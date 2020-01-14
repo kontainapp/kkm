@@ -1,0 +1,98 @@
+
+define show_pgd
+	if $argc == 0
+		help show_pgd
+	else
+		set $pgd_max_entries = 512
+		set $pgd_entry_address = (unsigned long long *)$arg0
+		set $pgd_index = 0
+		set $pgd_entry_va_offset = 0ULL
+		set $PRESENT = 0x1ULL
+		set $READ_WRITE = 0x2ULL
+		set $USER_SUPER = 0x4ULL
+		set $WRITE_THROUGH = 0x8ULL
+		set $PAGE_CACHE_DISABLE = 0x10ULL
+		set $ACCESSED = 0x20ULL
+		set $PAGE_SIZE = 0x80ULL
+		set $EXEC_DISABLE = 0x8000000000000000ULL
+		while $pgd_index < $pgd_max_entries
+			if $pgd_index < 256
+				set $pgd_entry_va_base = 0x0ULL
+			else
+				set $pgd_entry_va_base = 0xfff0000000000000ULL
+			end
+			set $pgd_entry_va = $pgd_entry_va_base + $pgd_entry_va_offset
+			set $entry = *$pgd_entry_address
+			if $entry != 0
+				printf "%4d %16llx", $pgd_index, $pgd_entry_va
+				printf " %16llx %3llx ", $entry & 0x7FFFFFFFFFFFF000ULL, $entry & 0xFFF
+				if $entry & $EXEC_DISABLE
+					printf "EX_DIS-"
+				else
+					printf "EX_ENA-"
+				end
+				if $entry & $PAGE_SIZE
+					printf "BIGPG-"
+				else
+					printf "PDPTR-"
+				end
+				if $entry & $ACCESSED
+					printf "ACC-"
+				else
+					printf "NOT-"
+				end
+				if $entry & $PAGE_CACHE_DISABLE
+					printf "PC_DIS-"
+				else
+					printf "PC_ENA-"
+				end
+				if $entry & $WRITE_THROUGH
+					printf "WR_TH-"
+				else
+					printf "WR_BA-"
+				end
+				if $entry & $USER_SUPER
+					printf "S-"
+				else
+					printf "U-"
+				end
+				if $entry & $READ_WRITE
+					printf "WR-"
+				else
+					printf "RD-"
+				end
+				if $entry & $PRESENT
+					printf "PRES"
+				else
+					printf "----"
+				end
+				printf "\n"
+			end
+			set $pgd_index = $pgd_index + 1
+			set $pgd_entry_address = $pgd_entry_address + 1
+			set $pgd_entry_va_offset = $pgd_entry_va_offset + 0x80000000000ULL
+		end
+	end
+end
+
+document show_pgd
+	"Usage show_pgd <pgd address>
+end
+
+define show_all_pgd
+	if $argc == 0
+		help show_all_pgd
+	else
+		set $kkm = (struct kkm *)$arg0
+		printf "PGD of monitor\n"
+		show_pgd $kkm->mm.pgd
+		printf "PGD of guest kernel\n"
+		show_pgd $kkm->guest_kernel
+		printf "PGD of guest payload\n"
+		show_pgd $kkm->guest_payload
+	end
+end
+
+document show_all_pgd
+	"Usage show_all_pgd <kkm address>
+end
