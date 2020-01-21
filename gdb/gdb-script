@@ -19,7 +19,7 @@ define show_pgd
 			if $pgd_index < 256
 				set $pgd_entry_va_base = 0x0ULL
 			else
-				set $pgd_entry_va_base = 0xfff0000000000000ULL
+				set $pgd_entry_va_base = 0xffff000000000000ULL
 			end
 			set $pgd_entry_va = $pgd_entry_va_base + $pgd_entry_va_offset
 			set $entry = *$pgd_entry_address
@@ -70,7 +70,7 @@ define show_pgd
 			end
 			set $pgd_index = $pgd_index + 1
 			set $pgd_entry_address = $pgd_entry_address + 1
-			set $pgd_entry_va_offset = $pgd_entry_va_offset + 0x80000000000ULL
+			set $pgd_entry_va_offset = $pgd_entry_va_offset + 0x8000000000ULL
 		end
 	end
 end
