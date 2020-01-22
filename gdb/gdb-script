@@ -96,3 +96,81 @@ end
 document show_all_pgd
 	"Usage show_all_pgd <kkm address>
 end
+
+define show_gdt
+	if $argc == 0
+		help show_gdt
+	else
+		set $gdt_entry_count = 32
+		set $gdt_index = 0
+		set $gdt_entry_address = (unsigned long long *)$arg0
+		while $gdt_index < $gdt_entry_count
+			set $gdt_entry = *$gdt_entry_address
+			printf "seg %4lx ", $gdt_index * 8
+
+			set $segment_base = (($gdt_entry & 0xff00000000000000ULL) >> 32) | (($gdt_entry & 0xff00000000ULL) >> 16) | (($gdt_entry & 0xffff0000ULL) >> 16)
+			printf "base %8lx ", $segment_base
+
+			set $segment_size = (($gdt_entry & 0xF000000000000ULL) >> 32) |  ($gdt_entry & 0xffff)
+			printf "size %6lx ", $segment_size
+
+			if $gdt_entry & 0x80000000000ULL
+				printf "C"
+			else
+				printf "D"
+			end
+			if $gdt_entry & 0x40000000000ULL
+				printf "D"
+			else
+				printf "U"
+			end
+			if $gdt_entry & 0x20000000000ULL
+				printf "W"
+			else
+				printf "R"
+			end
+			if $gdt_entry & 0x10000000000ULL
+				printf "A"
+			else
+				printf "-"
+			end
+			printf " "
+
+			if $gdt_entry & 0x100000000000ULL
+				printf "CD/DAT "
+			else
+				printf "SYSTEM "
+			end
+			printf "priv lvl %x ", ($gdt_entry & 0x600000000000ULL) >> 45
+			if $gdt_entry & 0x800000000000ULL
+				printf "PRESENT "
+			else
+				printf "------- "
+			end
+
+			if $gdt_entry & 0x80000000000000ULL
+				printf "4k "
+			else
+				printf "1b "
+			end
+			if $gdt_entry & 0x40000000000000ULL
+				printf "16b "
+			else
+				printf "32b "
+			end
+			if $gdt_entry & 0x20000000000000ULL
+				printf "64b "
+			else
+				printf "32b "
+			end
+			printf "sys bit %d", ($gdt_entry & 0x10000000000000ULL) >> 52
+			printf "\n"
+			set $gdt_entry_address = $gdt_entry_address + 1
+			set $gdt_index = $gdt_index + 1
+		end
+	end
+end
+
+document show_gdt
+	"Usage show_gdt <gdt virtual address"
+end

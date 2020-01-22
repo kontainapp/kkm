@@ -33,6 +33,7 @@ void kkm_mm_copy_range(unsigned long long src_base,
 
 void kkm_mm_copy_kernel_pgd(struct kkm *kkm)
 {
+	// when running in kernel mode we are expected to have kernel pgd
 	unsigned long current_pgd_base = (unsigned long long)kkm->mm->pgd;
 
 	if (current_pgd_base == 0) {
@@ -43,6 +44,9 @@ void kkm_mm_copy_kernel_pgd(struct kkm *kkm)
 	kkm_mm_copy_range(current_pgd_base, KKM_PGD_KERNEL_OFFSET,
 			  kkm->guest_kernel, KKM_PGD_KERNEL_OFFSET,
 			  KKM_PGD_KERNEL_SIZE);
+
+	// point to user pgd
+	current_pgd_base += PAGE_SIZE;
 	kkm_mm_copy_range(current_pgd_base, KKM_PGD_KERNEL_OFFSET,
 			  kkm->guest_payload, KKM_PGD_KERNEL_OFFSET,
 			  KKM_PGD_KERNEL_SIZE);
@@ -104,6 +108,7 @@ int kkm_mm_sync(struct kkm *kkm)
 {
 	unsigned long current_pgd_base = (unsigned long long)kkm->mm->pgd;
 
+	// keep kernel and user pgd same for payload area
 	kkm_mm_copy_range(current_pgd_base, KKM_PGD_MONITOR_PAYLOAD_OFFSET,
 			  kkm->guest_kernel, KKM_PGD_GUEST_PAYLOAD_OFFSET,
 			  KKM_PGD_PAYLOAD_SIZE);
