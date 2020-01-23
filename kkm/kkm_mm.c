@@ -19,7 +19,8 @@
 #define KKM_PGD_KERNEL_SIZE (2048)
 
 #define KKM_PGD_MONITOR_PAYLOAD_OFFSET (256)
-#define KKM_PGD_GUEST_PAYLOAD_OFFSET (0)
+#define KKM_PGD_GUEST_PAYLOAD_OFFSET_0 (0)
+#define KKM_PGD_GUEST_PAYLOAD_OFFSET_255 (255 * 8)
 #define KKM_PGD_PAYLOAD_SIZE (8)
 
 void kkm_mm_copy_range(unsigned long long src_base,
@@ -45,8 +46,9 @@ void kkm_mm_copy_kernel_pgd(struct kkm *kkm)
 			  kkm->guest_kernel, KKM_PGD_KERNEL_OFFSET,
 			  KKM_PGD_KERNEL_SIZE);
 
-	// point to user pgd
-	current_pgd_base += PAGE_SIZE;
+	// point to user pgd.
+	// keep all memory map for now.
+	// current_pgd_base += PAGE_SIZE;
 	kkm_mm_copy_range(current_pgd_base, KKM_PGD_KERNEL_OFFSET,
 			  kkm->guest_payload, KKM_PGD_KERNEL_OFFSET,
 			  KKM_PGD_KERNEL_SIZE);
@@ -109,11 +111,20 @@ int kkm_mm_sync(struct kkm *kkm)
 	unsigned long current_pgd_base = (unsigned long long)kkm->mm->pgd;
 
 	// keep kernel and user pgd same for payload area
+	// entry 0 for code+data
 	kkm_mm_copy_range(current_pgd_base, KKM_PGD_MONITOR_PAYLOAD_OFFSET,
-			  kkm->guest_kernel, KKM_PGD_GUEST_PAYLOAD_OFFSET,
+			  kkm->guest_kernel, KKM_PGD_GUEST_PAYLOAD_OFFSET_0,
 			  KKM_PGD_PAYLOAD_SIZE);
 	kkm_mm_copy_range(current_pgd_base, KKM_PGD_MONITOR_PAYLOAD_OFFSET,
-			  kkm->guest_payload, KKM_PGD_GUEST_PAYLOAD_OFFSET,
+			  kkm->guest_payload, KKM_PGD_GUEST_PAYLOAD_OFFSET_0,
+			  KKM_PGD_PAYLOAD_SIZE);
+
+	// entry 255 for stack+mmap
+	kkm_mm_copy_range(current_pgd_base, KKM_PGD_MONITOR_PAYLOAD_OFFSET,
+			  kkm->guest_kernel, KKM_PGD_GUEST_PAYLOAD_OFFSET_255,
+			  KKM_PGD_PAYLOAD_SIZE);
+	kkm_mm_copy_range(current_pgd_base, KKM_PGD_MONITOR_PAYLOAD_OFFSET,
+			  kkm->guest_payload, KKM_PGD_GUEST_PAYLOAD_OFFSET_255,
 			  KKM_PGD_PAYLOAD_SIZE);
 	return 0;
 }

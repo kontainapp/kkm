@@ -14,6 +14,8 @@
 #define __KKM_GUEST_H__
 
 int kkm_guest_switch_kernel(struct kkm_kontext *kkm_kontext);
+int kkm_guest_init(struct kkm *kkm);
+void kkm_guest_cleanup(struct kkm *kkm);
 
 
 #endif /* __KKM_GUEST_H__ */

@@ -419,6 +419,11 @@ int kkm_create_kontainer(unsigned long arg)
 		goto error;
 	}
 
+	ret_val = kkm_guest_init(kkm);
+	if (ret_val != 0) {
+		goto error;
+	}
+
 	kkm_reference_count_up(kkm);
 
 	return kkm->kontainer_fd;

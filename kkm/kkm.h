@@ -73,6 +73,9 @@ struct kkm {
 	struct page *guest_payload_page;
 	unsigned long guest_payload;
 	phys_addr_t guest_payload_pa;
+
+	struct page *idt_page;
+	unsigned long long idt;
 };
 
 #endif /* __KKM_H__ */

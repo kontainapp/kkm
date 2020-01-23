@@ -76,7 +76,7 @@ define show_pgd
 end
 
 document show_pgd
-	"Usage show_pgd <pgd address>
+	"Usage show_pgd pgd-va"
 end
 
 define show_all_pgd
@@ -94,7 +94,7 @@ define show_all_pgd
 end
 
 document show_all_pgd
-	"Usage show_all_pgd <kkm address>
+	"Usage show_all_pgd kkm-va"
 end
 
 define show_gdt
@@ -172,5 +172,34 @@ define show_gdt
 end
 
 document show_gdt
-	"Usage show_gdt <gdt virtual address"
+	"Usage show_gdt gdt-va"
+end
+
+define show_idt
+	if $argc == 0
+		help show_idt
+	else
+		set $idt_count = 256
+		set $idt_index = 0
+		set $idte_address = (unsigned long long *)$arg0
+		while $idt_index < $idt_count
+			set $entry0 = *($idte_address + 0)
+			set $entry1 = *($idte_address + 1)
+			if $entry0 & 0x800000000000ULL
+				printf "P "
+				printf "%4x seg %4x ", $idt_index, ($entry0 >> 16) & 0xffff
+				printf "addr %16lx ", (($entry1 & 0xffffffff) << 32) | (($entry0 >> 32) & 0xffff0000ULL) | ($entry0 & 0xffffULL)
+				printf "DPL %1x ", ($entry0 >> 45) & 3
+				printf "TYPE %1x ", ($entry0 >> 40) & 0xf
+				printf "IST %1x", ($entry0 >> 32) & 0x7
+				printf "\n"
+			end
+			set $idt_index = $idt_index + 1
+			set $idte_address = $idte_address + 2
+		end
+	end
+end
+
+document show_idt
+	"Usage show_idt idt-va"
 end
