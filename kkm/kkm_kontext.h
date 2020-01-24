@@ -10,12 +10,11 @@
  * permission of Kontain Inc.
  */
 
-#ifndef __KKM_MM_H__
-#define __KKM_MM_H__
+#ifndef __KKM_KONTEXT_H__
+#define __KKM_KONTEXT_H__
 
-int kkm_mm_allocate_page(struct page **page, void **virtual_address,
-			 phys_addr_t *physical_address);
-int kkm_mm_copy_kernel_pgd(struct kkm *kkm);
-int kkm_mm_sync(struct kkm *kkm);
+int kkm_kontext_init(struct kkm_kontext *kkm_kontext);
+void kkm_kontext_cleanup(struct kkm_kontext *kkm_kontext);
+int kkm_kontext_switch_kernel(struct kkm_kontext *kkm_kontext);
 
-#endif /* __KKM_MM_H__ */
+#endif /* KKM_KONTEXT_H__ */

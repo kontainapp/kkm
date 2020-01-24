@@ -10,12 +10,14 @@
  * permission of Kontain Inc.
  */
 
-#ifndef __KKM_MM_H__
-#define __KKM_MM_H__
+.code64
 
-int kkm_mm_allocate_page(struct page **page, void **virtual_address,
-			 phys_addr_t *physical_address);
-int kkm_mm_copy_kernel_pgd(struct kkm *kkm);
-int kkm_mm_sync(struct kkm *kkm);
+.globl kkm_trap_entry
+.align 16
+kkm_trap_entry:
+.size kkm_trap_entry, .-kkm_trap_entry
 
-#endif /* __KKM_MM_H__ */
+.global kkm_swith_to_guest
+.align 16
+kkm_swith_to_guest:
+.size kkm_swith_to_guest, .-kkm_swith_to_guest

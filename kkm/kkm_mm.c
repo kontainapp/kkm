@@ -23,23 +23,47 @@
 #define KKM_PGD_GUEST_PAYLOAD_OFFSET_255 (255 * 8)
 #define KKM_PGD_PAYLOAD_SIZE (8)
 
-void kkm_mm_copy_range(unsigned long long src_base,
-		       unsigned long long src_offset,
-		       unsigned long long dest_base,
-		       unsigned long long dest_offset, size_t count)
+int kkm_mm_allocate_page(struct page **page, void **virtual_address,
+			 phys_addr_t *physical_address)
+{
+	int ret_val = 0;
+
+	if ((page == NULL) || (virtual_address == NULL)) {
+		ret_val = -EINVAL;
+		goto error;
+	}
+
+	*page = alloc_pages(GFP_KERNEL | __GFP_ZERO, 1);
+	if (*page == NULL) {
+		ret_val = -ENOMEM;
+		goto error;
+	}
+	*virtual_address = page_address(*page);
+	if (physical_address != NULL) {
+		*physical_address = virt_to_phys(*virtual_address);
+	}
+
+error:
+	return ret_val;
+}
+
+static void kkm_mm_copy_range(unsigned long long src_base,
+			      unsigned long long src_offset,
+			      unsigned long long dest_base,
+			      unsigned long long dest_offset, size_t count)
 {
 	memcpy((void *)dest_base + dest_offset, (void *)src_base + src_offset,
 	       count);
 }
 
-void kkm_mm_copy_kernel_pgd(struct kkm *kkm)
+int kkm_mm_copy_kernel_pgd(struct kkm *kkm)
 {
 	// when running in kernel mode we are expected to have kernel pgd
 	unsigned long current_pgd_base = (unsigned long long)kkm->mm->pgd;
 
 	if (current_pgd_base == 0) {
-		printk(KERN_NOTICE "PGD base is zero\n");
-		return;
+		printk(KERN_NOTICE "kkm_mm_copy_kernel_pgd: PGD base is zero\n");
+		return -EINVAL;
 	}
 
 	kkm_mm_copy_range(current_pgd_base, KKM_PGD_KERNEL_OFFSET,
@@ -52,58 +76,8 @@ void kkm_mm_copy_kernel_pgd(struct kkm *kkm)
 	kkm_mm_copy_range(current_pgd_base, KKM_PGD_KERNEL_OFFSET,
 			  kkm->guest_payload, KKM_PGD_KERNEL_OFFSET,
 			  KKM_PGD_KERNEL_SIZE);
-}
 
-int kkm_mm_init(struct kkm *kkm)
-{
-	int ret_val = 0;
-
-	kkm->guest_kernel_page = alloc_pages(GFP_KERNEL | __GFP_ZERO, 1);
-	if (kkm->guest_kernel_page == NULL) {
-		ret_val = -ENOMEM;
-		goto error;
-	}
-	kkm->guest_kernel = (unsigned long)page_address(kkm->guest_kernel_page);
-	kkm->guest_kernel_pa = virt_to_phys((void *)kkm->guest_kernel);
-
-	printk(KERN_NOTICE "kkm_mm_init guest kernel page %lx va %lx pa %llx\n",
-	       (unsigned long)kkm->guest_kernel_page, kkm->guest_kernel,
-	       kkm->guest_kernel_pa);
-
-	kkm->guest_payload_page = alloc_page(GFP_KERNEL | __GFP_ZERO);
-	if (kkm->guest_payload_page == NULL) {
-		ret_val = -ENOMEM;
-		goto error;
-	}
-	kkm->guest_payload =
-		(unsigned long)page_address(kkm->guest_payload_page);
-	kkm->guest_payload_pa = virt_to_phys((void *)kkm->guest_payload);
-
-	printk(KERN_NOTICE
-	       "kkm_mm_init guest payload page %lx va %lx pa %llx\n",
-	       (unsigned long)kkm->guest_payload_page, kkm->guest_payload,
-	       kkm->guest_payload_pa);
-
-	kkm_mm_copy_kernel_pgd(kkm);
-error:
-	if (ret_val != 0) {
-		kkm_mm_cleanup(kkm);
-	}
-	return ret_val;
-}
-
-void kkm_mm_cleanup(struct kkm *kkm)
-{
-	if (kkm->guest_kernel_page != NULL) {
-		free_page(kkm->guest_kernel);
-		kkm->guest_kernel_page = NULL;
-		kkm->guest_kernel = 0;
-	}
-	if (kkm->guest_payload_page != NULL) {
-		free_page(kkm->guest_payload);
-		kkm->guest_payload_page = NULL;
-		kkm->guest_payload = 0;
-	}
+	return 0;
 }
 
 int kkm_mm_sync(struct kkm *kkm)
@@ -126,5 +100,8 @@ int kkm_mm_sync(struct kkm *kkm)
 	kkm_mm_copy_range(current_pgd_base, KKM_PGD_MONITOR_PAYLOAD_OFFSET,
 			  kkm->guest_payload, KKM_PGD_GUEST_PAYLOAD_OFFSET_255,
 			  KKM_PGD_PAYLOAD_SIZE);
+
+	// fix memory alias created
+	// modify km to use one pml4 entry for code + data and second entry for stack + mmap
 	return 0;
 }

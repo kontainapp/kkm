@@ -10,12 +10,10 @@
  * permission of Kontain Inc.
  */
 
-#ifndef __KKM_GUEST_H__
-#define __KKM_GUEST_H__
+#ifndef __KKM_ENTRY_H__
+#define __KKM_ENTRY_H__
 
-int kkm_guest_switch_kernel(struct kkm_kontext *kkm_kontext);
-int kkm_guest_init(struct kkm *kkm);
-void kkm_guest_cleanup(struct kkm *kkm);
+void kkm_trap_entry(void);
+void kkm_swith_to_guest(void);
 
-
-#endif /* __KKM_GUEST_H__ */
+#endif /* __KKM_ENTRY_H__ */
