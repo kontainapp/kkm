@@ -37,8 +37,8 @@ struct kkm_kontext {
 
 	struct kkm_kontext_mmap_area mmap_area[KKM_CONTEXT_MAP_PAGE_COUNT];
 
-	struct page *stack_page;
-	void *stack;
+	struct page *guest_area_page;
+	void *guest_area;
 
 	unsigned long native_kernel_cr3;
 	unsigned long guest_kernel_cr3;

@@ -12,6 +12,8 @@ KDIR ?= /lib/modules/`uname -r`/build
 
 default:
 	$(MAKE) -C $(KDIR) M=$(PWD)
+	objdump -d kkm.ko > kkm.dis
 
 clean:
 	$(MAKE) -C $(KDIR) M=$(PWD) clean
+	rm -f kkm.dis

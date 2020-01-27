@@ -13,24 +13,6 @@
 #ifndef __KKM_KONTAINER_H__
 #define __KKM_KONTAINER_H__
 
-#define GUEST_PRIVATE_DATA_SIZE (512)
-#define GUEST_STACK_REDZONE_SIZE (128)
-#define GUEST_STACK_SIZE                                                       \
-	(PAGE_SIZE - GUEST_PRIVATE_DATA_SIZE - GUEST_STACK_REDZONE_SIZE)
-
-#define GUEST_STACK_START_ADDRESS(guest_area_start)                            \
-	(guest_area_start + ((struct kkm_guest_area *)0)->redzone)
-
-struct kkm_guest_area {
-	// data store
-	union {
-		struct kkm *kkm;
-		char reserved[GUEST_PRIVATE_DATA_SIZE];
-	};
-	char stack[GUEST_STACK_SIZE];
-	char redzone[GUEST_STACK_REDZONE_SIZE];
-};
-
 int kkm_kontainer_init(struct kkm *kkm);
 void kkm_kontainer_cleanup(struct kkm *kkm);
 

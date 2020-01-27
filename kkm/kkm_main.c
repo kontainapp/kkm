@@ -110,7 +110,8 @@ static long kkm_execution_kontext_ioctl(struct file *file_p,
 	struct kkm_kontext *kkm_kontext =
 		(struct kkm_kontext *)file_p->private_data;
 
-	printk(KERN_NOTICE "kkm_execution_kontext_ioctl: ioctl_type(%x)\n", ioctl_type);
+	printk(KERN_NOTICE "kkm_execution_kontext_ioctl: ioctl_type(%x)\n",
+	       ioctl_type);
 
 	switch (ioctl_type) {
 	case KKM_RUN:
@@ -235,7 +236,8 @@ int kkm_add_execution_kontext(struct kkm *kkm)
 	kkm_kontext->kontext_fd =
 		anon_inode_getfd(buffer, &kkm_execution_kontext_fops,
 				 kkm_kontext, O_CLOEXEC | O_RDWR);
-	printk(KERN_NOTICE "kkm_add_execution_kontext: kontext fd %d\n", kkm_kontext->kontext_fd);
+	printk(KERN_NOTICE "kkm_add_execution_kontext: kontext fd %d\n",
+	       kkm_kontext->kontext_fd);
 	if (kkm_kontext->kontext_fd >= 0) {
 		ret_val = kkm_kontext->kontext_fd;
 	}
@@ -249,8 +251,9 @@ int kkm_add_execution_kontext(struct kkm *kkm)
 			goto error;
 		}
 		kkma->kvaddr = (unsigned long)page_address(kkma->page);
-		printk(KERN_NOTICE "kkm_add_execution_kontext: allocated space %d %p %lx\n", kkma->offset,
-		       kkma->page, kkma->kvaddr);
+		printk(KERN_NOTICE
+		       "kkm_add_execution_kontext: allocated space %d %p %lx\n",
+		       kkma->offset, kkma->page, kkma->kvaddr);
 	}
 
 	kkm_kontext_init(kkm_kontext);
@@ -357,6 +360,8 @@ static int kkm_kontainer_release(struct inode *inode_p, struct file *file_p)
 	struct kkm *kkm = file_p->private_data;
 	printk(KERN_NOTICE "kkm_kontainer_release:\n");
 
+	kkm_kontainer_cleanup(kkm);
+
 	kkm_reference_count_down(kkm);
 
 	return 0;
@@ -382,7 +387,8 @@ static long kkm_kontainer_ioctl(struct file *file_p, unsigned int ioctl_type,
 		ret_val = kkm_set_id_map_addr(kkm, arg);
 		break;
 	default:
-		printk(KERN_NOTICE "kkm_kontainer_ioctl: unsupported ioctl_type(%x)\n",
+		printk(KERN_NOTICE
+		       "kkm_kontainer_ioctl: unsupported ioctl_type(%x)\n",
 		       ioctl_type);
 		ret_val = -EOPNOTSUPP;
 		break;
@@ -515,7 +521,8 @@ static long kkm_device_ioctl(struct file *file_p, unsigned int ioctl_type,
 		ret_val = kkm_get_native_cpuid(arg);
 		break;
 	default:
-		printk(KERN_NOTICE "kkm_device_ioctl: unsupported ioctl_type(%x)\n",
+		printk(KERN_NOTICE
+		       "kkm_device_ioctl: unsupported ioctl_type(%x)\n",
 		       ioctl_type);
 		ret_val = -EOPNOTSUPP;
 		break;
