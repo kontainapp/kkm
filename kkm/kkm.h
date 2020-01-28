@@ -30,11 +30,6 @@ struct kkm_kontext {
 	struct task_struct *task;
 	struct kkm *kkm;
 
-	struct kkm_regs regs;
-	struct kkm_sregs sregs;
-	struct kkm_fpu fpu;
-	struct kkm_debug debug;
-
 	struct kkm_kontext_mmap_area mmap_area[KKM_CONTEXT_MAP_PAGE_COUNT];
 
 	struct page *guest_area_page;

@@ -57,6 +57,7 @@ kkm_switch_to_guest:
 .align 16
 kkm_switch_to_host:
 
+	/* restore host kernel stack */
 	movq	16(%rdi), %rsi
 	mov	%rsi, %rsp
 

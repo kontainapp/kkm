@@ -13,7 +13,7 @@
 #ifndef __KKM_KONTEXT_H__
 #define __KKM_KONTEXT_H__
 
-#define GUEST_PRIVATE_DATA_SIZE (256)
+#define GUEST_PRIVATE_DATA_SIZE (1024)
 #define GUEST_STACK_REDZONE_SIZE (256)
 #define GUEST_STACK_SIZE                                                       \
 	(PAGE_SIZE - GUEST_PRIVATE_DATA_SIZE - GUEST_STACK_REDZONE_SIZE)
@@ -29,6 +29,11 @@ struct kkm_guest_area {
 			uint64_t guest_area_beg;
 			uint64_t host_kernel_stack;
 			uint64_t guest_stack_variable_address;
+
+			struct kkm_regs regs;
+			struct kkm_sregs sregs;
+			struct kkm_debug debug;
+			struct kkm_fpu fpu;
 		};
 		char data[GUEST_PRIVATE_DATA_SIZE];
 	};

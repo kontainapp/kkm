@@ -65,7 +65,6 @@ int kkm_kontext_switch_kernel(struct kkm_kontext *kkm_kontext)
 	printk(KERN_NOTICE "kkm_kontext_switch_kernel: native kernel cr3 %lx\n",
 	       kkm_kontext->native_kernel_cr3);
 
-	memset(ga, 0x5a, sizeof(struct kkm_guest_area));
 	memset(ga->redzone, 0xa5, GUEST_STACK_REDZONE_SIZE);
 	printk(KERN_NOTICE "before %llx %llx %llx %llx\n",
 	       (unsigned long long)ga->kkm, ga->guest_area_beg,

@@ -109,6 +109,8 @@ static long kkm_execution_kontext_ioctl(struct file *file_p,
 	int ret_val = 0;
 	struct kkm_kontext *kkm_kontext =
 		(struct kkm_kontext *)file_p->private_data;
+	struct kkm_guest_area *ga =
+		(struct kkm_guest_area *)kkm_kontext->guest_area;
 
 	printk(KERN_NOTICE "kkm_execution_kontext_ioctl: ioctl_type(%x)\n",
 	       ioctl_type);
@@ -118,34 +120,34 @@ static long kkm_execution_kontext_ioctl(struct file *file_p,
 		ret_val = kkm_run(kkm_kontext);
 		break;
 	case KKM_GET_REGS:
-		ret_val = kkm_to_user((void *)arg, &kkm_kontext->regs,
+		ret_val = kkm_to_user((void *)arg, &ga->regs,
 				      sizeof(struct kkm_regs));
 		break;
 	case KKM_SET_REGS:
-		ret_val = kkm_from_user(&kkm_kontext->regs, (void *)arg,
+		ret_val = kkm_from_user(&ga->regs, (void *)arg,
 					sizeof(struct kkm_regs));
 		break;
 	case KKM_GET_SREGS:
-		ret_val = kkm_to_user((void *)arg, &kkm_kontext->sregs,
+		ret_val = kkm_to_user((void *)arg, &ga->sregs,
 				      sizeof(struct kkm_sregs));
 		break;
 	case KKM_SET_SREGS:
-		ret_val = kkm_from_user(&kkm_kontext->sregs, (void *)arg,
+		ret_val = kkm_from_user(&ga->sregs, (void *)arg,
 					sizeof(struct kkm_sregs));
 		break;
 	case KKM_GET_FPU:
-		ret_val = kkm_to_user((void *)arg, &kkm_kontext->fpu,
+		ret_val = kkm_to_user((void *)arg, &ga->fpu,
 				      sizeof(struct kkm_fpu));
 		break;
 	case KKM_SET_FPU:
-		ret_val = kkm_from_user(&kkm_kontext->fpu, (void *)arg,
+		ret_val = kkm_from_user(&ga->fpu, (void *)arg,
 					sizeof(struct kkm_fpu));
 		break;
 	case KKM_SET_CPUID:
 		// return success
 		break;
 	case KKM_SET_DEBUG:
-		ret_val = kkm_from_user(&kkm_kontext->debug, (void *)arg,
+		ret_val = kkm_from_user(&ga->debug, (void *)arg,
 					sizeof(struct kkm_debug));
 		break;
 	case KKM_GET_EVENTS:
