@@ -58,6 +58,8 @@ static int kkm_execution_kontext_release(struct inode *inode_p,
 
 	printk(KERN_NOTICE "kkm_execution_kontext_release:\n");
 
+	kkm_kontext_cleanup(kkm_kontext);
+
 	for (i = 0; i < KKM_CONTEXT_MAP_PAGE_COUNT; i++) {
 		kkma = &kkm_kontext->mmap_area[i];
 		if (kkma->kvaddr != 0) {

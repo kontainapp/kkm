@@ -57,6 +57,20 @@ int kkm_kontext_switch_kernel(struct kkm_kontext *kkm_kontext)
 	int ret_val = 0;
 	struct kkm_guest_area *ga =
 		(struct kkm_guest_area *)kkm_kontext->guest_area;
+	uint64_t fsbase = 0;
+	uint64_t gsbase = 0;
+	uint64_t gskernelbase = 0;
+	uint64_t efer = 0;
+	uint64_t star = 0;
+
+	rdmsrl(MSR_FS_BASE, fsbase);
+	rdmsrl(MSR_GS_BASE, gsbase);
+	rdmsrl(MSR_KERNEL_GS_BASE, gskernelbase);
+	rdmsrl(MSR_EFER, efer);
+	rdmsrl(MSR_STAR, star);
+
+	printk(KERN_NOTICE "FSBASE %llx GSBASE %llx KERNGSBASE %llx\n", fsbase, gsbase, gskernelbase);
+	printk(KERN_NOTICE "EFER %llx STAR %llx\n", efer, star);
 
 	printk(KERN_NOTICE "kkm_kontext_switch_kernel:\n");
 
