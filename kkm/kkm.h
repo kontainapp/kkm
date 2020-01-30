@@ -36,7 +36,10 @@ struct kkm_kontext {
 	void *guest_area;
 
 	unsigned long native_kernel_cr3;
+	unsigned long native_kernel_cr4;
+
 	unsigned long guest_kernel_cr3;
+	unsigned long guest_kernel_cr4;
 
 	char scratch_buffer[256];
 };

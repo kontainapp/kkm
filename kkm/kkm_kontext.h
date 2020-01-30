@@ -27,7 +27,7 @@ struct kkm_guest_area {
 		struct {
 			struct kkm *kkm;
 			uint64_t guest_area_beg;
-			uint64_t host_kernel_stack;
+			uint64_t native_kernel_stack;
 			uint64_t guest_stack_variable_address;
 
 			struct kkm_regs regs;
