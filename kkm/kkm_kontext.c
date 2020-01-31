@@ -69,9 +69,9 @@ int kkm_kontext_switch_kernel(struct kkm_kontext *kkm_kontext)
 	rdmsrl(MSR_EFER, efer);
 	rdmsrl(MSR_STAR, star);
 
-	printk(KERN_NOTICE "EFER %llx STAR %llx\n", efer, star);
+	printk(KERN_NOTICE "kkm_kontext_switch_kernel: EFER %llx STAR %llx\n",
+	       efer, star);
 #endif
-
 	printk(KERN_NOTICE "kkm_kontext_switch_kernel:\n");
 
 	cpu = get_cpu();
@@ -147,6 +147,12 @@ void kkm_guest_kernel_start_payload(struct kkm_guest_area *ga)
 
 	ga->guest_stack_variable_address = (unsigned long long)&value;
 
+	loadsegment(fs, 0);
+	wrmsrl(MSR_FS_BASE, ga->sregs.fs.base);
+
+	printk(KERN_NOTICE "kkm_guest_kernel_start_payload: fsbase %llx\n",
+	       ga->sregs.fs.base);
+
 	//kkm_switch_to_guest_payload(ga);
 	kkm_switch_to_host_kernel();
 }
@@ -156,12 +162,14 @@ void kkm_switch_to_host_kernel(void)
 	int cpu = -1;
 	struct kkm_kontext *kkm_kontext = NULL;
 
+	printk(KERN_NOTICE "kkm_switch_to_host_kernel:\n");
+
 	cpu = get_cpu();
 	kkm_kontext = per_cpu(current_kontext, cpu);
 	printk(KERN_NOTICE "kkm_switch_to_host_kernel: cpu %d\n", cpu);
 
 	printk(KERN_NOTICE
-	       "kkm_kontext_switch_kernel: segments ds %x es %x fs %x fsbase %lx gs %x gsbase %lx gskernbase %lx ss %x\n",
+	       "kkm_switch_to_host_kernel: segments ds %x es %x fs %x fsbase %lx gs %x gsbase %lx gskernbase %lx ss %x\n",
 	       kkm_kontext->native_kernel_ds, kkm_kontext->native_kernel_es,
 	       kkm_kontext->native_kernel_fs,
 	       kkm_kontext->native_kernel_fs_base,
@@ -173,12 +181,12 @@ void kkm_switch_to_host_kernel(void)
 	loadsegment(ds, kkm_kontext->native_kernel_ds);
 	loadsegment(es, kkm_kontext->native_kernel_es);
 
-	wrmsrl(MSR_FS_BASE, kkm_kontext->native_kernel_fs_base);
 	loadsegment(fs, kkm_kontext->native_kernel_fs);
+	wrmsrl(MSR_FS_BASE, kkm_kontext->native_kernel_fs_base);
 
+	load_gs_index(kkm_kontext->native_kernel_gs);
 	wrmsrl(MSR_GS_BASE, kkm_kontext->native_kernel_gs_base);
 	wrmsrl(MSR_KERNEL_GS_BASE, kkm_kontext->native_kernel_gs_kern_base);
-	load_gs_index(kkm_kontext->native_kernel_gs);
 
 	loadsegment(ss, __KERNEL_DS);
 
