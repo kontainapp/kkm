@@ -81,7 +81,7 @@ int kkm_kontext_switch_kernel(struct kkm_kontext *kkm_kontext)
 	memset(ga->redzone, 0xa5, GUEST_STACK_REDZONE_SIZE);
 	printk(KERN_NOTICE
 	       "kkm_kontext_switch_kernel: before %llx %llx %llx %llx\n",
-	       (unsigned long long)ga->kkm, ga->guest_area_beg,
+	       (unsigned long long)ga->kkm_kontext, ga->guest_area_beg,
 	       ga->native_kernel_stack, ga->guest_stack_variable_address);
 
 	// save native kernel address space
@@ -124,7 +124,9 @@ int kkm_kontext_switch_kernel(struct kkm_kontext *kkm_kontext)
 	       kkm_kontext->native_kernel_gs_kern_base,
 	       kkm_kontext->native_kernel_ss);
 
-	kkm_switch_to_guest(ga, kkm, (unsigned long long)ga->redzone);
+	ga->guest_payload_cr3 = kkm->guest_payload_pa;
+
+	kkm_switch_to_gk_asm(ga, kkm_kontext, (unsigned long long)ga->redzone);
 
 	// flush TLB, and restore original cr4
 	__write_cr4(kkm_kontext->native_kernel_cr4);
@@ -134,7 +136,7 @@ int kkm_kontext_switch_kernel(struct kkm_kontext *kkm_kontext)
 
 	printk(KERN_NOTICE
 	       "kkm_kontext_switch_kernel: after %llx %llx %llx %llx\n",
-	       (unsigned long long)ga->kkm, ga->guest_area_beg,
+	       (unsigned long long)ga->kkm_kontext, ga->guest_area_beg,
 	       ga->native_kernel_stack, ga->guest_stack_variable_address);
 
 	return ret_val;
@@ -153,7 +155,7 @@ void kkm_guest_kernel_start_payload(struct kkm_guest_area *ga)
 	printk(KERN_NOTICE "kkm_guest_kernel_start_payload: fsbase %llx\n",
 	       ga->sregs.fs.base);
 
-	//kkm_switch_to_guest_payload(ga);
+	//kkm_switch_to_gp_asm(ga);
 	kkm_switch_to_host_kernel();
 }
 
@@ -190,5 +192,5 @@ void kkm_switch_to_host_kernel(void)
 
 	loadsegment(ss, __KERNEL_DS);
 
-	kkm_switch_to_host(kkm_kontext->guest_area);
+	kkm_switch_to_hk_asm(kkm_kontext->guest_area);
 }

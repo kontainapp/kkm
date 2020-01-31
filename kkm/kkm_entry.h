@@ -13,9 +13,11 @@
 #ifndef __KKM_ENTRY_H__
 #define __KKM_ENTRY_H__
 
-void kkm_switch_to_guest(struct kkm_guest_area *ga, struct kkm *kkm,
-			 unsigned long long stackstart);
-void kkm_switch_to_host(struct kkm_guest_area *ga);
+void kkm_switch_to_gk_asm(struct kkm_guest_area *ga,
+			  struct kkm_kontext *kkm_kontext,
+			  unsigned long long stackstart);
+void kkm_switch_to_hk_asm(struct kkm_guest_area *ga);
+void kkm_switch_to_gp_asm(struct kkm_guest_area *ga);
 void kkm_trap_entry(void);
 
 #endif /* __KKM_ENTRY_H__ */

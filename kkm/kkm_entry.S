@@ -11,6 +11,7 @@
  */
 
 #include <linux/linkage.h>
+#include "kkm_offsets.h"
 
 .code64
 .section .entry.text, "ax"
@@ -20,9 +21,9 @@
  * %rsi -- pointer to kkm
  * %rdx -- stack start
  */
-.global kkm_switch_to_guest
+.global kkm_switch_to_gk_asm
 .align 16
-kkm_switch_to_guest:
+kkm_switch_to_gk_asm:
 	pushq	%rbp
 	pushq	%rbx
 	pushq	%r12
@@ -31,11 +32,11 @@ kkm_switch_to_guest:
 	pushq	%r15
 
 	/* save kkm */
-	movq	%rsi, (%rdi)
+	movq	%rsi, OFF_KONTEXT(%rdi)
 	/* save guest private pointer */
-	movq	%rdi, 8(%rdi)
-	/* save kernel stack */
-	movq	%rsp, 16(%rdi)
+	movq	%rdi, OFF_GAB(%rdi)
+	/* save native kernel stack */
+	movq	%rsp, OFF_NK_STACK(%rdi)
 
 	mov	%rdx, %rsp
 
@@ -50,15 +51,18 @@ kkm_switch_to_guest:
 	popq	%rbx
 	popq	%rbp
 	retq
-	.type kkm_switch_to_guest, @function
-.size kkm_switch_to_guest, .-kkm_switch_to_guest
+	.type kkm_switch_to_gk_asm, @function
+.size kkm_switch_to_gk_asm, .-kkm_switch_to_gk_asm
 
-.global kkm_switch_to_host
+/*
+ * %rdi -- guest private area
+ */
+.global kkm_switch_to_hk_asm
 .align 16
-kkm_switch_to_host:
+kkm_switch_to_hk_asm:
 
-	/* restore host kernel stack */
-	movq	16(%rdi), %rsi
+	/* restore native kernel stack */
+	movq	OFF_NK_STACK(%rdi), %rsi
 	mov	%rsi, %rsp
 
 	popq	%r15
@@ -68,10 +72,46 @@ kkm_switch_to_host:
 	popq	%rbx
 	popq	%rbp
 	retq
-	.type kkm_switch_to_host, @function
-.size kkm_switch_to_host, .-kkm_switch_to_host
+	.type kkm_switch_to_hk_asm, @function
+.size kkm_switch_to_hk_asm, .-kkm_switch_to_hk_asm
 
-.globl kkm_trap_entry
+/*
+ * %rdi -- guest private area
+ */
+.global kkm_switch_to_gp_asm
+.align 16
+kkm_switch_to_gp_asm:
+	movq OFF_R15(%rdi), %r15
+	movq OFF_R14(%rdi), %r14
+	movq OFF_R13(%rdi), %r13
+	movq OFF_R12(%rdi), %r12
+
+	movq OFF_R11(%rdi), %r11
+	movq OFF_R10(%rdi), %r10
+	movq OFF_R9(%rdi), %r9
+	movq OFF_R8(%rdi), %r8
+
+	movq OFF_RBP(%rdi), %rbp
+	movq OFF_RSP(%rdi), %rsi
+	pushq %rsi
+	movq OFF_RDI(%rdi), %rsi
+	pushq %rsi
+	movq OFF_RSI(%rdi), %rsi
+
+	movq OFF_RDX(%rdi), %rdx
+	movq OFF_RCX(%rdi), %rcx
+	movq OFF_RBX(%rdi), %rbx
+	movq OFF_RAX(%rdi), %rax
+
+	popq %rdi
+	popq %rsp
+
+	swapgs
+	sysretq
+.size kkm_switch_to_gp_asm, .-kkm_switch_to_gp_asm
+
+.global kkm_trap_entry
 .align 16
 kkm_trap_entry:
+	iretq
 .size kkm_trap_entry, .-kkm_trap_entry

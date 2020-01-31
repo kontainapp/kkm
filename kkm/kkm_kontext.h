@@ -25,10 +25,13 @@ struct kkm_guest_area {
 	// data store
 	union {
 		struct {
-			struct kkm *kkm;
-			uint64_t guest_area_beg;
-			uint64_t native_kernel_stack;
+			struct kkm_kontext *kkm_kontext;
+			uint64_t guest_area_beg; /* virtual address of this struct */
+			uint64_t native_kernel_stack; /* %rsp before switching stacks */
+			uint64_t guest_kernel_cr3;
+			uint64_t guest_payload_cr3;
 			uint64_t guest_stack_variable_address;
+			uint64_t reserved[2];
 
 			struct kkm_regs regs;
 			struct kkm_sregs sregs;
