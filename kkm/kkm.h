@@ -38,6 +38,18 @@ struct kkm_kontext {
 	unsigned long native_kernel_cr3;
 	unsigned long native_kernel_cr4;
 
+	unsigned short native_kernel_ds;
+	unsigned short native_kernel_es;
+
+	unsigned short native_kernel_fs;
+	unsigned long native_kernel_fs_base;
+
+	unsigned short native_kernel_gs;
+	unsigned long native_kernel_gs_base;
+	unsigned long native_kernel_gs_kern_base;
+
+	unsigned short native_kernel_ss;
+
 	unsigned long guest_kernel_cr3;
 	unsigned long guest_kernel_cr4;
 

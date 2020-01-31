@@ -40,7 +40,7 @@ kkm_switch_to_guest:
 	mov	%rdx, %rsp
 
 	/* guest private area is still in %rdi */
-	call kkm_guest_kernel_start
+	call kkm_guest_kernel_start_payload
 
 	/* following code never executes */
 	popq	%r15
