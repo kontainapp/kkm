@@ -76,7 +76,7 @@ int kkm_kontext_switch_kernel(struct kkm_kontext *kkm_kontext)
 
 	cpu = get_cpu();
 	per_cpu(current_kontext, cpu) = kkm_kontext;
-	printk(KERN_NOTICE "kkm_kontext_switch_kernel: cpu %d\n", cpu);
+	printk(KERN_NOTICE "kkm_kontext_switch_kernel: cpu %d %llx\n", cpu, (unsigned long long)&cpu);
 
 	memset(ga->redzone, 0xa5, GUEST_STACK_REDZONE_SIZE);
 	printk(KERN_NOTICE
@@ -157,16 +157,19 @@ int kkm_kontext_switch_kernel(struct kkm_kontext *kkm_kontext)
 	       (unsigned long long)ga->kkm_kontext, ga->guest_area_beg,
 	       ga->native_kernel_stack, ga->guest_stack_variable_address);
 
+	printk(KERN_NOTICE "kkm_kontext_switch_kernel: ret_val %d %llx\n", ret_val, (unsigned long long)&ret_val);
+
 	return ret_val;
 }
 
 // running in guest kernel address space
 void kkm_guest_kernel_start_payload(struct kkm_guest_area *ga)
 {
-	int value = 0x66;
-	printk(KERN_NOTICE "kkm_guest_kernel_start_payload:\n");
+	int cpu = 0x66;
+	cpu = get_cpu();
+	printk(KERN_NOTICE "kkm_guest_kernel_start_payload: cpu %d %llx\n", cpu, (unsigned long long)&cpu);
 
-	ga->guest_stack_variable_address = (unsigned long long)&value;
+	ga->guest_stack_variable_address = (unsigned long long)&cpu;
 
 	loadsegment(fs, 0);
 	wrmsrl(MSR_FS_BASE, ga->sregs.fs.base);
@@ -175,8 +178,8 @@ void kkm_guest_kernel_start_payload(struct kkm_guest_area *ga)
 	       ga->sregs.fs.base);
 
 	kkm_switch_to_gp_asm(ga);
-	kkm_switch_to_host_kernel();
-	//kkm_trap_entry();
+	kkm_trap_entry();
+	//kkm_switch_to_host_kernel();
 }
 
 // should be called from trap code, with zero context
@@ -189,7 +192,7 @@ void kkm_switch_to_host_kernel(void)
 
 	cpu = get_cpu();
 	kkm_kontext = per_cpu(current_kontext, cpu);
-	printk(KERN_NOTICE "kkm_switch_to_host_kernel: cpu %d\n", cpu);
+	printk(KERN_NOTICE "kkm_switch_to_host_kernel: cpu %d %llx\n", cpu, (unsigned long long)&cpu);
 
 	printk(KERN_NOTICE
 	       "kkm_switch_to_host_kernel: segments ds %x es %x fs %x fsbase %lx gs %x gsbase %lx gskernbase %lx ss %x\n",

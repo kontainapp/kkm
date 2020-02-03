@@ -113,11 +113,13 @@ kkm_switch_to_gp_asm:
 	popq	%rax
 	retq
 #endif
+	.type kkm_switch_to_gp_asm, @function
 .size kkm_switch_to_gp_asm, .-kkm_switch_to_gp_asm
 
 .global kkm_trap_entry
 .align 16
 kkm_trap_entry:
+#if 0
 	pushq	%rdi			# save %rdi on stack
 
 	movq	%rsp, %rdi
@@ -147,9 +149,10 @@ kkm_trap_entry:
 
 	popq	%rdi
 
-#if 0
 	iretq
 #else
-	jmp	kkm_switch_to_host_kernel
+	call	kkm_switch_to_host_kernel
+	retq
 #endif
+	.type kkm_trap_entry, @function
 .size kkm_trap_entry, .-kkm_trap_entry
