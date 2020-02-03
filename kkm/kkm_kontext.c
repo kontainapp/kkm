@@ -53,7 +53,7 @@ void kkm_kontext_cleanup(struct kkm_kontext *kkm_kontext)
 	}
 }
 
-// running in host kernel context
+// running in native kernel address space
 int kkm_kontext_switch_kernel(struct kkm_kontext *kkm_kontext)
 {
 	struct kkm *kkm = kkm_kontext->kkm;
@@ -128,11 +128,29 @@ int kkm_kontext_switch_kernel(struct kkm_kontext *kkm_kontext)
 
 	kkm_switch_to_gk_asm(ga, kkm_kontext, (unsigned long long)ga->redzone);
 
-	// flush TLB, and restore original cr4
+#if 0
+	// restore is done as part of trap/intr, delete once everything works
+	// this code runs in native kernel context
+
+	// flush TLB, and restore native kernel cr4
 	__write_cr4(kkm_kontext->native_kernel_cr4);
 
-	// restore kernel address space
+	// restore native kernel address space
 	write_cr3(kkm_kontext->native_kernel_cr3);
+
+	// restore native kernel segment registers
+	loadsegment(ds, kkm_kontext->native_kernel_ds);
+	loadsegment(es, kkm_kontext->native_kernel_es);
+
+	loadsegment(fs, kkm_kontext->native_kernel_fs);
+	wrmsrl(MSR_FS_BASE, kkm_kontext->native_kernel_fs_base);
+
+	load_gs_index(kkm_kontext->native_kernel_gs);
+	wrmsrl(MSR_GS_BASE, kkm_kontext->native_kernel_gs_base);
+	wrmsrl(MSR_KERNEL_GS_BASE, kkm_kontext->native_kernel_gs_kern_base);
+
+	loadsegment(ss, __KERNEL_DS);
+#endif
 
 	printk(KERN_NOTICE
 	       "kkm_kontext_switch_kernel: after %llx %llx %llx %llx\n",
@@ -142,6 +160,7 @@ int kkm_kontext_switch_kernel(struct kkm_kontext *kkm_kontext)
 	return ret_val;
 }
 
+// running in guest kernel address space
 void kkm_guest_kernel_start_payload(struct kkm_guest_area *ga)
 {
 	int value = 0x66;
@@ -159,6 +178,7 @@ void kkm_guest_kernel_start_payload(struct kkm_guest_area *ga)
 	kkm_switch_to_host_kernel();
 }
 
+// should be called from trap code, with zero context
 void kkm_switch_to_host_kernel(void)
 {
 	int cpu = -1;
@@ -180,6 +200,13 @@ void kkm_switch_to_host_kernel(void)
 	       kkm_kontext->native_kernel_gs_kern_base,
 	       kkm_kontext->native_kernel_ss);
 
+	// flush TLB, and restore native kernel cr4
+	__write_cr4(kkm_kontext->native_kernel_cr4);
+
+	// restore native kernel address space
+	write_cr3(kkm_kontext->native_kernel_cr3);
+
+	// restore native kernel segment registers
 	loadsegment(ds, kkm_kontext->native_kernel_ds);
 	loadsegment(es, kkm_kontext->native_kernel_es);
 
