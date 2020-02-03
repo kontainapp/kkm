@@ -81,37 +81,75 @@ kkm_switch_to_hk_asm:
 .global kkm_switch_to_gp_asm
 .align 16
 kkm_switch_to_gp_asm:
-	movq OFF_R15(%rdi), %r15
-	movq OFF_R14(%rdi), %r14
-	movq OFF_R13(%rdi), %r13
-	movq OFF_R12(%rdi), %r12
+	movq	OFF_R15(%rdi), %r15
+	movq	OFF_R14(%rdi), %r14
+	movq	OFF_R13(%rdi), %r13
+	movq	OFF_R12(%rdi), %r12
 
-	movq OFF_R11(%rdi), %r11
-	movq OFF_R10(%rdi), %r10
-	movq OFF_R9(%rdi), %r9
-	movq OFF_R8(%rdi), %r8
+	movq	OFF_R11(%rdi), %r11
+	movq	OFF_R10(%rdi), %r10
+	movq	OFF_R9(%rdi), %r9
+	movq	OFF_R8(%rdi), %r8
 
-	movq OFF_RBP(%rdi), %rbp
-	movq OFF_RSP(%rdi), %rsi
-	pushq %rsi
-	movq OFF_RDI(%rdi), %rsi
-	pushq %rsi
-	movq OFF_RSI(%rdi), %rsi
+	movq	OFF_RBP(%rdi), %rbp
+	movq	OFF_RSP(%rdi), %rsi
+	pushq	%rsi			# save %rsi on stack
+	movq	OFF_RDI(%rdi), %rsi
+	pushq	%rsi			# save %rdi on stack
+	movq	OFF_RSI(%rdi), %rsi
 
-	movq OFF_RDX(%rdi), %rdx
-	movq OFF_RCX(%rdi), %rcx
-	movq OFF_RBX(%rdi), %rbx
-	movq OFF_RAX(%rdi), %rax
+	movq	OFF_RDX(%rdi), %rdx
+	movq	OFF_RCX(%rdi), %rcx
+	movq	OFF_RBX(%rdi), %rbx
+	movq	OFF_RAX(%rdi), %rax
 
-	popq %rdi
-	popq %rsp
+	popq	%rdi
+#if 0
+	popq	%rsp
 
 	swapgs
 	sysretq
+#else
+	popq	%rax
+	retq
+#endif
 .size kkm_switch_to_gp_asm, .-kkm_switch_to_gp_asm
 
 .global kkm_trap_entry
 .align 16
 kkm_trap_entry:
+	pushq	%rdi			# save %rdi on stack
+
+	movq	%rsp, %rdi
+	and	$0xfffff000, %edi	# begining of current stack page is register save area
+
+	movq	%r15, OFF_R15(%rdi)
+	movq	%r14, OFF_R14(%rdi)
+	movq	%r13, OFF_R13(%rdi)
+	movq	%r12, OFF_R12(%rdi)
+
+	movq	%r11, OFF_R11(%rdi)
+	movq	%r10, OFF_R10(%rdi)
+	movq	%r9, OFF_R9(%rdi)
+	movq	%r8, OFF_R8(%rdi)
+
+	movq	%rbp, OFF_RBP(%rdi)
+	movq	%rsp, OFF_RSP(%rdi)
+	# rbp is already saved use %rbp as scratch
+	movq	(%rsp), %rbp		# move %rdi from stack to scratch reg
+	movq	%rbp, OFF_RDI(%rdi)	# move scratch(%rdi) to register save area
+	movq	%rsi, OFF_RSI(%rdi)
+
+	movq	%rdx, OFF_RDX(%rdi)
+	movq	%rcx, OFF_RCX(%rdi)
+	movq	%rbx, OFF_RBX(%rdi)
+	movq	%rax, OFF_RAX(%rdi)
+
+	popq	%rdi
+
+#if 0
 	iretq
+#else
+	jmp	kkm_switch_to_host_kernel
+#endif
 .size kkm_trap_entry, .-kkm_trap_entry

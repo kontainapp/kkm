@@ -174,8 +174,9 @@ void kkm_guest_kernel_start_payload(struct kkm_guest_area *ga)
 	printk(KERN_NOTICE "kkm_guest_kernel_start_payload: fsbase %llx\n",
 	       ga->sregs.fs.base);
 
-	//kkm_switch_to_gp_asm(ga);
+	kkm_switch_to_gp_asm(ga);
 	kkm_switch_to_host_kernel();
+	//kkm_trap_entry();
 }
 
 // should be called from trap code, with zero context
