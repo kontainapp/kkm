@@ -180,6 +180,9 @@ void kkm_guest_kernel_start_payload(struct kkm_guest_area *ga)
 	printk(KERN_NOTICE "kkm_guest_kernel_start_payload: cpu %d %llx\n", cpu,
 	       (unsigned long long)&cpu);
 
+	// switch to guest payload address space
+	write_cr3(ga->guest_payload_cr3);
+
 	ga->guest_stack_variable_address = (unsigned long long)&cpu;
 
 	loadsegment(fs, 0);
