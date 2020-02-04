@@ -119,11 +119,10 @@ kkm_switch_to_gp_asm:
 .global kkm_trap_entry
 .align 16
 kkm_trap_entry:
-#if 0
 	pushq	%rdi			# save %rdi on stack
 
 	movq	%rsp, %rdi
-	and	$0xfffff000, %edi	# begining of current stack page is register save area
+	andq	$0xfffffffffffff000, %rdi	# begining of current stack page is register save area
 
 	movq	%r15, OFF_R15(%rdi)
 	movq	%r14, OFF_R14(%rdi)
@@ -149,6 +148,7 @@ kkm_trap_entry:
 
 	popq	%rdi
 
+#if 0
 	iretq
 #else
 	call	kkm_switch_to_host_kernel
