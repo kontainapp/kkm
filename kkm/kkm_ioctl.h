@@ -148,7 +148,9 @@ struct kkm_fpu {
 
 // KKM_SET_DEBUG
 struct kkm_debug {
-	uint64_t reserved[9];
+	uint32_t control;
+	uint32_t reserved;
+	uint64_t registers[8];
 };
 
 // KKM_GET_EVENTS

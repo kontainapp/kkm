@@ -11,6 +11,7 @@
  */
 
 #include <linux/mm.h>
+#include <asm/debugreg.h>
 
 #include "kkm.h"
 #include "kkm_kontext.h"
@@ -18,6 +19,9 @@
 #include "kkm_entry.h"
 
 DEFINE_PER_CPU(struct kkm_kontext *, current_kontext);
+
+void kkm_hw_debug_registers_save(uint64_t *registers);
+void kkm_hw_debug_registers_restore(uint64_t *registers);
 
 int kkm_kontext_init(struct kkm_kontext *kkm_kontext)
 {
@@ -76,7 +80,8 @@ int kkm_kontext_switch_kernel(struct kkm_kontext *kkm_kontext)
 
 	cpu = get_cpu();
 	per_cpu(current_kontext, cpu) = kkm_kontext;
-	printk(KERN_NOTICE "kkm_kontext_switch_kernel: cpu %d %llx\n", cpu, (unsigned long long)&cpu);
+	printk(KERN_NOTICE "kkm_kontext_switch_kernel: cpu %d %llx\n", cpu,
+	       (unsigned long long)&cpu);
 
 	memset(ga->redzone, 0xa5, GUEST_STACK_REDZONE_SIZE);
 	printk(KERN_NOTICE
@@ -126,7 +131,11 @@ int kkm_kontext_switch_kernel(struct kkm_kontext *kkm_kontext)
 
 	ga->guest_payload_cr3 = kkm->guest_payload_pa;
 
+	kkm_hw_debug_registers_save(kkm_kontext->native_debug_registers);
+
 	kkm_switch_to_gk_asm(ga, kkm_kontext, (unsigned long long)ga->redzone);
+
+	kkm_hw_debug_registers_restore(kkm_kontext->native_debug_registers);
 
 #if 0
 	// restore is done as part of trap/intr, delete once everything works
@@ -157,7 +166,8 @@ int kkm_kontext_switch_kernel(struct kkm_kontext *kkm_kontext)
 	       (unsigned long long)ga->kkm_kontext, ga->guest_area_beg,
 	       ga->native_kernel_stack, ga->guest_stack_variable_address);
 
-	printk(KERN_NOTICE "kkm_kontext_switch_kernel: ret_val %d %llx\n", ret_val, (unsigned long long)&ret_val);
+	printk(KERN_NOTICE "kkm_kontext_switch_kernel: ret_val %d %llx\n",
+	       ret_val, (unsigned long long)&ret_val);
 
 	return ret_val;
 }
@@ -167,7 +177,8 @@ void kkm_guest_kernel_start_payload(struct kkm_guest_area *ga)
 {
 	int cpu = 0x66;
 	cpu = get_cpu();
-	printk(KERN_NOTICE "kkm_guest_kernel_start_payload: cpu %d %llx\n", cpu, (unsigned long long)&cpu);
+	printk(KERN_NOTICE "kkm_guest_kernel_start_payload: cpu %d %llx\n", cpu,
+	       (unsigned long long)&cpu);
 
 	ga->guest_stack_variable_address = (unsigned long long)&cpu;
 
@@ -176,6 +187,8 @@ void kkm_guest_kernel_start_payload(struct kkm_guest_area *ga)
 
 	printk(KERN_NOTICE "kkm_guest_kernel_start_payload: fsbase %llx\n",
 	       ga->sregs.fs.base);
+
+	kkm_hw_debug_registers_restore(ga->debug.registers);
 
 	kkm_switch_to_gp_asm(ga);
 	kkm_trap_entry();
@@ -187,12 +200,18 @@ void kkm_switch_to_host_kernel(void)
 {
 	int cpu = -1;
 	struct kkm_kontext *kkm_kontext = NULL;
+	struct kkm_guest_area *ga = NULL;
 
 	printk(KERN_NOTICE "kkm_switch_to_host_kernel:\n");
 
 	cpu = get_cpu();
 	kkm_kontext = per_cpu(current_kontext, cpu);
-	printk(KERN_NOTICE "kkm_switch_to_host_kernel: cpu %d %llx\n", cpu, (unsigned long long)&cpu);
+	ga = (struct kkm_guest_area *)kkm_kontext->guest_area;
+
+	printk(KERN_NOTICE "kkm_switch_to_host_kernel: cpu %d %llx\n", cpu,
+	       (unsigned long long)&cpu);
+
+	kkm_hw_debug_registers_save(ga->debug.registers);
 
 	printk(KERN_NOTICE
 	       "kkm_switch_to_host_kernel: segments ds %x es %x fs %x fsbase %lx gs %x gsbase %lx gskernbase %lx ss %x\n",
@@ -224,4 +243,39 @@ void kkm_switch_to_host_kernel(void)
 	loadsegment(ss, __KERNEL_DS);
 
 	kkm_switch_to_hk_asm(kkm_kontext->guest_area);
+}
+
+void kkm_hw_debug_registers_save(uint64_t *registers)
+{
+	uint64_t original_dr6 = 0;
+
+	get_debugreg(registers[0], 0);
+	get_debugreg(registers[1], 1);
+	get_debugreg(registers[2], 2);
+	get_debugreg(registers[3], 3);
+	get_debugreg(registers[6], 6);
+	get_debugreg(registers[7], 7);
+
+	original_dr6 = registers[6];
+	registers[6] &= 0x1E00F;
+
+	printk(KERN_NOTICE
+	       "kkm_hw_debug_registers_save: dr0 %llx dr1 %llx dr2 %llx dr3 %llx dr6 %llx masked_dr6 %llx dr7 %llx\n",
+	       registers[0], registers[1], registers[2], registers[3],
+	       original_dr6, registers[6], registers[7]);
+}
+
+void kkm_hw_debug_registers_restore(uint64_t *registers)
+{
+	printk(KERN_NOTICE
+	       "kkm_hw_debug_registers_restore: dr0 %llx dr1 %llx dr2 %llx dr3 %llx dr6 %llx dr7 %llx\n",
+	       registers[0], registers[1], registers[2], registers[3],
+	       registers[6], registers[7]);
+
+	set_debugreg(registers[0], 0);
+	set_debugreg(registers[1], 1);
+	set_debugreg(registers[2], 2);
+	set_debugreg(registers[3], 3);
+	set_debugreg(registers[6], 6);
+	set_debugreg(registers[7], 7);
 }

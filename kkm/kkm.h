@@ -53,6 +53,8 @@ struct kkm_kontext {
 	unsigned long guest_kernel_cr3;
 	unsigned long guest_kernel_cr4;
 
+	uint64_t native_debug_registers[8];
+
 	char scratch_buffer[256];
 };
 
