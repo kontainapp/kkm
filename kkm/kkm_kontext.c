@@ -185,6 +185,9 @@ void kkm_guest_kernel_start_payload(struct kkm_guest_area *ga)
 
 	ga->guest_stack_variable_address = (unsigned long long)&cpu;
 
+	loadsegment(ds, 0);
+	loadsegment(es, 0);
+
 	loadsegment(fs, 0);
 	wrmsrl(MSR_FS_BASE, ga->sregs.fs.base);
 
