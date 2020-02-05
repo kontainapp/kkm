@@ -250,6 +250,7 @@ void kkm_switch_to_host_kernel(void)
 
 void kkm_hw_debug_registers_save(uint64_t *registers)
 {
+#if 0
 	uint64_t original_dr6 = 0;
 
 	get_debugreg(registers[0], 0);
@@ -266,10 +267,12 @@ void kkm_hw_debug_registers_save(uint64_t *registers)
 	       "kkm_hw_debug_registers_save: dr0 %llx dr1 %llx dr2 %llx dr3 %llx dr6 %llx masked_dr6 %llx dr7 %llx\n",
 	       registers[0], registers[1], registers[2], registers[3],
 	       original_dr6, registers[6], registers[7]);
+#endif
 }
 
 void kkm_hw_debug_registers_restore(uint64_t *registers)
 {
+#if 0
 	printk(KERN_NOTICE
 	       "kkm_hw_debug_registers_restore: dr0 %llx dr1 %llx dr2 %llx dr3 %llx dr6 %llx dr7 %llx\n",
 	       registers[0], registers[1], registers[2], registers[3],
@@ -281,4 +284,5 @@ void kkm_hw_debug_registers_restore(uint64_t *registers)
 	set_debugreg(registers[3], 3);
 	set_debugreg(registers[6], 6);
 	set_debugreg(registers[7], 7);
+#endif
 }

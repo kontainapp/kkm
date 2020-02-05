@@ -92,10 +92,11 @@ kkm_switch_to_gp_asm:
 	movq	OFF_R8(%rdi), %r8
 
 	movq	OFF_RBP(%rdi), %rbp
-	movq	OFF_RSP(%rdi), %rsi
-	pushq	%rsi			# save %rsi on stack
-	movq	OFF_RDI(%rdi), %rsi
-	pushq	%rsi			# save %rdi on stack
+	# use %rsi as scratch register. It is not yet loaded
+	movq	OFF_RSP(%rdi), %rsi	# move %rsp from guest_private_area to scratch(%rsi)
+	pushq	%rsi			# save %rsp=scratch(%rsi) on stack
+	movq	OFF_RDI(%rdi), %rsi	# move %rdi from guest_private_area to scratch(%rsi)
+	pushq	%rsi			# save %rdi=scratch(%rsi) on stack
 	movq	OFF_RSI(%rdi), %rsi
 
 	movq	OFF_RDX(%rdi), %rdx
