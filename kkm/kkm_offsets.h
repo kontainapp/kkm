@@ -23,6 +23,8 @@
 #define OFF_GK_CR3 (24) /* guest_kernel_cr3 */
 #define OFF_GP_CR3 (32) /* guest_payload_cr3 */
 #define OFF_GSV (40) /* guest_stack_variable_address */
+#define OFF_GP_CS (48) /* guest_payload_cs */
+#define OFF_GP_SS (56) /* guest_payload_ss */
 
 #define OFF_RAX (64) /* regs.rax */
 #define OFF_RBX (72) /* regs.rbx */

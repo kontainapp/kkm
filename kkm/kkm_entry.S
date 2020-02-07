@@ -11,6 +11,8 @@
  */
 
 #include <linux/linkage.h>
+#include <asm/percpu.h>
+#include <asm/asm-offsets.h>
 #include "kkm_offsets.h"
 
 .code64
@@ -104,14 +106,39 @@ kkm_switch_to_gp_asm:
 	movq	OFF_RBX(%rdi), %rbx
 	movq	OFF_RAX(%rdi), %rax
 
-	popq	%rdi
+
+	movq	%rsp, %rbx		# save guest kernel stack in %rbx
+
+	movq    PER_CPU_VAR(cpu_tss_rw + TSS_sp0), %rsp	# switch to temporary stack
+
+	pushq	OFF_GP_SS(%rdi)
+	pushq	OFF_RSP(%rdi)
+	pushq	OFF_RFLAGS(%rdi)
+	pushq	OFF_GP_CS(%rdi)
+	pushq	OFF_RIP(%rdi)
+
+	pushq	OFF_RSP(%rdi)	# user %rsp
+	pushq	OFF_RDI(%rdi)	# user %rdi
+	pushq	OFF_RAX(%rdi)	# user %rax
+	pushq	OFF_RBX(%rdi)	# user %rbx
+
+	movq	OFF_GP_CR3(%rdi), %rax
+	movq	%rax, %cr3
+
 #if 0
+	popq	%rbx
+	popq	%rax
+	popq	%rdi
 	popq	%rsp
 
 	swapgs
-	sysretq
+	iretq
 #else
+	movq	%rbx, %rsp
+
+	popq	%rdi
 	popq	%rax
+
 	retq
 #endif
 	.type kkm_switch_to_gp_asm, @function
