@@ -83,6 +83,13 @@ kkm_switch_to_hk_asm:
 .global kkm_switch_to_gp_asm
 .align 16
 kkm_switch_to_gp_asm:
+	pushq	%rbp
+	pushq	%rbx
+	pushq	%r12
+	pushq	%r13
+	pushq	%r14
+	pushq	%r15
+
 	movq	OFF_R15(%rdi), %r15
 	movq	OFF_R14(%rdi), %r14
 	movq	OFF_R13(%rdi), %r13
@@ -139,6 +146,13 @@ kkm_switch_to_gp_asm:
 	popq	%rdi
 	popq	%rax
 
+	popq	%r15
+	popq	%r14
+	popq	%r13
+	popq	%r12
+	popq	%rbx
+	popq	%rbp
+
 	retq
 #endif
 	.type kkm_switch_to_gp_asm, @function
@@ -147,6 +161,8 @@ kkm_switch_to_gp_asm:
 .global kkm_trap_entry
 .align 16
 kkm_trap_entry:
+#swapgs
+
 	pushq	%rdi			# save %rdi on stack
 
 	movq	%rsp, %rdi

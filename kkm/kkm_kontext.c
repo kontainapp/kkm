@@ -11,7 +11,9 @@
  */
 
 #include <linux/mm.h>
+#include <asm/tlbflush.h>
 #include <asm/debugreg.h>
+#include <asm/cpu_entry_area.h>
 
 #include "kkm.h"
 #include "kkm_kontext.h"
@@ -65,16 +67,19 @@ int kkm_kontext_switch_kernel(struct kkm_kontext *kkm_kontext)
 	struct kkm_guest_area *ga =
 		(struct kkm_guest_area *)kkm_kontext->guest_area;
 	int cpu = -1;
+	struct cpu_entry_area *cea = NULL;
 #if 1
 	// delete
 	uint64_t efer = 0;
 	uint64_t star = 0;
+	uint64_t lstar = 0;
 
 	rdmsrl(MSR_EFER, efer);
 	rdmsrl(MSR_STAR, star);
+	rdmsrl(MSR_LSTAR, lstar);
 
-	printk(KERN_NOTICE "kkm_kontext_switch_kernel: EFER %llx STAR %llx\n",
-	       efer, star);
+	printk(KERN_NOTICE "kkm_kontext_switch_kernel: EFER %llx STAR %llx LSTAR %llx\n",
+	       efer, star, lstar);
 #endif
 	printk(KERN_NOTICE "kkm_kontext_switch_kernel:\n");
 
@@ -89,6 +94,10 @@ int kkm_kontext_switch_kernel(struct kkm_kontext *kkm_kontext)
 	       (unsigned long long)ga->kkm_kontext, ga->guest_area_beg,
 	       ga->native_kernel_stack, ga->guest_stack_variable_address);
 
+	// save trampoline stack
+	cea = get_cpu_entry_area(cpu);
+	memcpy(&ga->native_entry_stack, &cea->entry_stack_page.stack, sizeof(struct entry_stack));
+
 	// save native kernel address space
 	kkm_kontext->native_kernel_cr3 = __read_cr3();
 	kkm_kontext->native_kernel_cr4 = __read_cr4();
@@ -96,8 +105,8 @@ int kkm_kontext_switch_kernel(struct kkm_kontext *kkm_kontext)
 	       "kkm_kontext_switch_kernel: native kernel cr3 %lx cr4 %lx\n",
 	       kkm_kontext->native_kernel_cr3, kkm_kontext->native_kernel_cr4);
 
-	// flush TLB, and disable PCID
-	__write_cr4(kkm_kontext->native_kernel_cr4 & ~X86_CR4_PCIDE);
+	// flush TLB
+	__native_flush_tlb_global();
 
 	// change to guest kernel address space
 	write_cr3(kkm->guest_kernel_pa);
@@ -142,7 +151,7 @@ int kkm_kontext_switch_kernel(struct kkm_kontext *kkm_kontext)
 	// this code runs in native kernel context
 
 	// flush TLB, and restore native kernel cr4
-	__write_cr4(kkm_kontext->native_kernel_cr4);
+	__native_flush_tlb_global();
 
 	// restore native kernel address space
 	write_cr3(kkm_kontext->native_kernel_cr3);
@@ -176,12 +185,15 @@ int kkm_kontext_switch_kernel(struct kkm_kontext *kkm_kontext)
 void kkm_guest_kernel_start_payload(struct kkm_guest_area *ga)
 {
 	int cpu = 0x66;
+	struct cpu_entry_area *cea = NULL;
+
 	cpu = get_cpu();
 	printk(KERN_NOTICE "kkm_guest_kernel_start_payload: cpu %d %llx\n", cpu,
 	       (unsigned long long)&cpu);
 
+	// delete - moved to asm file
 	// switch to guest payload address space
-	write_cr3(ga->guest_payload_cr3);
+	// write_cr3(ga->guest_payload_cr3);
 
 	ga->guest_stack_variable_address = (unsigned long long)&cpu;
 
@@ -191,12 +203,27 @@ void kkm_guest_kernel_start_payload(struct kkm_guest_area *ga)
 	loadsegment(fs, 0);
 	wrmsrl(MSR_FS_BASE, ga->sregs.fs.base);
 
-	printk(KERN_NOTICE "kkm_guest_kernel_start_payload: fsbase %llx\n",
-	       ga->sregs.fs.base);
+	ga->guest_payload_cs = __USER_CS;
+	ga->guest_payload_ss = __USER_DS;
+
+	printk(KERN_NOTICE "kkm_guest_kernel_start_payload: fsbase %llx usercs %llx userss %llx\n",
+	       ga->sregs.fs.base, ga->guest_payload_cs, ga->guest_payload_ss);
+
+	printk(KERN_NOTICE "kkm_guest_kernel_start_payload: rip %llx rsp %llx rflags %llx\n",
+	       ga->regs.rip, ga->regs.rsp, ga->regs.rflags);
 
 	kkm_hw_debug_registers_restore(ga->debug.registers);
 
+	// flush TLB
+	__native_flush_tlb_global();
+
 	kkm_switch_to_gp_asm(ga);
+
+	printk(KERN_NOTICE "kkm_guest_kernel_start_payload: returned from guest call\n");
+
+	cea = get_cpu_entry_area(cpu);
+	memcpy(&ga->payload_entry_stack, &cea->entry_stack_page.stack, sizeof(struct entry_stack));
+
 	kkm_trap_entry();
 	//kkm_switch_to_host_kernel();
 }
@@ -230,7 +257,7 @@ void kkm_switch_to_host_kernel(void)
 	       kkm_kontext->native_kernel_ss);
 
 	// flush TLB, and restore native kernel cr4
-	__write_cr4(kkm_kontext->native_kernel_cr4);
+	__native_flush_tlb_global();
 
 	// restore native kernel address space
 	write_cr3(kkm_kontext->native_kernel_cr3);
