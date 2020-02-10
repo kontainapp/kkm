@@ -1,4 +1,74 @@
 
+define show_entry
+	if $argc != 1
+		help show_entry
+	else
+		set $PRESENT = 0x1ULL
+		set $READ_WRITE = 0x2ULL
+		set $USER_SUPER = 0x4ULL
+		set $WRITE_THROUGH = 0x8ULL
+		set $PAGE_CACHE_DISABLE = 0x10ULL
+		set $ACCESSED = 0x20ULL
+		set $DIRTY = 0x40ULL
+		set $PAGE_SIZE = 0x80ULL
+		set $EXEC_DISABLE = 0x8000000000000000ULL
+
+		set $entry = $arg0
+
+		printf " %16llx %3llx ", $entry & 0x7FFFFFFFFFFFF000ULL, $entry & 0xFFF
+		if $entry & $EXEC_DISABLE
+			printf "EX_DIS-"
+		else
+			printf "EX_ENA-"
+		end
+		if $entry & $PAGE_SIZE
+			printf "BIGPG-"
+		else
+			printf "PDPTR-"
+		end
+		if $entry & $DIRTY
+			printf "DIRTY-"
+		else
+			printf "CLEAN-"
+		end
+		if $entry & $ACCESSED
+			printf "ACC-"
+		else
+			printf "NOT-"
+		end
+		if $entry & $PAGE_CACHE_DISABLE
+			printf "PC_DIS-"
+		else
+			printf "PC_ENA-"
+		end
+		if $entry & $WRITE_THROUGH
+			printf "WR_TH-"
+		else
+			printf "WR_BA-"
+		end
+		if $entry & $USER_SUPER
+			printf "USER-"
+		else
+			printf "SUPR-"
+		end
+		if $entry & $READ_WRITE
+			printf "WR-"
+		else
+			printf "RD-"
+		end
+		if $entry & $PRESENT
+			printf "PRESENT"
+		else
+			printf "ABSCENT"
+		end
+		printf "\n"
+	end
+end
+
+document show_entry
+	"Usage show_entry entry"
+end
+
 define show_pgd
 	if $argc == 0
 		help show_pgd
@@ -23,50 +93,10 @@ define show_pgd
 			end
 			set $pgd_entry_va = $pgd_entry_va_base + $pgd_entry_va_offset
 			set $entry = *$pgd_entry_address
+
 			if $entry != 0
+				show_entry $entry
 				printf "%4d %16llx", $pgd_index, $pgd_entry_va
-				printf " %16llx %3llx ", $entry & 0x7FFFFFFFFFFFF000ULL, $entry & 0xFFF
-				if $entry & $EXEC_DISABLE
-					printf "EX_DIS-"
-				else
-					printf "EX_ENA-"
-				end
-				if $entry & $PAGE_SIZE
-					printf "BIGPG-"
-				else
-					printf "PDPTR-"
-				end
-				if $entry & $ACCESSED
-					printf "ACC-"
-				else
-					printf "NOT-"
-				end
-				if $entry & $PAGE_CACHE_DISABLE
-					printf "PC_DIS-"
-				else
-					printf "PC_ENA-"
-				end
-				if $entry & $WRITE_THROUGH
-					printf "WR_TH-"
-				else
-					printf "WR_BA-"
-				end
-				if $entry & $USER_SUPER
-					printf "S-"
-				else
-					printf "U-"
-				end
-				if $entry & $READ_WRITE
-					printf "WR-"
-				else
-					printf "RD-"
-				end
-				if $entry & $PRESENT
-					printf "PRES"
-				else
-					printf "----"
-				end
-				printf "\n"
 			end
 			set $pgd_index = $pgd_index + 1
 			set $pgd_entry_address = $pgd_entry_address + 1
@@ -95,6 +125,62 @@ end
 
 document show_all_pgd
 	"Usage show_all_pgd kkm-va"
+end
+
+define show_pgd_va
+	if $argc != 2
+		help show_idt
+	else
+		set $kern_base_va = 0xFFFF888000000000ULL
+		set $entry_size = 8ULL
+		set $va = $arg1
+		set $offset = $va & 0xFFF
+		set $va = $va >> 12
+		set $pte_index = $va & 0x1FF
+		set $va = $va >> 9
+		set $pmd_index = $va & 0x1FF
+		set $va = $va >> 9
+		set $pud_index = $va & 0x1FF
+		set $va = $va >> 9
+		set $pgd_index = $va & 0x1FF
+		printf "va : %16lx\n", $arg1
+		printf "pgd index : %3x\n", $pgd_index
+		printf "pud index : %3x\n", $pud_index
+		printf "pmd index : %3x\n", $pmd_index
+		printf "pte index : %3x\n", $pte_index
+		printf "pg offset : %3x\n\n", $offset
+
+		set $entry_va = (unsigned long long)$arg0 + $pgd_index * $entry_size
+		set $entry_value = *((unsigned long long *)$entry_va)
+		printf "pgd table va %16lx pgd index %3x entry va %16lx entry value %16lx\n", $arg0, $pgd_index, $entry_va, $entry_value
+		show_entry $entry_value
+
+		set $table_pa = (unsigned long long)($entry_value & 0x7FFFFFFFFFFFF000ULL)
+		set $table_va = $kern_base_va + $table_pa
+		set $entry_va = $table_va + $pud_index * $entry_size
+		set $entry_value = *((unsigned long long *)$entry_va)
+		printf "\ntable pa %16lx table va %16lx entry index %3x entry va %16lx entry value %16lx\n", $table_pa, $table_va, $pud_index, $entry_va, $entry_value
+		show_entry $entry_value
+
+		set $table_pa = $entry_value & 0x7FFFFFFFFFFFF000ULL
+		set $table_va = $kern_base_va + $table_pa
+		set $entry_va = $table_va + $pmd_index * $entry_size
+		set $entry_value = *((unsigned long long *)$entry_va)
+		printf "\ntable pa %16lx table va %16lx entry index %3x entry va %16lx entry value %16lx\n", $table_pa, $table_va, $pmd_index, $entry_va, $entry_value
+		show_entry $entry_value
+
+		set $table_pa = $entry_value & 0x7FFFFFFFFFFFF000ULL
+		set $table_va = $kern_base_va + $table_pa
+		set $entry_va = $table_va + $pte_index * $entry_size
+		set $entry_value = *((unsigned long long *)$entry_va)
+		printf "\ntable pa %16lx table va %16lx entry index %3x entry va %16lx entry value %16lx\n", $table_pa, $table_va, $pte_index, $entry_va, $entry_value
+		show_entry $entry_value
+
+	end
+end
+
+document show_pgd_va
+	"Usage show_pgd_va idt-va va"
 end
 
 define show_gdt
