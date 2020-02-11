@@ -213,6 +213,22 @@ void kkm_guest_kernel_start_payload(struct kkm_guest_area *ga)
 	printk(KERN_NOTICE "kkm_guest_kernel_start_payload: rip %llx rsp %llx rflags %llx\n",
 	       ga->regs.rip, ga->regs.rsp, ga->regs.rflags);
 
+	// flags are from userland
+	// make sure interrupts are enabled, iopl is 0 and resume flag is set
+	if ((ga->regs.rflags & X86_EFLAGS_IF) == 0) {
+		printk(KERN_NOTICE "kkm_guest_kernel_start_payload: interrupts are disabled in rflags, enabling\n");
+		ga->regs.rflags |= X86_EFLAGS_IF;
+	}
+	if ((ga->regs.rflags & X86_EFLAGS_IOPL) != 0) {
+		printk(KERN_NOTICE "kkm_guest_kernel_start_payload: user provided iopl 0x%llx, changing to 0\n",
+				(ga->regs.rflags & X86_EFLAGS_IOPL) >> X86_EFLAGS_IOPL_BIT);
+		ga->regs.rflags &= ~(X86_EFLAGS_IOPL);
+	}
+	if ((ga->regs.rflags & X86_EFLAGS_RF) == 0) {
+		printk(KERN_NOTICE "kkm_guest_kernel_start_payload: resume flag is not set rflags, enabling\n");
+		ga->regs.rflags |= X86_EFLAGS_RF;
+	}
+
 	kkm_hw_debug_registers_restore(ga->debug.registers);
 
 	// flush TLB
