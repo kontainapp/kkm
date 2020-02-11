@@ -124,7 +124,6 @@ kkm_switch_to_gp_asm:
 	pushq	OFF_GP_CS(%rdi)
 	pushq	OFF_RIP(%rdi)
 
-	pushq	OFF_RSP(%rdi)	# user %rsp
 	pushq	OFF_RDI(%rdi)	# user %rdi
 	pushq	OFF_RAX(%rdi)	# user %rax
 	pushq	OFF_RBX(%rdi)	# user %rbx
@@ -136,7 +135,6 @@ kkm_switch_to_gp_asm:
 	popq	%rbx
 	popq	%rax
 	popq	%rdi
-	popq	%rsp
 
 	swapgs
 	iretq

@@ -39,9 +39,9 @@ int kkm_kontext_init(struct kkm_kontext *kkm_kontext)
 		goto error;
 	}
 
-	printk(KERN_NOTICE "kkm_kontext_init: stack0 page %lx va %p\n",
+	printk(KERN_NOTICE "kkm_kontext_init: stack0 page %lx va %lx\n",
 	       (unsigned long)kkm_kontext->guest_area_page,
-	       kkm_kontext->guest_area);
+	       (unsigned long)kkm_kontext->guest_area);
 
 error:
 	if (ret_val != 0) {
@@ -188,8 +188,9 @@ void kkm_guest_kernel_start_payload(struct kkm_guest_area *ga)
 	struct cpu_entry_area *cea = NULL;
 
 	cpu = get_cpu();
-	printk(KERN_NOTICE "kkm_guest_kernel_start_payload: cpu %d %llx\n", cpu,
-	       (unsigned long long)&cpu);
+	cea = get_cpu_entry_area(cpu);
+	printk(KERN_NOTICE "kkm_guest_kernel_start_payload: cpu %d %llx cea %llx\n", cpu,
+	       (unsigned long long)&cpu, (unsigned long long)cea);
 
 	// delete - moved to asm file
 	// switch to guest payload address space
