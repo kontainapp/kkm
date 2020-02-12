@@ -95,8 +95,8 @@ define show_pgd
 			set $entry = *$pgd_entry_address
 
 			if $entry != 0
-				show_entry $entry
 				printf "%4d %16llx", $pgd_index, $pgd_entry_va
+				show_entry $entry
 			end
 			set $pgd_index = $pgd_index + 1
 			set $pgd_entry_address = $pgd_entry_address + 1
