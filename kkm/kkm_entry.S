@@ -131,7 +131,7 @@ kkm_switch_to_gp_asm:
 	movq	OFF_GP_CR3(%rdi), %rax
 	movq	%rax, %cr3
 
-#if 0
+#if 1
 	popq	%rbx
 	popq	%rax
 	popq	%rdi
