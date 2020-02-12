@@ -83,6 +83,7 @@ int kkm_mm_copy_kernel_pgd(struct kkm *kkm)
 int kkm_mm_sync(struct kkm *kkm)
 {
 	unsigned long current_pgd_base = (unsigned long long)kkm->mm->pgd;
+	unsigned long long *pgd_pointer = NULL;
 
 	// keep kernel and user pgd same for payload area
 	// entry 0 for code+data
@@ -100,6 +101,13 @@ int kkm_mm_sync(struct kkm *kkm)
 	kkm_mm_copy_range(current_pgd_base, KKM_PGD_MONITOR_PAYLOAD_OFFSET,
 			  kkm->guest_payload, KKM_PGD_GUEST_PAYLOAD_OFFSET_255,
 			  KKM_PGD_PAYLOAD_SIZE);
+
+	// change pml4 entry 0 to allow execution
+	pgd_pointer = (unsigned long long *)kkm->guest_payload;
+	if (pgd_pointer[0] & _PAGE_NX) {
+		printk(KERN_NOTICE "kkm_mm_sync: entry 0 has execute disable set, enable it.\n");
+		pgd_pointer[0] &= ~_PAGE_NX;
+	}
 
 	// fix memory alias created
 	// modify km to use one pml4 entry for code + data and second entry for stack + mmap
