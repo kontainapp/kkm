@@ -88,9 +88,12 @@ int kkm_kontainer_init(struct kkm *kkm)
 		gd[i].bits.p = 1;
 	}
 
+#if 0
+	// store_gdt not available in PV(aws) kernels
 	store_gdt(&kkm->native_gdt_descr);
 	printk(KERN_NOTICE "kkm_kontainer_init: native kernel gdt size %x base %lx\n",
 	       kkm->native_gdt_descr.size, kkm->native_gdt_descr.address);
+#endif
 
 	store_idt(&kkm->native_idt_descr);
 	printk(KERN_NOTICE "kkm_kontainer_init: native kernel idt size %x base %lx\n",
