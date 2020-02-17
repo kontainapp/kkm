@@ -1,4 +1,17 @@
 
+define show_pa_to_kva
+	if $argc != 1
+		help show_pa_to_kva
+	else
+		set $kva = 0xffff888000000000 + arg0
+		printf "%llx\n", $kva
+	end
+end
+
+document show_pa_to_kva
+	"Usage show_pa_to_kva physical-address"
+end
+
 define show_entry
 	if $argc != 1
 		help show_entry
