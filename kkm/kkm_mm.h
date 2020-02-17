@@ -13,6 +13,8 @@
 #ifndef __KKM_MM_H__
 #define __KKM_MM_H__
 
+int kkm_mm_allocate_pages(struct page **page, void **virtual_address,
+			 phys_addr_t *physical_address, int count);
 int kkm_mm_allocate_page(struct page **page, void **virtual_address,
 			 phys_addr_t *physical_address);
 int kkm_mm_copy_kernel_pgd(struct kkm *kkm);

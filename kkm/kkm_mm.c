@@ -11,6 +11,7 @@
  */
 
 #include <linux/mm.h>
+#include <linux/log2.h>
 
 #include "kkm.h"
 #include "kkm_mm.h"
@@ -23,17 +24,24 @@
 #define KKM_PGD_GUEST_PAYLOAD_OFFSET_255 (255 * 8)
 #define KKM_PGD_PAYLOAD_SIZE (8)
 
-int kkm_mm_allocate_page(struct page **page, void **virtual_address,
-			 phys_addr_t *physical_address)
+int kkm_mm_allocate_pages(struct page **page, void **virtual_address,
+			 phys_addr_t *physical_address, int count)
 {
 	int ret_val = 0;
+	int pow2count = 0;
+
+	if (count == 0) {
+		ret_val = -EINVAL;
+		goto error;
+	}
+	pow2count = order_base_2(count);
 
 	if ((page == NULL) || (virtual_address == NULL)) {
 		ret_val = -EINVAL;
 		goto error;
 	}
 
-	*page = alloc_pages(GFP_KERNEL | __GFP_ZERO, 1);
+	*page = alloc_pages(GFP_KERNEL | __GFP_ZERO, pow2count);
 	if (*page == NULL) {
 		ret_val = -ENOMEM;
 		goto error;
@@ -45,6 +53,12 @@ int kkm_mm_allocate_page(struct page **page, void **virtual_address,
 
 error:
 	return ret_val;
+}
+
+int kkm_mm_allocate_page(struct page **page, void **virtual_address,
+			 phys_addr_t *physical_address)
+{
+	return kkm_mm_allocate_pages(page, virtual_address, physical_address, 1);
 }
 
 static void kkm_mm_copy_range(unsigned long long src_base,

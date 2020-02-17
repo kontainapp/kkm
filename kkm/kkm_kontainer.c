@@ -20,6 +20,11 @@
 #include "kkm_mm.h"
 #include "kkm_entry.h"
 
+// PTI_USER_PGTABLE_MASK not visible to modules
+// make up our own
+#define	KKM_USER_PGTABLE_BIT	(PAGE_SHIFT)
+#define	KKM_USER_PGTABLE_MASK	(1 << KKM_USER_PGTABLE_BIT)
+
 int kkm_kontainer_init(struct kkm *kkm)
 {
 	int ret_val = 0;
@@ -27,9 +32,9 @@ int kkm_kontainer_init(struct kkm *kkm)
 	gate_desc *gd = NULL;
 	unsigned long long desc_addr = (unsigned long long)kkm_trap_entry;
 
-	ret_val = kkm_mm_allocate_page(&kkm->guest_kernel_page,
+	ret_val = kkm_mm_allocate_pages(&kkm->guest_kernel_page,
 				       (void **)&kkm->guest_kernel,
-				       &kkm->guest_kernel_pa);
+				       &kkm->guest_kernel_pa, 2);
 	if (ret_val != 0) {
 		printk(KERN_NOTICE
 		       "kkm_kontainer_init: Failed to allocate memory for guest kernel page table error(%d)\n",
@@ -42,15 +47,15 @@ int kkm_kontainer_init(struct kkm *kkm)
 	       (unsigned long)kkm->guest_kernel_page, kkm->guest_kernel,
 	       kkm->guest_kernel_pa);
 
-	ret_val = kkm_mm_allocate_page(&kkm->guest_payload_page,
-				       (void **)&kkm->guest_payload,
-				       &kkm->guest_payload_pa);
-	if (ret_val != 0) {
-		printk(KERN_NOTICE
-		       "kkm_kontainer_init: Failed to allocate memory for guest payload page table error(%d)\n",
-		       ret_val);
+	if ((kkm->guest_kernel & KKM_USER_PGTABLE_MASK) == KKM_USER_PGTABLE_MASK) {
+		printk(KERN_ERR "kkm_kontainer_init: unexpected odd start page address\n");
+		ret_val = -EINVAL;
 		goto error;
 	}
+
+	// kernel code depends on kernel page table at even page and user page table at next(odd) page
+	kkm->guest_payload = kkm->guest_kernel + PAGE_SIZE;
+	kkm->guest_payload_pa += kkm->guest_kernel_pa + PAGE_SIZE;
 
 	printk(KERN_NOTICE
 	       "kkm_kontainer_init: guest payload page %lx va %lx pa %llx\n",
@@ -94,12 +99,12 @@ void kkm_kontainer_cleanup(struct kkm *kkm)
 	if (kkm->guest_kernel_page != NULL) {
 		free_page(kkm->guest_kernel);
 		kkm->guest_kernel_page = NULL;
+
 		kkm->guest_kernel = 0;
-	}
-	if (kkm->guest_payload_page != NULL) {
-		free_page(kkm->guest_payload);
-		kkm->guest_payload_page = NULL;
+		kkm->guest_kernel_pa = 0;
+
 		kkm->guest_payload = 0;
+		kkm->guest_payload_pa = 0;
 	}
 	if (kkm->idt_page != NULL) {
 		free_page((unsigned long long)kkm->idt);
