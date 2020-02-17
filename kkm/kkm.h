@@ -90,7 +90,13 @@ struct kkm {
 	phys_addr_t guest_payload_pa;
 
 	struct page *idt_page;
-	void *idt;
+	void *idt_va;
+	struct desc_ptr idt_descr;
+
+	struct desc_ptr native_gdt_descr;
+	struct desc_ptr native_idt_descr;
+
+	struct desc_ptr guest_idt_descr;
 };
 
 #endif /* __KKM_H__ */

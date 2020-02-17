@@ -13,6 +13,7 @@
 #include <linux/mm.h>
 #include <linux/interrupt.h>
 #include <asm/traps.h>
+#include <asm/desc.h>
 
 #include "kkm.h"
 #include "kkm_kontext.h"
@@ -62,7 +63,7 @@ int kkm_kontainer_init(struct kkm *kkm)
 	       (unsigned long)kkm->guest_payload_page, kkm->guest_payload,
 	       kkm->guest_payload_pa);
 
-	ret_val = kkm_mm_allocate_page(&kkm->idt_page, &kkm->idt, NULL);
+	ret_val = kkm_mm_allocate_page(&kkm->idt_page, &kkm->idt_va, NULL);
 	if (ret_val != 0) {
 		printk(KERN_NOTICE
 		       "kkm_kontainer_init: Failed to allocate memory for idt error(%d)\n",
@@ -70,7 +71,7 @@ int kkm_kontainer_init(struct kkm *kkm)
 		goto error;
 	}
 
-	gd = (gate_desc *)kkm->idt;
+	gd = (gate_desc *)kkm->idt_va;
 	for (i = 0; i < IDT_ENTRIES; i++) {
 		// TODO: setup different entry points based on normal kernel idt table
 		// different entry point for each type
@@ -86,6 +87,24 @@ int kkm_kontainer_init(struct kkm *kkm)
 		gd[i].bits.dpl = 0;
 		gd[i].bits.p = 1;
 	}
+
+	store_gdt(&kkm->native_gdt_descr);
+	printk(KERN_NOTICE "kkm_kontainer_init: native kernel gdt size %x base %lx\n",
+	       kkm->native_gdt_descr.size, kkm->native_gdt_descr.address);
+
+	store_idt(&kkm->native_idt_descr);
+	printk(KERN_NOTICE "kkm_kontainer_init: native kernel idt size %x base %lx\n",
+	       kkm->native_idt_descr.size, kkm->native_idt_descr.address);
+	if (kkm->native_idt_descr.size != (PAGE_SIZE - 1)) {
+		printk(KERN_NOTICE "kkm_kontainer_init: idt size expecting 0xfff found %x\n",
+				kkm->native_idt_descr.size);
+	}
+
+	memcpy(kkm->idt_va, (void *)kkm->native_idt_descr.address, PAGE_SIZE);
+
+	kkm->guest_idt_descr.size = kkm->native_idt_descr.size;
+	kkm->guest_idt_descr.address = (unsigned long)kkm->idt_va;
+
 
 error:
 	if (ret_val != 0) {
@@ -107,8 +126,8 @@ void kkm_kontainer_cleanup(struct kkm *kkm)
 		kkm->guest_payload_pa = 0;
 	}
 	if (kkm->idt_page != NULL) {
-		free_page((unsigned long long)kkm->idt);
+		free_page((unsigned long long)kkm->idt_va);
 		kkm->idt_page = NULL;
-		kkm->idt = NULL;
+		kkm->idt_va = NULL;
 	}
 }
