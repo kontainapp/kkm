@@ -82,21 +82,20 @@ struct kkm {
 	struct kkm_kontext kontext[KKM_MAX_CONTEXTS];
 
 	struct page *guest_kernel_page;
-	unsigned long guest_kernel;
+	unsigned long guest_kernel_va;
 	phys_addr_t guest_kernel_pa;
 
 	struct page *guest_payload_page;
-	unsigned long guest_payload;
+	unsigned long guest_payload_va;
 	phys_addr_t guest_payload_pa;
 
 	struct page *idt_page;
 	void *idt_va;
-	struct desc_ptr idt_descr;
+	struct desc_ptr guest_idt_descr;
 
 	struct desc_ptr native_gdt_descr;
 	struct desc_ptr native_idt_descr;
 
-	struct desc_ptr guest_idt_descr;
 };
 
 #endif /* __KKM_H__ */

@@ -81,14 +81,14 @@ int kkm_mm_copy_kernel_pgd(struct kkm *kkm)
 	}
 
 	kkm_mm_copy_range(current_pgd_base, KKM_PGD_KERNEL_OFFSET,
-			  kkm->guest_kernel, KKM_PGD_KERNEL_OFFSET,
+			  kkm->guest_kernel_va, KKM_PGD_KERNEL_OFFSET,
 			  KKM_PGD_KERNEL_SIZE);
 
 	// point to user pgd.
 	// keep all memory map for now.
 	// current_pgd_base += PAGE_SIZE;
 	kkm_mm_copy_range(current_pgd_base, KKM_PGD_KERNEL_OFFSET,
-			  kkm->guest_payload, KKM_PGD_KERNEL_OFFSET,
+			  kkm->guest_payload_va, KKM_PGD_KERNEL_OFFSET,
 			  KKM_PGD_KERNEL_SIZE);
 
 	return 0;
@@ -102,22 +102,22 @@ int kkm_mm_sync(struct kkm *kkm)
 	// keep kernel and user pgd same for payload area
 	// entry 0 for code+data
 	kkm_mm_copy_range(current_pgd_base, KKM_PGD_MONITOR_PAYLOAD_OFFSET,
-			  kkm->guest_kernel, KKM_PGD_GUEST_PAYLOAD_OFFSET_0,
+			  kkm->guest_kernel_va, KKM_PGD_GUEST_PAYLOAD_OFFSET_0,
 			  KKM_PGD_PAYLOAD_SIZE);
 	kkm_mm_copy_range(current_pgd_base, KKM_PGD_MONITOR_PAYLOAD_OFFSET,
-			  kkm->guest_payload, KKM_PGD_GUEST_PAYLOAD_OFFSET_0,
+			  kkm->guest_payload_va, KKM_PGD_GUEST_PAYLOAD_OFFSET_0,
 			  KKM_PGD_PAYLOAD_SIZE);
 
 	// entry 255 for stack+mmap
 	kkm_mm_copy_range(current_pgd_base, KKM_PGD_MONITOR_PAYLOAD_OFFSET,
-			  kkm->guest_kernel, KKM_PGD_GUEST_PAYLOAD_OFFSET_255,
+			  kkm->guest_kernel_va, KKM_PGD_GUEST_PAYLOAD_OFFSET_255,
 			  KKM_PGD_PAYLOAD_SIZE);
 	kkm_mm_copy_range(current_pgd_base, KKM_PGD_MONITOR_PAYLOAD_OFFSET,
-			  kkm->guest_payload, KKM_PGD_GUEST_PAYLOAD_OFFSET_255,
+			  kkm->guest_payload_va, KKM_PGD_GUEST_PAYLOAD_OFFSET_255,
 			  KKM_PGD_PAYLOAD_SIZE);
 
 	// change pml4 entry 0 to allow execution
-	pgd_pointer = (unsigned long long *)kkm->guest_payload;
+	pgd_pointer = (unsigned long long *)kkm->guest_payload_va;
 	if (pgd_pointer[0] & _PAGE_NX) {
 		printk(KERN_NOTICE "kkm_mm_sync: entry 0 has execute disable set, enable it.\n");
 		pgd_pointer[0] &= ~_PAGE_NX;

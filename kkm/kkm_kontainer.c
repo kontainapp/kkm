@@ -34,7 +34,7 @@ int kkm_kontainer_init(struct kkm *kkm)
 	unsigned long long desc_addr = (unsigned long long)kkm_trap_entry;
 
 	ret_val = kkm_mm_allocate_pages(&kkm->guest_kernel_page,
-				       (void **)&kkm->guest_kernel,
+				       (void **)&kkm->guest_kernel_va,
 				       &kkm->guest_kernel_pa, 2);
 	if (ret_val != 0) {
 		printk(KERN_NOTICE
@@ -45,22 +45,22 @@ int kkm_kontainer_init(struct kkm *kkm)
 
 	printk(KERN_NOTICE
 	       "kkm_kontainer_init: guest kernel page %lx va %lx pa %llx\n",
-	       (unsigned long)kkm->guest_kernel_page, kkm->guest_kernel,
+	       (unsigned long)kkm->guest_kernel_page, kkm->guest_kernel_va,
 	       kkm->guest_kernel_pa);
 
-	if ((kkm->guest_kernel & KKM_USER_PGTABLE_MASK) == KKM_USER_PGTABLE_MASK) {
+	if ((kkm->guest_kernel_va & KKM_USER_PGTABLE_MASK) == KKM_USER_PGTABLE_MASK) {
 		printk(KERN_ERR "kkm_kontainer_init: unexpected odd start page address\n");
 		ret_val = -EINVAL;
 		goto error;
 	}
 
 	// kernel code depends on kernel page table at even page and user page table at next(odd) page
-	kkm->guest_payload = kkm->guest_kernel + PAGE_SIZE;
+	kkm->guest_payload_va = kkm->guest_kernel_va + PAGE_SIZE;
 	kkm->guest_payload_pa += kkm->guest_kernel_pa + PAGE_SIZE;
 
 	printk(KERN_NOTICE
 	       "kkm_kontainer_init: guest payload page %lx va %lx pa %llx\n",
-	       (unsigned long)kkm->guest_payload_page, kkm->guest_payload,
+	       (unsigned long)kkm->guest_payload_page, kkm->guest_payload_va,
 	       kkm->guest_payload_pa);
 
 	ret_val = kkm_mm_allocate_page(&kkm->idt_page, &kkm->idt_va, NULL);
@@ -119,13 +119,13 @@ error:
 void kkm_kontainer_cleanup(struct kkm *kkm)
 {
 	if (kkm->guest_kernel_page != NULL) {
-		free_page(kkm->guest_kernel);
+		free_page(kkm->guest_kernel_va);
 		kkm->guest_kernel_page = NULL;
 
-		kkm->guest_kernel = 0;
+		kkm->guest_kernel_va = 0;
 		kkm->guest_kernel_pa = 0;
 
-		kkm->guest_payload = 0;
+		kkm->guest_payload_va = 0;
 		kkm->guest_payload_pa = 0;
 	}
 	if (kkm->idt_page != NULL) {
