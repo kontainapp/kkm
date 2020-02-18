@@ -241,7 +241,7 @@ void kkm_guest_kernel_start_payload(struct kkm_guest_area *ga)
 	cea = get_cpu_entry_area(cpu);
 	memcpy(&ga->payload_entry_stack, &cea->entry_stack_page.stack, sizeof(struct entry_stack));
 
-	kkm_trap_entry();
+	kkm_trap_entry_asm();
 	//kkm_switch_to_host_kernel();
 }
 

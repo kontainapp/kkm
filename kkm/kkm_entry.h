@@ -18,6 +18,6 @@ void kkm_switch_to_gk_asm(struct kkm_guest_area *ga,
 			  unsigned long long stackstart);
 void kkm_switch_to_hk_asm(struct kkm_guest_area *ga);
 void kkm_switch_to_gp_asm(struct kkm_guest_area *ga);
-void kkm_trap_entry(void);
+void kkm_trap_entry_asm(void);
 
 #endif /* __KKM_ENTRY_H__ */

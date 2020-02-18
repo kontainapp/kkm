@@ -15,17 +15,14 @@
 #include <asm/asm-offsets.h>
 #include "kkm_offsets.h"
 
-.code64
-.section .entry.text, "ax"
-
+	.text
 /*
  * %rdi -- guest private area
  * %rsi -- pointer to kkm
  * %rdx -- stack start
  */
-.global kkm_switch_to_gk_asm
-.align 16
-kkm_switch_to_gk_asm:
+ENTRY(kkm_switch_to_gk_asm)
+
 	pushq	%rbp
 	pushq	%rbx
 	pushq	%r12
@@ -53,15 +50,13 @@ kkm_switch_to_gk_asm:
 	popq	%rbx
 	popq	%rbp
 	retq
-	.type kkm_switch_to_gk_asm, @function
-.size kkm_switch_to_gk_asm, .-kkm_switch_to_gk_asm
+
+END(kkm_switch_to_gk_asm)
 
 /*
  * %rdi -- guest private area
  */
-.global kkm_switch_to_hk_asm
-.align 16
-kkm_switch_to_hk_asm:
+ENTRY(kkm_switch_to_hk_asm)
 
 	/* restore native kernel stack */
 	movq	OFF_NK_STACK(%rdi), %rsi
@@ -74,15 +69,14 @@ kkm_switch_to_hk_asm:
 	popq	%rbx
 	popq	%rbp
 	retq
-	.type kkm_switch_to_hk_asm, @function
-.size kkm_switch_to_hk_asm, .-kkm_switch_to_hk_asm
+
+END(kkm_switch_to_hk_asm)
 
 /*
  * %rdi -- guest private area
  */
-.global kkm_switch_to_gp_asm
-.align 16
-kkm_switch_to_gp_asm:
+ENTRY(kkm_switch_to_gp_asm)
+
 	pushq	%rbp
 	pushq	%rbx
 	pushq	%r12
@@ -153,14 +147,12 @@ kkm_switch_to_gp_asm:
 
 	retq
 #endif
-	.type kkm_switch_to_gp_asm, @function
-.size kkm_switch_to_gp_asm, .-kkm_switch_to_gp_asm
 
-.global kkm_trap_entry
-.align 16
-kkm_trap_entry:
+END(kkm_switch_to_gp_asm)
+
+ENTRY(kkm_trap_entry_asm)
+
 #swapgs
-
 	pushq	%rdi			# save %rdi on stack
 
 	movq	%rsp, %rdi
@@ -196,5 +188,5 @@ kkm_trap_entry:
 	call	kkm_switch_to_host_kernel
 	retq
 #endif
-	.type kkm_trap_entry, @function
-.size kkm_trap_entry, .-kkm_trap_entry
+
+END(kkm_trap_entry_asm)

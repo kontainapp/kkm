@@ -31,7 +31,7 @@ int kkm_kontainer_init(struct kkm *kkm)
 	int ret_val = 0;
 	int i = 0;
 	gate_desc *gd = NULL;
-	unsigned long long desc_addr = (unsigned long long)kkm_trap_entry;
+	unsigned long long desc_addr = (unsigned long long)kkm_trap_entry_asm;
 
 	ret_val = kkm_mm_allocate_pages(&kkm->guest_kernel_page,
 				       (void **)&kkm->guest_kernel_va,
