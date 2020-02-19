@@ -39,6 +39,12 @@ struct kkm_guest_area {
 			struct kkm_debug debug;
 			struct kkm_fpu fpu;
 
+			uint8_t reserved[424];
+
+			// keep these two entries at the end
+			// offset of payload_entry_stack is used
+			// at offset(0x600-0x800) from begining of
+			// this structure in kkm_entry.S
 			struct entry_stack native_entry_stack;
 			struct entry_stack payload_entry_stack;
 		};

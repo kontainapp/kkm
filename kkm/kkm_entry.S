@@ -110,7 +110,10 @@ ENTRY(kkm_switch_to_gp_asm)
 
 	movq	%rsp, %rbx		# save guest kernel stack in %rbx
 
-	movq    PER_CPU_VAR(cpu_tss_rw + TSS_sp0), %rsp	# switch to temporary stack
+	# using %rdi->payload_entry_stack as trampoline
+	movq	%rdi, %rax
+	addq	$OFF_PAY_ENT_STK, %rax
+	movq	%rax, %rsp
 
 	pushq	OFF_GP_SS(%rdi)
 	pushq	OFF_RSP(%rdi)

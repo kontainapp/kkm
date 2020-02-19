@@ -49,4 +49,6 @@
 #define OFF_RIP (192) /* regs.rip */
 #define OFF_RFLAGS (200) /* regs.rflags */
 
+#define OFF_PAY_ENT_STK	(2048)	/* payload_entry_stack end */
+
 #endif /* __KKM_OFFSETS_H__ */
