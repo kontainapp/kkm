@@ -29,9 +29,6 @@
 int kkm_kontainer_init(struct kkm *kkm)
 {
 	int ret_val = 0;
-	int i = 0;
-	gate_desc *gd = NULL;
-	unsigned long long desc_addr = (unsigned long long)kkm_trap_entry_asm;
 
 	ret_val = kkm_mm_allocate_pages(&kkm->guest_kernel_page,
 				       (void **)&kkm->guest_kernel_va,
@@ -63,51 +60,6 @@ int kkm_kontainer_init(struct kkm *kkm)
 	       (unsigned long)kkm->guest_payload_page, kkm->guest_payload_va,
 	       kkm->guest_payload_pa);
 
-	ret_val = kkm_mm_allocate_page(&kkm->idt_page, &kkm->idt_va, NULL);
-	if (ret_val != 0) {
-		printk(KERN_NOTICE
-		       "kkm_kontainer_init: Failed to allocate memory for idt error(%d)\n",
-		       ret_val);
-		goto error;
-	}
-
-	gd = (gate_desc *)kkm->idt_va;
-	for (i = 0; i < IDT_ENTRIES; i++) {
-		// TODO: setup different entry points based on normal kernel idt table
-		// different entry point for each type
-		gd[i].segment = __KERNEL_CS;
-
-		gd[i].offset_low = desc_addr & 0xFFFF;
-		gd[i].offset_middle = desc_addr >> 16 & 0xFFFF;
-		gd[i].offset_high = desc_addr >> 32 & 0xFFFFFFFF;
-
-		gd[i].bits.ist = 0;
-		gd[i].bits.zero = 0;
-		gd[i].bits.type = GATE_INTERRUPT;
-		gd[i].bits.dpl = 0;
-		gd[i].bits.p = 1;
-	}
-
-#if 0
-	// store_gdt not available in PV(aws) kernels
-	store_gdt(&kkm->native_gdt_descr);
-	printk(KERN_NOTICE "kkm_kontainer_init: native kernel gdt size %x base %lx\n",
-	       kkm->native_gdt_descr.size, kkm->native_gdt_descr.address);
-#endif
-
-	store_idt(&kkm->native_idt_descr);
-	printk(KERN_NOTICE "kkm_kontainer_init: native kernel idt size %x base %lx\n",
-	       kkm->native_idt_descr.size, kkm->native_idt_descr.address);
-	if (kkm->native_idt_descr.size != (PAGE_SIZE - 1)) {
-		printk(KERN_NOTICE "kkm_kontainer_init: idt size expecting 0xfff found %x\n",
-				kkm->native_idt_descr.size);
-	}
-
-	memcpy(kkm->idt_va, (void *)kkm->native_idt_descr.address, PAGE_SIZE);
-
-	kkm->guest_idt_descr.size = kkm->native_idt_descr.size;
-	kkm->guest_idt_descr.address = (unsigned long)kkm->idt_va;
-
 error:
 	if (ret_val != 0) {
 		kkm_kontainer_cleanup(kkm);
@@ -126,10 +78,5 @@ void kkm_kontainer_cleanup(struct kkm *kkm)
 
 		kkm->guest_payload_va = 0;
 		kkm->guest_payload_pa = 0;
-	}
-	if (kkm->idt_page != NULL) {
-		free_page((unsigned long long)kkm->idt_va);
-		kkm->idt_page = NULL;
-		kkm->idt_va = NULL;
 	}
 }
