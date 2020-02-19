@@ -64,21 +64,6 @@ int kkm_kontext_init(struct kkm_kontext *kkm_kontext)
 	       kkm_kontext->native_gdt_descr.size, kkm_kontext->native_gdt_descr.address);
 #endif
 
-	/*
-	store_idt(&kkm_kontext->native_idt_descr);
-	printk(KERN_NOTICE "kkm_kontainer_init: native kernel idt size %x base %lx\n",
-	       kkm_kontext->native_idt_descr.size, kkm_kontext->native_idt_descr.address);
-	if (kkm_kontext->native_idt_descr.size != (PAGE_SIZE - 1)) {
-		printk(KERN_NOTICE "kkm_kontainer_init: idt size expecting 0xfff found %x\n",
-				kkm_kontext->native_idt_descr.size);
-	}
-
-	memcpy(kkm_kontext->idt_va, (void *)kkm_kontext->native_idt_descr.address, PAGE_SIZE);
-
-	kkm_kontext->guest_idt_descr.size = kkm_kontext->native_idt_descr.size;
-	kkm_kontext->guest_idt_descr.address = (unsigned long)kkm_kontext->idt_va;
-	*/
-
 error:
 	if (ret_val != 0) {
 		kkm_kontext_cleanup(kkm_kontext);
