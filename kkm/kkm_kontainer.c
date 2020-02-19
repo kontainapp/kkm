@@ -108,7 +108,6 @@ int kkm_kontainer_init(struct kkm *kkm)
 	kkm->guest_idt_descr.size = kkm->native_idt_descr.size;
 	kkm->guest_idt_descr.address = (unsigned long)kkm->idt_va;
 
-
 error:
 	if (ret_val != 0) {
 		kkm_kontainer_cleanup(kkm);

@@ -11,6 +11,7 @@
  */
 
 #include <linux/mm.h>
+#include <asm/desc.h>
 #include <asm/tlbflush.h>
 #include <asm/debugreg.h>
 #include <asm/cpu_entry_area.h>
@@ -18,6 +19,7 @@
 #include "kkm.h"
 #include "kkm_kontext.h"
 #include "kkm_mm.h"
+#include "kkm_misc.h"
 #include "kkm_entry.h"
 
 DEFINE_PER_CPU(struct kkm_kontext *, current_kontext);
@@ -186,6 +188,7 @@ void kkm_guest_kernel_start_payload(struct kkm_guest_area *ga)
 {
 	int cpu = 0x66;
 	struct cpu_entry_area *cea = NULL;
+	struct kkm *kkm = ga->kkm_kontext->kkm;
 
 	cpu = get_cpu();
 	cea = get_cpu_entry_area(cpu);
@@ -230,6 +233,15 @@ void kkm_guest_kernel_start_payload(struct kkm_guest_area *ga)
 	}
 
 	kkm_hw_debug_registers_restore(ga->debug.registers);
+
+	// disable interrupts
+	local_irq_disable();
+
+	// invalidate current idt
+	kkm_idt_invalidate((void *)kkm->native_idt_descr.address);
+
+	// set new idt
+	load_idt(&kkm->guest_idt_descr);
 
 	// flush TLB
 	__native_flush_tlb_global();

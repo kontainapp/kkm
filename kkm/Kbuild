@@ -9,4 +9,4 @@
 #  Kontain Inc.
 
 obj-m += kkm.o
-kkm-objs += kkm_main.o kkm_kontainer.o kkm_kontext.o kkm_mm.o kkm_entry.o
+kkm-objs += kkm_main.o kkm_kontainer.o kkm_kontext.o kkm_mm.o kkm_entry.o kkm_misc.o
