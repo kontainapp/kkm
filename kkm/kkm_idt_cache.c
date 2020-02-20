@@ -105,6 +105,9 @@ int kkm_idt_get_desc(struct desc_ptr **native_desc, struct desc_ptr **guest_desc
 			       ret_val, cpu);
 			goto error;
 		}
+		printk(KERN_NOTICE "kkm_idt_get_desc: idt page %lx va %lx\n",
+		       (unsigned long)entry->idt_page,
+		       (unsigned long)entry->idt_va);
 
 		store_idt(&entry->native_idt_desc);
 
@@ -123,6 +126,11 @@ int kkm_idt_get_desc(struct desc_ptr **native_desc, struct desc_ptr **guest_desc
 
 		entry->guest_idt_desc.size = entry->native_idt_desc.size;
 		entry->guest_idt_desc.address = (unsigned long)entry->idt_va;
+
+		printk(KERN_NOTICE
+		       "kkm_idt_get_desc: guest kernel idt size %x base address %lx\n",
+		       entry->guest_idt_desc.size,
+		       entry->guest_idt_desc.address);
 
 		// replace needed idt entries
 
