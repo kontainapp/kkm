@@ -21,6 +21,7 @@
 #include "kkm_mm.h"
 #include "kkm_misc.h"
 #include "kkm_entry.h"
+#include "kkm_idt_cache.h"
 
 DEFINE_PER_CPU(struct kkm_kontext *, current_kontext);
 
@@ -45,18 +46,6 @@ int kkm_kontext_init(struct kkm_kontext *kkm_kontext)
 	       (unsigned long)kkm_kontext->guest_area_page,
 	       (unsigned long)kkm_kontext->guest_area);
 
-	ret_val = kkm_mm_allocate_page(&kkm_kontext->idt_page, &kkm_kontext->idt_va, NULL);
-	if (ret_val != 0) {
-		printk(KERN_NOTICE
-		       "kkm_kontainer_init: Failed to allocate memory for idt error(%d)\n",
-		       ret_val);
-		goto error;
-	}
-
-	printk(KERN_NOTICE "kkm_kontext_init: idt page %lx va %lx\n",
-	       (unsigned long)kkm_kontext->idt_page,
-	       (unsigned long)kkm_kontext->idt_va);
-
 #if 0
 	// store_gdt not available in PV(aws) kernels
 	store_gdt(&kkm_kontext->native_gdt_descr);
@@ -77,12 +66,6 @@ void kkm_kontext_cleanup(struct kkm_kontext *kkm_kontext)
 		free_page((unsigned long long)kkm_kontext->guest_area);
 		kkm_kontext->guest_area_page = NULL;
 		kkm_kontext->guest_area = NULL;
-	}
-
-	if (kkm_kontext->idt_page != NULL) {
-		free_page((unsigned long long)kkm_kontext->idt_va);
-		kkm_kontext->idt_page = NULL;
-		kkm_kontext->idt_va = NULL;
 	}
 }
 
@@ -213,28 +196,13 @@ void kkm_guest_kernel_start_payload(struct kkm_guest_area *ga)
 {
 	int cpu = 0x66;
 	struct cpu_entry_area *cea = NULL;
-	struct kkm_kontext *kkm_kontext = ga->kkm_kontext;
+	struct desc_ptr *native_idt_desc = NULL;
+	struct desc_ptr *guest_idt_desc = NULL;
 
 	cpu = get_cpu();
 	cea = get_cpu_entry_area(cpu);
 	printk(KERN_NOTICE "kkm_guest_kernel_start_payload: cpu %d %llx cea %llx\n", cpu,
 	       (unsigned long long)&cpu, (unsigned long long)cea);
-
-	// we can be scheduled to a different cpu every time
-	// make copy of idt on this CPU and make changes for our descriptors
-	// TODO: optimize by maintaining one per cpu and use one allocated per current cpu
-	store_idt(&kkm_kontext->native_idt_descr);
-	printk(KERN_NOTICE "kkm_kontainer_init: native kernel idt size %x base %lx\n",
-	       kkm_kontext->native_idt_descr.size, kkm_kontext->native_idt_descr.address);
-	if (kkm_kontext->native_idt_descr.size != (PAGE_SIZE - 1)) {
-		printk(KERN_NOTICE "kkm_kontainer_init: idt size expecting 0xfff found %x\n",
-				kkm_kontext->native_idt_descr.size);
-	}
-
-	memcpy(kkm_kontext->idt_va, (void *)kkm_kontext->native_idt_descr.address, PAGE_SIZE);
-
-	kkm_kontext->guest_idt_descr.size = kkm_kontext->native_idt_descr.size;
-	kkm_kontext->guest_idt_descr.address = (unsigned long)kkm_kontext->idt_va;
 
 	// delete - moved to asm file
 	// switch to guest payload address space
@@ -275,14 +243,16 @@ void kkm_guest_kernel_start_payload(struct kkm_guest_area *ga)
 
 	kkm_hw_debug_registers_restore(ga->debug.registers);
 
+	kkm_idt_get_desc(&native_idt_desc, &guest_idt_desc);
+
 	// disable interrupts
-	local_irq_disable();
+	//local_irq_disable();
 
 	// invalidate current idt
-	kkm_idt_invalidate((void *)kkm_kontext->native_idt_descr.address);
+	//kkm_idt_invalidate((void *)native_idt_desc->address);
 
 	// set new idt
-	load_idt(&kkm_kontext->guest_idt_descr);
+	//load_idt(guest_idt_desc);
 
 	// flush TLB
 	__native_flush_tlb_global();

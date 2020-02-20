@@ -55,12 +55,7 @@ struct kkm_kontext {
 
 	uint64_t native_debug_registers[8];
 
-	struct page *idt_page;
-	void *idt_va;
-	struct desc_ptr guest_idt_descr;
-
 	struct desc_ptr native_gdt_descr;
-	struct desc_ptr native_idt_descr;
 
 	char scratch_buffer[256];
 };

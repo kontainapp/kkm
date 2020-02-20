@@ -25,6 +25,7 @@
 #include "kkm_kontainer.h"
 #include "kkm_kontext.h"
 #include "kkm_mm.h"
+#include "kkm_idt_cache.h"
 
 uint32_t kkm_version = 12;
 
@@ -553,6 +554,12 @@ static int __init kkm_init(void)
 		return ret_val;
 	}
 
+	ret_val = kkm_idt_cache_init();
+	if (ret_val != 0) {
+		printk(KERN_ERR "kkm_init: Cannot initialize idt cache.\n");
+		return ret_val;
+	}
+
 	printk(KERN_INFO "kkm_init: Registered kkm.\n");
 
 	return 0;
@@ -562,6 +569,7 @@ module_init(kkm_init);
 
 static void __exit kkm_exit(void)
 {
+	kkm_idt_cache_cleanup();
 	misc_deregister(&kkm_device);
 	printk(KERN_INFO "kkm_exit: De-Registered kkm.\n");
 }
