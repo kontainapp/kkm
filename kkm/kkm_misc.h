@@ -14,5 +14,6 @@
 #define __KKM_MISC_H__
 
 void kkm_idt_invalidate(void *address);
+void kkm_flush_tlb_all(void);
 
 #endif /* __KKM_MISC_H__ */

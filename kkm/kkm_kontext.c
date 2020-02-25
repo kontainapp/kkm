@@ -93,6 +93,9 @@ int kkm_kontext_switch_kernel(struct kkm_kontext *kkm_kontext)
 #endif
 	printk(KERN_NOTICE "kkm_kontext_switch_kernel:\n");
 
+	// disable interrupts
+	local_irq_disable();
+
 	cpu = get_cpu();
 	per_cpu(current_kontext, cpu) = kkm_kontext;
 	printk(KERN_NOTICE "kkm_kontext_switch_kernel: cpu %d %llx\n", cpu,
@@ -116,7 +119,7 @@ int kkm_kontext_switch_kernel(struct kkm_kontext *kkm_kontext)
 	       kkm_kontext->native_kernel_cr3, kkm_kontext->native_kernel_cr4);
 
 	// flush TLB
-	__native_flush_tlb_global();
+	kkm_flush_tlb_all();
 
 	// change to guest kernel address space
 	write_cr3(kkm->guest_kernel_pa);
@@ -161,7 +164,7 @@ int kkm_kontext_switch_kernel(struct kkm_kontext *kkm_kontext)
 	// this code runs in native kernel context
 
 	// flush TLB, and restore native kernel cr4
-	__native_flush_tlb_global();
+	kkm_flush_tlb_all();
 
 	// restore native kernel address space
 	write_cr3(kkm_kontext->native_kernel_cr3);
@@ -229,8 +232,11 @@ void kkm_guest_kernel_start_payload(struct kkm_guest_area *ga)
 	// make sure interrupts are enabled, iopl is 0 and resume flag is set
 	if ((ga->regs.rflags & X86_EFLAGS_IF) == 0) {
 		printk(KERN_NOTICE "kkm_guest_kernel_start_payload: interrupts are disabled in rflags, enabling\n");
-		ga->regs.rflags |= X86_EFLAGS_IF;
+		// keep interrupts disabled till trap handlers are completely working
+		// ga->regs.rflags |= X86_EFLAGS_IF;
 	}
+	// TODO: delete this
+	ga->regs.rflags &= ~(X86_EFLAGS_IF);
 	if ((ga->regs.rflags & X86_EFLAGS_IOPL) != 0) {
 		printk(KERN_NOTICE "kkm_guest_kernel_start_payload: user provided iopl 0x%llx, changing to 0\n",
 				(ga->regs.rflags & X86_EFLAGS_IOPL) >> X86_EFLAGS_IOPL_BIT);
@@ -245,17 +251,12 @@ void kkm_guest_kernel_start_payload(struct kkm_guest_area *ga)
 
 	kkm_idt_get_desc(&native_idt_desc, &guest_idt_desc);
 
-	// disable interrupts
-	//local_irq_disable();
-
-	// invalidate current idt
-	//kkm_idt_invalidate((void *)native_idt_desc->address);
-
+	// interrupts are disbled at the begining of switch_kernel
 	// set new idt
 	//load_idt(guest_idt_desc);
 
 	// flush TLB
-	__native_flush_tlb_global();
+	kkm_flush_tlb_all();
 
 	kkm_switch_to_gp_asm(ga);
 
@@ -297,7 +298,7 @@ void kkm_switch_to_host_kernel(void)
 	       kkm_kontext->native_kernel_ss);
 
 	// flush TLB, and restore native kernel cr4
-	__native_flush_tlb_global();
+	kkm_flush_tlb_all();
 
 	// restore native kernel address space
 	write_cr3(kkm_kontext->native_kernel_cr3);
