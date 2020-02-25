@@ -118,11 +118,8 @@ int kkm_kontext_switch_kernel(struct kkm_kontext *kkm_kontext)
 	       "kkm_kontext_switch_kernel: native kernel cr3 %lx cr4 %lx\n",
 	       kkm_kontext->native_kernel_cr3, kkm_kontext->native_kernel_cr4);
 
-	// flush TLB
-	kkm_flush_tlb_all();
-
 	// change to guest kernel address space
-	write_cr3(kkm->guest_kernel_pa);
+	kkm_change_address_space(kkm->guest_kernel_pa);
 
 	kkm_kontext->guest_kernel_cr3 = __read_cr3();
 	kkm_kontext->guest_kernel_cr4 = __read_cr4();
@@ -183,10 +180,6 @@ void kkm_guest_kernel_start_payload(struct kkm_guest_area *ga)
 	printk(KERN_NOTICE "kkm_guest_kernel_start_payload: cpu %d %llx cea %llx\n", cpu,
 	       (unsigned long long)&cpu, (unsigned long long)cea);
 
-	// delete - moved to asm file
-	// switch to guest payload address space
-	// write_cr3(ga->guest_payload_cr3);
-
 	ga->guest_stack_variable_address = (unsigned long long)&cpu;
 
 	loadsegment(ds, 0);
@@ -234,6 +227,10 @@ void kkm_guest_kernel_start_payload(struct kkm_guest_area *ga)
 	// flush TLB
 	kkm_flush_tlb_all();
 
+	// switch to guest payload address space is done in assembly
+	// just before switching to user space
+	// TODO: move flush to assembly
+
 	kkm_switch_to_gp_asm(ga);
 
 	printk(KERN_NOTICE "kkm_guest_kernel_start_payload: returned from guest call\n");
@@ -273,11 +270,8 @@ void kkm_switch_to_host_kernel(void)
 	       kkm_kontext->native_kernel_gs_kern_base,
 	       kkm_kontext->native_kernel_ss);
 
-	// flush TLB, and restore native kernel cr4
-	kkm_flush_tlb_all();
-
 	// restore native kernel address space
-	write_cr3(kkm_kontext->native_kernel_cr3);
+	kkm_change_address_space(kkm_kontext->native_kernel_cr3);
 
 	// restore native kernel segment registers
 	loadsegment(ds, kkm_kontext->native_kernel_ds);

@@ -15,5 +15,6 @@
 
 void kkm_idt_invalidate(void *address);
 void kkm_flush_tlb_all(void);
+void kkm_change_address_space(phys_addr_t pgd_pa);
 
 #endif /* __KKM_MISC_H__ */

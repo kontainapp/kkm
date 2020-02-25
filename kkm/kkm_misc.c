@@ -44,3 +44,14 @@ void kkm_flush_tlb_all(void)
 	native_write_cr4(cr4);
 	raw_local_irq_restore(flags);
 }
+
+// kernel uses ASID's and are managed by kernel
+// make sure tlb is completely cleared
+void kkm_change_address_space(phys_addr_t pgd_pa)
+{
+	// change space
+	write_cr3(pgd_pa);
+
+	// flush TLB
+	kkm_flush_tlb_all();
+}
