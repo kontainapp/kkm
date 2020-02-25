@@ -26,28 +26,30 @@
 #define OFF_GP_CS (48) /* guest_payload_cs */
 #define OFF_GP_SS (56) /* guest_payload_ss */
 
-#define OFF_RAX (64) /* regs.rax */
-#define OFF_RBX (72) /* regs.rbx */
-#define OFF_RCX (80) /* regs.rcx */
-#define OFF_RDX (88) /* regs.rdx */
+#define	REG_BASE_OFF	(64)
 
-#define OFF_RSI (96) /* regs.rsi */
-#define OFF_RDI (104) /* regs.rdi */
-#define OFF_RSP (112) /* regs.rsp */
-#define OFF_RBP (120) /* regs.rbp */
+#define OFF_RAX ((REG_BASE_OFF) + 8 * 0) /* regs.rax */
+#define OFF_RBX ((REG_BASE_OFF) + 8 * 1) /* regs.rbx */
+#define OFF_RCX ((REG_BASE_OFF) + 8 * 2) /* regs.rcx */
+#define OFF_RDX ((REG_BASE_OFF) + 8 * 3) /* regs.rdx */
 
-#define OFF_R8 (128) /* regs.rax */
-#define OFF_R9 (136) /* regs.rbx */
-#define OFF_R10 (144) /* regs.rcx */
-#define OFF_R11 (152) /* regs.rdx */
+#define OFF_RSI ((REG_BASE_OFF) + 8 * 4) /* regs.rsi */
+#define OFF_RDI ((REG_BASE_OFF) + 8 * 5) /* regs.rdi */
+#define OFF_RSP ((REG_BASE_OFF) + 8 * 6) /* regs.rsp */
+#define OFF_RBP ((REG_BASE_OFF) + 8 * 7) /* regs.rbp */
 
-#define OFF_R12 (160) /* regs.rsi */
-#define OFF_R13 (168) /* regs.rdi */
-#define OFF_R14 (176) /* regs.rsp */
-#define OFF_R15 (184) /* regs.rbp */
+#define OFF_R8 ((REG_BASE_OFF) + 8 * 8) /* regs.rax */
+#define OFF_R9 ((REG_BASE_OFF) + 8 * 9) /* regs.rbx */
+#define OFF_R10 ((REG_BASE_OFF) + 8 * 10) /* regs.rcx */
+#define OFF_R11 ((REG_BASE_OFF) + 8 * 11) /* regs.rdx */
 
-#define OFF_RIP (192) /* regs.rip */
-#define OFF_RFLAGS (200) /* regs.rflags */
+#define OFF_R12 ((REG_BASE_OFF) + 8 * 12) /* regs.rsi */
+#define OFF_R13 ((REG_BASE_OFF) + 8 * 13) /* regs.rdi */
+#define OFF_R14 ((REG_BASE_OFF) + 8 * 14) /* regs.rsp */
+#define OFF_R15 ((REG_BASE_OFF) + 8 * 15) /* regs.rbp */
+
+#define OFF_RIP ((REG_BASE_OFF) + 8 * 16) /* regs.rip */
+#define OFF_RFLAGS ((REG_BASE_OFF) + 8 * 17) /* regs.rflags */
 
 #define OFF_PAY_ENT_STK	(2048)	/* payload_entry_stack end */
 
