@@ -159,30 +159,6 @@ int kkm_kontext_switch_kernel(struct kkm_kontext *kkm_kontext)
 
 	kkm_hw_debug_registers_restore(kkm_kontext->native_debug_registers);
 
-#if 0
-	// restore is done as part of trap/intr, delete once everything works
-	// this code runs in native kernel context
-
-	// flush TLB, and restore native kernel cr4
-	kkm_flush_tlb_all();
-
-	// restore native kernel address space
-	write_cr3(kkm_kontext->native_kernel_cr3);
-
-	// restore native kernel segment registers
-	loadsegment(ds, kkm_kontext->native_kernel_ds);
-	loadsegment(es, kkm_kontext->native_kernel_es);
-
-	loadsegment(fs, kkm_kontext->native_kernel_fs);
-	wrmsrl(MSR_FS_BASE, kkm_kontext->native_kernel_fs_base);
-
-	load_gs_index(kkm_kontext->native_kernel_gs);
-	wrmsrl(MSR_GS_BASE, kkm_kontext->native_kernel_gs_base);
-	wrmsrl(MSR_KERNEL_GS_BASE, kkm_kontext->native_kernel_gs_kern_base);
-
-	loadsegment(ss, __KERNEL_DS);
-#endif
-
 	printk(KERN_NOTICE
 	       "kkm_kontext_switch_kernel: after %llx %llx %llx %llx\n",
 	       (unsigned long long)ga->kkm_kontext, ga->guest_area_beg,
