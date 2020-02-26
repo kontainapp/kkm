@@ -3,8 +3,8 @@ define show_pa_to_kva
 	if $argc != 1
 		help show_pa_to_kva
 	else
-		set $kva = 0xffff888000000000 + arg0
-		printf "%llx\n", $kva
+		set $kva = 0xffff888000000000 + $arg0
+		printf "0x%llx\n", $kva
 	end
 end
 
