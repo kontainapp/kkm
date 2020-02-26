@@ -16,6 +16,10 @@
 #include <asm/debugreg.h>
 #include <asm/cpu_entry_area.h>
 
+#include "kkm.h"
+#include "kkm_kontext.h"
+#include "kkm_misc.h"
+
 // this will cause triple exception.
 // as faults cannot be disabled.
 void kkm_idt_invalidate(void *address)
@@ -54,4 +58,42 @@ void kkm_change_address_space(phys_addr_t pgd_pa)
 
 	// flush TLB
 	kkm_flush_tlb_all();
+}
+
+void kkm_init_guest_area_redzone(struct kkm_guest_area *ga)
+{
+	memset(ga->redzone_top, REDZONE_DATA, GUEST_STACK_REDZONE_SIZE);
+	memset(ga->redzone_bottom, REDZONE_DATA, GUEST_STACK_REDZONE_SIZE);
+}
+
+void kkm_verify_guest_area_redzone(struct kkm_guest_area *ga)
+{
+	if (kkm_verify_bytes(ga->redzone_top, GUEST_STACK_REDZONE_SIZE,
+			     REDZONE_DATA) == false) {
+		printk(KERN_NOTICE
+		       "kkm_verify_guest_area_redzone: top rezone mismatch\n");
+	}
+	if (kkm_verify_bytes(ga->redzone_bottom, GUEST_STACK_REDZONE_SIZE,
+			     REDZONE_DATA) == false) {
+		printk(KERN_NOTICE
+		       "kkm_verify_guest_area_redzone: bottom rezone mismatch\n");
+	}
+}
+
+bool kkm_verify_bytes(uint8_t *data, uint32_t count, uint8_t value)
+{
+	int i = 0;
+	bool ret_val = true;
+
+	for (i = 0; i < count; i++) {
+		if (data[i] == value) {
+			continue;
+		}
+		ret_val = false;
+		printk(KERN_NOTICE
+		       "kkm_verify_bytes: data mismatch expected(0x%2x) found (0x%2x)\n",
+		       REDZONE_DATA, data[i]);
+		break;
+	}
+	return ret_val;
 }

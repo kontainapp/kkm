@@ -34,7 +34,8 @@ int kkm_kontext_init(struct kkm_kontext *kkm_kontext)
 
 	// stack0
 	ret_val = kkm_mm_allocate_pages(&kkm_kontext->guest_area_page,
-				       &kkm_kontext->guest_area, NULL, KKM_GUEST_AREA_PAGES);
+					&kkm_kontext->guest_area, NULL,
+					KKM_GUEST_AREA_PAGES);
 	if (ret_val != 0) {
 		printk(KERN_NOTICE
 		       "kkm_kontext_init: Failed to allocate memory for stack0 error(%d)\n",
@@ -45,6 +46,9 @@ int kkm_kontext_init(struct kkm_kontext *kkm_kontext)
 	printk(KERN_NOTICE "kkm_kontext_init: stack0 page %lx va %lx\n",
 	       (unsigned long)kkm_kontext->guest_area_page,
 	       (unsigned long)kkm_kontext->guest_area);
+
+	kkm_init_guest_area_redzone(
+		(struct kkm_guest_area *)kkm_kontext->guest_area);
 
 #if 0
 	// store_gdt not available in PV(aws) kernels
@@ -80,6 +84,7 @@ int kkm_kontext_switch_kernel(struct kkm_kontext *kkm_kontext)
 	struct cpu_entry_area *cea = NULL;
 	struct desc_ptr *native_idt_desc = NULL;
 	struct desc_ptr *guest_idt_desc = NULL;
+	struct task_struct *tsk = current;
 
 #if 1
 	// delete
@@ -91,8 +96,10 @@ int kkm_kontext_switch_kernel(struct kkm_kontext *kkm_kontext)
 	rdmsrl(MSR_STAR, star);
 	rdmsrl(MSR_LSTAR, lstar);
 
-	printk(KERN_NOTICE "kkm_kontext_switch_kernel: EFER %llx STAR %llx LSTAR %llx\n",
-	       efer, star, lstar);
+	printk(KERN_NOTICE
+	       "kkm_kontext_switch_kernel: EFER %llx STAR %llx LSTAR %llx stack %lx %lx\n",
+	       efer, star, lstar, (unsigned long)tsk->stack,
+	       (unsigned long)&efer);
 #endif
 	printk(KERN_NOTICE "kkm_kontext_switch_kernel:\n");
 
@@ -111,7 +118,6 @@ int kkm_kontext_switch_kernel(struct kkm_kontext *kkm_kontext)
 	printk(KERN_NOTICE "kkm_kontext_switch_kernel: cpu %d %llx\n", cpu,
 	       (unsigned long long)&cpu);
 
-	memset(ga->redzone, 0xa5, GUEST_STACK_REDZONE_SIZE);
 	printk(KERN_NOTICE
 	       "kkm_kontext_switch_kernel: before %llx %llx %llx %llx\n",
 	       (unsigned long long)ga->kkm_kontext, ga->guest_area_beg,
@@ -119,7 +125,8 @@ int kkm_kontext_switch_kernel(struct kkm_kontext *kkm_kontext)
 
 	// save trampoline stack
 	cea = get_cpu_entry_area(cpu);
-	memcpy(&ga->native_entry_stack, &cea->entry_stack_page.stack, sizeof(struct entry_stack));
+	memcpy(&ga->native_entry_stack, &cea->entry_stack_page.stack,
+	       sizeof(struct entry_stack));
 
 	// save native kernel address space
 	kkm_kontext->native_kernel_cr3 = __read_cr3();
@@ -162,7 +169,8 @@ int kkm_kontext_switch_kernel(struct kkm_kontext *kkm_kontext)
 
 	kkm_hw_debug_registers_save(kkm_kontext->native_debug_registers);
 
-	kkm_switch_to_gk_asm(ga, kkm_kontext, (unsigned long long)ga->redzone);
+	kkm_switch_to_gk_asm(ga, kkm_kontext,
+			     (unsigned long long)ga->redzone_bottom);
 
 	kkm_hw_debug_registers_restore(kkm_kontext->native_debug_registers);
 
@@ -185,8 +193,9 @@ void kkm_guest_kernel_start_payload(struct kkm_guest_area *ga)
 
 	cpu = get_cpu();
 	cea = get_cpu_entry_area(cpu);
-	printk(KERN_NOTICE "kkm_guest_kernel_start_payload: cpu %d %llx cea %llx\n", cpu,
-	       (unsigned long long)&cpu, (unsigned long long)cea);
+	printk(KERN_NOTICE
+	       "kkm_guest_kernel_start_payload: cpu %d %llx cea %llx\n",
+	       cpu, (unsigned long long)&cpu, (unsigned long long)cea);
 
 	ga->guest_stack_variable_address = (unsigned long long)&cpu;
 
@@ -199,28 +208,34 @@ void kkm_guest_kernel_start_payload(struct kkm_guest_area *ga)
 	ga->guest_payload_cs = __USER_CS;
 	ga->guest_payload_ss = __USER_DS;
 
-	printk(KERN_NOTICE "kkm_guest_kernel_start_payload: fsbase %llx usercs %llx userss %llx\n",
+	printk(KERN_NOTICE
+	       "kkm_guest_kernel_start_payload: fsbase %llx usercs %llx userss %llx\n",
 	       ga->sregs.fs.base, ga->guest_payload_cs, ga->guest_payload_ss);
 
-	printk(KERN_NOTICE "kkm_guest_kernel_start_payload: rip %llx rsp %llx rflags %llx\n",
+	printk(KERN_NOTICE
+	       "kkm_guest_kernel_start_payload: rip %llx rsp %llx rflags %llx\n",
 	       ga->regs.rip, ga->regs.rsp, ga->regs.rflags);
 
 	// flags are from userland
 	// make sure interrupts are enabled, iopl is 0 and resume flag is set
 	if ((ga->regs.rflags & X86_EFLAGS_IF) == 0) {
-		printk(KERN_NOTICE "kkm_guest_kernel_start_payload: interrupts are disabled in rflags, enabling\n");
+		printk(KERN_NOTICE
+		       "kkm_guest_kernel_start_payload: interrupts are disabled in rflags, enabling\n");
 		// keep interrupts disabled till trap handlers are completely working
 		// ga->regs.rflags |= X86_EFLAGS_IF;
 	}
 	// TODO: delete this
 	ga->regs.rflags &= ~(X86_EFLAGS_IF);
 	if ((ga->regs.rflags & X86_EFLAGS_IOPL) != 0) {
-		printk(KERN_NOTICE "kkm_guest_kernel_start_payload: user provided iopl 0x%llx, changing to 0\n",
-				(ga->regs.rflags & X86_EFLAGS_IOPL) >> X86_EFLAGS_IOPL_BIT);
+		printk(KERN_NOTICE
+		       "kkm_guest_kernel_start_payload: user provided iopl 0x%llx, changing to 0\n",
+		       (ga->regs.rflags & X86_EFLAGS_IOPL) >>
+			       X86_EFLAGS_IOPL_BIT);
 		ga->regs.rflags &= ~(X86_EFLAGS_IOPL);
 	}
 	if ((ga->regs.rflags & X86_EFLAGS_RF) == 0) {
-		printk(KERN_NOTICE "kkm_guest_kernel_start_payload: resume flag is not set rflags, enabling\n");
+		printk(KERN_NOTICE
+		       "kkm_guest_kernel_start_payload: resume flag is not set rflags, enabling\n");
 		ga->regs.rflags |= X86_EFLAGS_RF;
 	}
 
@@ -229,7 +244,6 @@ void kkm_guest_kernel_start_payload(struct kkm_guest_area *ga)
 	// interrupts are disbled at the begining of switch_kernel
 	// set new idt
 	load_idt(&ga->guest_idt);
-
 
 	// flush TLB
 	kkm_flush_tlb_all();
@@ -242,10 +256,12 @@ void kkm_guest_kernel_start_payload(struct kkm_guest_area *ga)
 
 	kkm_switch_to_gp_asm(ga);
 
-	printk(KERN_NOTICE "kkm_guest_kernel_start_payload: returned from guest call\n");
+	printk(KERN_NOTICE
+	       "kkm_guest_kernel_start_payload: returned from guest call\n");
 
 	cea = get_cpu_entry_area(cpu);
-	memcpy(&ga->payload_entry_stack, &cea->entry_stack_page.stack, sizeof(struct entry_stack));
+	memcpy(&ga->payload_entry_stack, &cea->entry_stack_page.stack,
+	       sizeof(struct entry_stack));
 
 	kkm_trap_entry_asm();
 	//kkm_switch_to_host_kernel();
