@@ -37,12 +37,23 @@ struct kkm_guest_area {
 			uint64_t guest_payload_cs;
 			uint64_t guest_payload_ss;
 
+			union {
+				struct desc_ptr native_idt;
+				uint64_t native[2];
+			};
+			union {
+				struct desc_ptr guest_idt;
+				uint64_t guest[2];
+			};
+
+			uint8_t reserved1[32];
+
 			struct kkm_regs regs;
 			struct kkm_sregs sregs;
 			struct kkm_debug debug;
 			struct kkm_fpu fpu;
 
-			uint8_t reserved[2472];
+			uint8_t reserved[2408];
 
 			// keep these two entries at the end
 			// offset of payload_entry_stack is used

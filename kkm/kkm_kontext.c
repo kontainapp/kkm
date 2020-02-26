@@ -78,6 +78,8 @@ int kkm_kontext_switch_kernel(struct kkm_kontext *kkm_kontext)
 		(struct kkm_guest_area *)kkm_kontext->guest_area;
 	int cpu = -1;
 	struct cpu_entry_area *cea = NULL;
+	struct desc_ptr *native_idt_desc = NULL;
+	struct desc_ptr *guest_idt_desc = NULL;
 
 #if 1
 	// delete
@@ -93,6 +95,13 @@ int kkm_kontext_switch_kernel(struct kkm_kontext *kkm_kontext)
 	       efer, star, lstar);
 #endif
 	printk(KERN_NOTICE "kkm_kontext_switch_kernel:\n");
+
+	// do all kernel interaction before changing address space
+	kkm_idt_get_desc(&native_idt_desc, &guest_idt_desc);
+	ga->native_idt.size = native_idt_desc->size;
+	ga->native_idt.address = native_idt_desc->address;
+	ga->guest_idt.size = guest_idt_desc->size;
+	ga->guest_idt.address = guest_idt_desc->address;
 
 	// disable interrupts
 	local_irq_disable();
@@ -173,8 +182,6 @@ void kkm_guest_kernel_start_payload(struct kkm_guest_area *ga)
 {
 	int cpu = 0x66;
 	struct cpu_entry_area *cea = NULL;
-	struct desc_ptr *native_idt_desc = NULL;
-	struct desc_ptr *guest_idt_desc = NULL;
 
 	cpu = get_cpu();
 	cea = get_cpu_entry_area(cpu);
@@ -219,11 +226,9 @@ void kkm_guest_kernel_start_payload(struct kkm_guest_area *ga)
 
 	kkm_hw_debug_registers_restore(ga->debug.registers);
 
-	kkm_idt_get_desc(&native_idt_desc, &guest_idt_desc);
-
 	// interrupts are disbled at the begining of switch_kernel
 	// set new idt
-	load_idt(guest_idt_desc);
+	load_idt(&ga->guest_idt);
 
 
 	// flush TLB
@@ -233,7 +238,7 @@ void kkm_guest_kernel_start_payload(struct kkm_guest_area *ga)
 	// just before switching to user space
 	// TODO: move flush to assembly
 
-	load_idt(native_idt_desc);
+	load_idt(&ga->native_idt);
 
 	kkm_switch_to_gp_asm(ga);
 

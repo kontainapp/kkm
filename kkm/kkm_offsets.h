@@ -26,7 +26,7 @@
 #define OFF_GP_CS (48) /* guest_payload_cs */
 #define OFF_GP_SS (56) /* guest_payload_ss */
 
-#define	REG_BASE_OFF	(64)
+#define	REG_BASE_OFF	(128)
 
 #define OFF_RAX ((REG_BASE_OFF) + 8 * 0) /* regs.rax */
 #define OFF_RBX ((REG_BASE_OFF) + 8 * 1) /* regs.rbx */
