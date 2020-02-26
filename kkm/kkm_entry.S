@@ -159,7 +159,7 @@ ENTRY(kkm_trap_entry_asm)
 	pushq	%rdi			# save %rdi on stack
 
 	movq	%rsp, %rdi
-	andq	$0xfffffffffffff000, %rdi	# begining of current stack page is register save area
+	andq	$0xffffffffffffe000, %rdi	# begining of current stack is register save area
 
 	movq	%r15, OFF_R15(%rdi)
 	movq	%r14, OFF_R14(%rdi)

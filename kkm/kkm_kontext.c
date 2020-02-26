@@ -33,8 +33,8 @@ int kkm_kontext_init(struct kkm_kontext *kkm_kontext)
 	int ret_val = 0;
 
 	// stack0
-	ret_val = kkm_mm_allocate_page(&kkm_kontext->guest_area_page,
-				       &kkm_kontext->guest_area, NULL);
+	ret_val = kkm_mm_allocate_pages(&kkm_kontext->guest_area_page,
+				       &kkm_kontext->guest_area, NULL, KKM_GUEST_AREA_PAGES);
 	if (ret_val != 0) {
 		printk(KERN_NOTICE
 		       "kkm_kontext_init: Failed to allocate memory for stack0 error(%d)\n",
@@ -78,6 +78,7 @@ int kkm_kontext_switch_kernel(struct kkm_kontext *kkm_kontext)
 		(struct kkm_guest_area *)kkm_kontext->guest_area;
 	int cpu = -1;
 	struct cpu_entry_area *cea = NULL;
+
 #if 1
 	// delete
 	uint64_t efer = 0;
@@ -222,7 +223,8 @@ void kkm_guest_kernel_start_payload(struct kkm_guest_area *ga)
 
 	// interrupts are disbled at the begining of switch_kernel
 	// set new idt
-	//load_idt(guest_idt_desc);
+	load_idt(guest_idt_desc);
+
 
 	// flush TLB
 	kkm_flush_tlb_all();
@@ -230,6 +232,8 @@ void kkm_guest_kernel_start_payload(struct kkm_guest_area *ga)
 	// switch to guest payload address space is done in assembly
 	// just before switching to user space
 	// TODO: move flush to assembly
+
+	load_idt(native_idt_desc);
 
 	kkm_switch_to_gp_asm(ga);
 
