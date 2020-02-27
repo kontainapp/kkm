@@ -25,6 +25,7 @@
 #include "kkm_kontainer.h"
 #include "kkm_kontext.h"
 #include "kkm_mm.h"
+#include "kkm_mmu.h"
 #include "kkm_idt_cache.h"
 
 uint32_t kkm_version = 12;
@@ -338,7 +339,7 @@ int kkm_set_kontainer_memory(struct kkm *kkm, unsigned long arg)
 		kkm->mem_slot_count++;
 	}
 
-	kkm_mm_sync(kkm);
+	kkm_mmu_sync(kkm);
 error:
 	mutex_unlock(&kkm->mem_lock);
 	return ret_val;
@@ -435,7 +436,7 @@ int kkm_create_kontainer(unsigned long arg)
 		goto error;
 	}
 
-	ret_val = kkm_mm_copy_kernel_pgd(kkm);
+	ret_val = kkm_mmu_copy_kernel_pgd(kkm);
 	if (ret_val != 0) {
 		printk(KERN_NOTICE
 		       "kkm_create_kontainer: Copy kernel pgd entry failed error(%d)\n",
@@ -560,6 +561,12 @@ static int __init kkm_init(void)
 		return ret_val;
 	}
 
+	ret_val = kkm_mmu_init();
+	if (ret_val != 0) {
+		printk(KERN_ERR "kkm_init: Cannot initialize mmu tables.\n");
+		return ret_val;
+	}
+
 	printk(KERN_INFO "kkm_init: Registered kkm.\n");
 
 	return 0;
@@ -569,6 +576,7 @@ module_init(kkm_init);
 
 static void __exit kkm_exit(void)
 {
+	kkm_mmu_cleanup();
 	kkm_idt_cache_cleanup();
 	misc_deregister(&kkm_device);
 	printk(KERN_INFO "kkm_exit: De-Registered kkm.\n");

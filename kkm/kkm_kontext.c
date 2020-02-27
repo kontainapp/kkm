@@ -19,6 +19,7 @@
 #include "kkm.h"
 #include "kkm_kontext.h"
 #include "kkm_mm.h"
+#include "kkm_mmu.h"
 #include "kkm_misc.h"
 #include "kkm_entry.h"
 #include "kkm_idt_cache.h"
@@ -107,8 +108,11 @@ int kkm_kontext_switch_kernel(struct kkm_kontext *kkm_kontext)
 	kkm_idt_get_desc(&native_idt_desc, &guest_idt_desc);
 	ga->native_idt.size = native_idt_desc->size;
 	ga->native_idt.address = native_idt_desc->address;
+
+	// insert idt entry at specific va
+	kkm_mmu_set_idt((void *)guest_idt_desc->address);
 	ga->guest_idt.size = guest_idt_desc->size;
-	ga->guest_idt.address = guest_idt_desc->address;
+	ga->guest_idt.address = (unsigned long)kkm_mmu_get_idt_va();
 
 	// disable interrupts
 	local_irq_disable();
@@ -252,7 +256,7 @@ void kkm_guest_kernel_start_payload(struct kkm_guest_area *ga)
 	// just before switching to user space
 	// TODO: move flush to assembly
 
-	load_idt(&ga->native_idt);
+	//load_idt(&ga->native_idt);
 
 	kkm_switch_to_gp_asm(ga);
 
