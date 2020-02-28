@@ -17,14 +17,15 @@
  * offsets of variables into guest area
  */
 
-#define OFF_KONTEXT (0) /* struct kkm_kontext * */
-#define OFF_GAB (8) /* guest_area_beg */
-#define OFF_NK_STACK (16) /* native_kernel_stack */
-#define OFF_GK_CR3 (24) /* guest_kernel_cr3 */
-#define OFF_GP_CR3 (32) /* guest_payload_cr3 */
-#define OFF_GSV (40) /* guest_stack_variable_address */
-#define OFF_GP_CS (48) /* guest_payload_cs */
-#define OFF_GP_SS (56) /* guest_payload_ss */
+#define OFF_KONTEXT (8 * 0) /* struct kkm_kontext * */
+#define OFF_GAB (8 * 1) /* guest_area_beg */
+#define OFF_NK_STACK (8 * 2) /* native_kernel_stack */
+#define OFF_GK_CR3 (8 * 3) /* guest_kernel_cr3 */
+#define OFF_GK_CR4 (8 * 4) /* guest_kernel_cr3 */
+#define OFF_GP_CR3 (8 * 5) /* guest_payload_cr3 */
+#define OFF_GSV (8 * 6) /* guest_stack_variable_address */
+#define OFF_GP_CS (8 * 7) /* guest_payload_cs */
+#define OFF_GP_SS (8 * 8) /* guest_payload_ss */
 
 #define	REG_BASE_OFF	(128)
 
@@ -51,6 +52,6 @@
 #define OFF_RIP ((REG_BASE_OFF) + 8 * 16) /* regs.rip */
 #define OFF_RFLAGS ((REG_BASE_OFF) + 8 * 17) /* regs.rflags */
 
-#define OFF_PAY_ENT_STK	(2048)	/* payload_entry_stack end */
+#define OFF_PAY_ENT_STK	(4096)	/* payload_entry_stack bottom */
 
 #endif /* __KKM_OFFSETS_H__ */

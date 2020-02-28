@@ -35,6 +35,7 @@ struct kkm_guest_area {
 			uint64_t guest_area_beg; /* virtual address of this struct */
 			uint64_t native_kernel_stack; /* %rsp before switching stacks */
 			uint64_t guest_kernel_cr3;
+			uint64_t guest_kernel_cr4;
 			uint64_t guest_payload_cr3;
 			uint64_t guest_stack_variable_address;
 			uint64_t guest_payload_cs;
@@ -49,7 +50,6 @@ struct kkm_guest_area {
 				uint64_t guest[2];
 			};
 
-			uint64_t guest_kernel_cr4;
 
 			uint8_t reserved1[24];
 
@@ -61,9 +61,8 @@ struct kkm_guest_area {
 			uint8_t reserved[2408];
 
 			// keep these two entries at the end
-			// offset of payload_entry_stack is used
-			// at offset(0x600-0x800) from begining of
-			// this structure in kkm_entry.S
+			// first page of guest area(0xE00 - 0x1000)
+			// payload_entry_stack is used in kkm_entry.S
 			struct entry_stack native_entry_stack;
 			struct entry_stack payload_entry_stack;
 		};
