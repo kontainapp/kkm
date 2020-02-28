@@ -264,6 +264,9 @@ void kkm_guest_kernel_start_payload(struct kkm_guest_area *ga)
 
 	kkm_hw_debug_registers_restore(ga->debug.registers);
 
+	// verify stack redzone
+	kkm_verify_guest_area_redzone(ga);
+
 	// interrupts are disbled at the begining of switch_kernel
 	// set new idt
 	load_idt(&ga->guest_idt);
