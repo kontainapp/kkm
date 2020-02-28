@@ -44,15 +44,23 @@ int kkm_kontext_init(struct kkm_kontext *kkm_kontext)
 		goto error;
 	}
 
-	printk(KERN_NOTICE "kkm_kontext_init: stack0 page %lx va %lx\n",
+	kkm_kontext->guest_area_page0_pa =
+		virt_to_phys(kkm_kontext->guest_area);
+	kkm_kontext->guest_area_page1_pa =
+		virt_to_phys(kkm_kontext->guest_area + PAGE_SIZE);
+
+	printk(KERN_NOTICE
+	       "kkm_kontext_init: stack0 page %lx va %lx pa0 %llx pa1 %llx\n",
 	       (unsigned long)kkm_kontext->guest_area_page,
-	       (unsigned long)kkm_kontext->guest_area);
+	       (unsigned long)kkm_kontext->guest_area,
+	       kkm_kontext->guest_area_page0_pa,
+	       kkm_kontext->guest_area_page1_pa);
 
 	kkm_init_guest_area_redzone(
 		(struct kkm_guest_area *)kkm_kontext->guest_area);
 
 #if 0
-	// store_gdt not available in PV(aws) kernels
+	// store_gdt not available in aws kernels
 	store_gdt(&kkm_kontext->native_gdt_descr);
 	printk(KERN_NOTICE "kkm_kontainer_init: native kernel gdt size %x base %lx\n",
 	       kkm_kontext->native_gdt_descr.size, kkm_kontext->native_gdt_descr.address);
@@ -104,6 +112,11 @@ int kkm_kontext_switch_kernel(struct kkm_kontext *kkm_kontext)
 #endif
 	printk(KERN_NOTICE "kkm_kontext_switch_kernel:\n");
 
+	// setup physical cpu kontain area to this kontex guest area
+	kkm_mmu_set_guest_area(kkm_kontext->guest_area_page0_pa,
+			       kkm_kontext->guest_area_page1_pa,
+			       (phys_addr_t)NULL, (phys_addr_t)NULL);
+
 	// do all kernel interaction before changing address space
 	kkm_idt_get_desc(&native_idt_desc, &guest_idt_desc);
 	ga->native_idt.size = native_idt_desc->size;
@@ -143,14 +156,14 @@ int kkm_kontext_switch_kernel(struct kkm_kontext *kkm_kontext)
 	       "kkm_kontext_switch_kernel: native kernel cr3 %lx cr4 %lx\n",
 	       kkm_kontext->native_kernel_cr3, kkm_kontext->native_kernel_cr4);
 
-	// change to guest kernel address space
-	kkm_change_address_space(kkm->guest_kernel_pa);
+	ga->guest_kernel_cr3 = kkm->guest_kernel_pa;
+	ga->guest_payload_cr3 = kkm->guest_payload_pa;
 
-	kkm_kontext->guest_kernel_cr3 = __read_cr3();
-	kkm_kontext->guest_kernel_cr4 = __read_cr4();
-	printk(KERN_NOTICE
-	       "kkm_kontext_switch_kernel: guest kernel cr3 %lx cr4 %lx\n",
-	       kkm_kontext->guest_kernel_cr3, kkm_kontext->guest_kernel_cr4);
+	ga->guest_kernel_cr4 = __read_cr4();
+
+	// change to guest kernel address space
+	kkm_change_address_space(ga->guest_kernel_cr3);
+
 
 	savesegment(ds, kkm_kontext->native_kernel_ds);
 	savesegment(es, kkm_kontext->native_kernel_es);
@@ -172,8 +185,6 @@ int kkm_kontext_switch_kernel(struct kkm_kontext *kkm_kontext)
 	       kkm_kontext->native_kernel_gs_base,
 	       kkm_kontext->native_kernel_gs_kern_base,
 	       kkm_kontext->native_kernel_ss);
-
-	ga->guest_payload_cr3 = kkm->guest_payload_pa;
 
 	kkm_hw_debug_registers_save(kkm_kontext->native_debug_registers);
 
@@ -198,6 +209,10 @@ void kkm_guest_kernel_start_payload(struct kkm_guest_area *ga)
 {
 	int cpu = 0x66;
 	struct cpu_entry_area *cea = NULL;
+
+	printk(KERN_NOTICE "kkm_guest_kernel_start_payload: ga %llx\n", (unsigned long long)ga);
+	ga = kkm_mmu_get_cur_cpu_guest_va();
+	printk(KERN_NOTICE "kkm_guest_kernel_start_payload: ga kontain private area %llx\n", (unsigned long long)ga);
 
 	cpu = get_cpu();
 	cea = get_cpu_entry_area(cpu);
@@ -253,13 +268,13 @@ void kkm_guest_kernel_start_payload(struct kkm_guest_area *ga)
 	// set new idt
 	load_idt(&ga->guest_idt);
 
-	// flush TLB
-	kkm_flush_tlb_all();
-
 	// switch to guest payload address space is done in assembly
 	// just before switching to user space
 	// TODO: move flush to assembly
+	// flush TLB
+	kkm_flush_tlb_all();
 
+	// start payload
 	kkm_switch_to_gp_asm(ga);
 
 	printk(KERN_NOTICE
@@ -274,20 +289,19 @@ void kkm_guest_kernel_start_payload(struct kkm_guest_area *ga)
 }
 
 // should be called from trap code, with zero context
+// enters with guest kernel cr3
 void kkm_switch_to_host_kernel(void)
 {
 	int cpu = -1;
 	struct kkm_kontext *kkm_kontext = NULL;
 	struct kkm_guest_area *ga = NULL;
 
-	printk(KERN_NOTICE "kkm_switch_to_host_kernel:\n");
-
 	cpu = get_cpu();
 	kkm_kontext = per_cpu(current_kontext, cpu);
 	ga = (struct kkm_guest_area *)kkm_kontext->guest_area;
 
-	printk(KERN_NOTICE "kkm_switch_to_host_kernel: cpu %d %llx\n", cpu,
-	       (unsigned long long)&cpu);
+	printk(KERN_NOTICE "kkm_switch_to_host_kernel: cpu %d stack address %llx ga %llx\n", cpu,
+	       (unsigned long long)&cpu, (unsigned long long)ga);
 
 	kkm_hw_debug_registers_save(ga->debug.registers);
 

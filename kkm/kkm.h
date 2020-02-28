@@ -34,6 +34,8 @@ struct kkm_kontext {
 
 	struct page *guest_area_page;
 	void *guest_area;
+	phys_addr_t  guest_area_page0_pa;
+	phys_addr_t  guest_area_page1_pa;
 
 	unsigned long native_kernel_cr3;
 	unsigned long native_kernel_cr4;
@@ -49,9 +51,6 @@ struct kkm_kontext {
 	unsigned long native_kernel_gs_kern_base;
 
 	unsigned short native_kernel_ss;
-
-	unsigned long guest_kernel_cr3;
-	unsigned long guest_kernel_cr4;
 
 	uint64_t native_debug_registers[8];
 

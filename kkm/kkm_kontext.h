@@ -49,7 +49,9 @@ struct kkm_guest_area {
 				uint64_t guest[2];
 			};
 
-			uint8_t reserved1[32];
+			uint64_t guest_kernel_cr4;
+
+			uint8_t reserved1[24];
 
 			struct kkm_regs regs;
 			struct kkm_sregs sregs;
