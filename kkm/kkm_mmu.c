@@ -121,10 +121,14 @@ void kkm_mmu_set_idt(void *idt_va)
 
 void *kkm_mmu_get_idt_va(void)
 {
+#if 0
 	int cpu;
 
 	cpu = get_cpu();
 	return (void *)(KKM_PRIVATE_START_VA + cpu * PAGE_SIZE);
+#else
+	return (void *)KKM_PRIVATE_START_VA;
+#endif
 }
 
 static void kkm_mmu_copy_range(unsigned long long src_base,

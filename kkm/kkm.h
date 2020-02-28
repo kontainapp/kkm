@@ -56,6 +56,7 @@ struct kkm_kontext {
 	uint64_t native_debug_registers[8];
 
 	struct desc_ptr native_gdt_descr;
+	uint64_t native_tr;
 
 	char scratch_buffer[256];
 };
