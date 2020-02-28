@@ -12,6 +12,25 @@ document show_pa_to_kva
 	"Usage show_pa_to_kva physical-address"
 end
 
+define show_kva_to_pa
+	if $argc != 1
+		help show_kva_to_pa
+	else
+		set $START_KVA = 0xffff888000000000ULL
+		set $END_KVA = 0xffffc88000000000ULL
+		if $arg0 >= $START_KVA && $arg0 < $END_KVA
+			set $pa = $arg0 - $START_KVA
+			printf "0x%llx\n", $pa
+		else
+			printf "address not in range\n"
+		end
+	end
+end
+
+document show_kva_to_pa
+	"Usage show_kva_to_pa kernel-direct-map-address"
+end
+
 define show_entry
 	if $argc != 1
 		help show_entry
