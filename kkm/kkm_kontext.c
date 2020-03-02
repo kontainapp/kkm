@@ -23,6 +23,7 @@
 #include "kkm_misc.h"
 #include "kkm_entry.h"
 #include "kkm_idt_cache.h"
+#include "kkm_run.h"
 
 DEFINE_PER_CPU(struct kkm_kontext *, current_kontext);
 

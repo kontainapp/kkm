@@ -155,7 +155,36 @@ struct kkm_debug {
 
 // KKM_GET_EVENTS
 struct kkm_ec_events {
-	uint8_t reserved[64];
+	struct {
+		uint8_t injected;
+		uint8_t nr;
+		uint8_t has_error_code;
+		uint8_t pending;
+		uint32_t error_code;
+	} exception;
+	struct {
+		uint8_t interrupt;
+		uint8_t nr;
+		uint8_t soft;
+		uint8_t shadow;
+	} interrupt;
+	struct {
+		uint8_t injected;
+		uint8_t pending;
+		uint8_t masked;
+		uint8_t reserved_nmi;
+	} nmi;
+	uint32_t sipi_vector;
+	uint32_t flags;
+	struct {
+		uint8_t smm;
+		uint8_t pending;
+		uint8_t smm_inside_nmi;
+		uint8_t latched_init;
+	} smi;
+	uint8_t reserved[27];
+	uint8_t excepption_has_payload;
+	uint64_t exception_payload;
 };
 
 // KKM_APP_MEMORY
