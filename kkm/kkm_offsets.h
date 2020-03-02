@@ -15,6 +15,7 @@
 
 /*
  * offsets of variables into guest area
+ * keep this always in sync with kkm_kontext
  */
 
 #define OFF_KONTEXT (8 * 0) /* struct kkm_kontext * */

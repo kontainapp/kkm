@@ -14,28 +14,28 @@
 #define __KKM_RUN_H__
 
 enum kkm_exit_status {
-	KKM_EXIT_UNKNOWN	= 0,
-	KKM_EXIT_EXCEPTION	= 1,
-	KKM_EXIT_IO		= 2,
-	KKM_EXIT_HYPERCALL	= 3,
-	KKM_EXIT_DEBUG		= 4,
-	KKM_EXIT_HLT		= 5,
-	KKM_EXIT_MMIO		= 6,
-	KKM_EXIT_IRQ_WINDOW_OPEN	= 7,
-	KKM_EXIT_SHUTDOWN	= 8,
-	KKM_EXIT_FAIL_ENTRY	= 9,
-	KKM_EXIT_INTR		= 10,
-	KKM_EXIT_NMI		= 16,
-	KKM_EXIT_INTERNAL_ERROR	= 17,
-	KKM_EXIT_OSI		= 18,
-	KKM_EXIT_PAPR_CALL	= 19,
-	KKM_EXIT_WATCHDOG	= 21,
-	KKM_EXIT_EPR		= 23,
-	KKM_EXIT_SYSTEM_EVENT	= 24,
-	KKM_EXIT_IOAPIC_EOI	= 26,
+	KKM_EXIT_UNKNOWN = 0,
+	KKM_EXIT_EXCEPTION = 1,
+	KKM_EXIT_IO = 2,
+	KKM_EXIT_HYPERCALL = 3,
+	KKM_EXIT_DEBUG = 4,
+	KKM_EXIT_HLT = 5,
+	KKM_EXIT_MMIO = 6,
+	KKM_EXIT_IRQ_WINDOW_OPEN = 7,
+	KKM_EXIT_SHUTDOWN = 8,
+	KKM_EXIT_FAIL_ENTRY = 9,
+	KKM_EXIT_INTR = 10,
+	KKM_EXIT_NMI = 16,
+	KKM_EXIT_INTERNAL_ERROR = 17,
+	KKM_EXIT_OSI = 18,
+	KKM_EXIT_PAPR_CALL = 19,
+	KKM_EXIT_WATCHDOG = 21,
+	KKM_EXIT_EPR = 23,
+	KKM_EXIT_SYSTEM_EVENT = 24,
+	KKM_EXIT_IOAPIC_EOI = 26,
 };
 
-struct kkm_debug_exit_arch  {
+struct kkm_debug_exit_arch {
 	uint32_t exception;
 	uint32_t reserved;
 	uint64_t pc;
@@ -48,7 +48,6 @@ struct kkm_sync_regs {
 	struct kkm_sregs sregs;
 	struct kkm_ec_events events;
 };
-
 
 struct kkm_run {
 	uint8_t request_interrupt_window;
@@ -121,8 +120,8 @@ struct kkm_run {
 		// KKM_EXIT_SYSTEM_EVENT
 		struct {
 #define KKM_SYSTEM_EVENT_SHUTDOWN 1
-#define KKM_SYSTEM_EVENT_RESET	2
-#define KKM_SYSTEM_EVENT_CRASH	3
+#define KKM_SYSTEM_EVENT_RESET 2
+#define KKM_SYSTEM_EVENT_CRASH 3
 			uint32_t type;
 			uint64_t flags;
 		} system_event;
@@ -133,7 +132,7 @@ struct kkm_run {
 		int8_t reserved1[256];
 	};
 
-#define REGISTER_SIZE_BYTES	2048
+#define REGISTER_SIZE_BYTES 2048
 	uint64_t kvm_valid_regs;
 	uint64_t kvm_dirty_regs;
 	union {

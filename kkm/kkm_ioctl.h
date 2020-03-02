@@ -16,6 +16,8 @@
 #include <linux/types.h>
 #include <linux/ioctl.h>
 
+/* various ioctl's and their respective data structures */
+
 /* device base name */
 #define KKM_DEVICE_NAME "kkm"
 

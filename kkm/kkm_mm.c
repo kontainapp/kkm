@@ -16,6 +16,13 @@
 #include "kkm.h"
 #include "kkm_mm.h"
 
+/*
+ * allocate multiple kernel page's
+ * kernel interface allocates pages only in power of 2
+ * if requested count is not power of 2 rest of the pages are unused
+ *
+ * return allocated page address, kernel virtual address of the page and physical address
+ */
 int kkm_mm_allocate_pages(struct page **page, void **virtual_address,
 			 phys_addr_t *physical_address, int count)
 {
@@ -47,6 +54,10 @@ error:
 	return ret_val;
 }
 
+/*
+ * allocate one kernel page
+ * return allocated page address, kernel virtual address of the page and physical address
+ */
 int kkm_mm_allocate_page(struct page **page, void **virtual_address,
 			 phys_addr_t *physical_address)
 {
