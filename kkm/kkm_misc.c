@@ -20,8 +20,11 @@
 #include "kkm_kontext.h"
 #include "kkm_misc.h"
 
-// this will cause triple exception.
-// as faults cannot be disabled.
+/*
+ * dont use
+ * this will cause triple exception.
+ * as faults cannot be disabled.
+ */
 void kkm_idt_invalidate(void *address)
 {
 	struct desc_ptr kkm_idt;
@@ -32,9 +35,11 @@ void kkm_idt_invalidate(void *address)
 	load_idt(&kkm_idt);
 }
 
-// use CR4 to flush tbl.
-// don't use __native_flush_tlb_global
-// __native_flush_tlb_global is causing return to user space
+/*
+ * use CR4 to flush tbl.
+ * don't use __native_flush_tlb_global
+ * __native_flush_tlb_global is causing return to user space
+ */
 void kkm_flush_tlb_all(void)
 {
 	unsigned long cr4;
@@ -49,23 +54,31 @@ void kkm_flush_tlb_all(void)
 	raw_local_irq_restore(flags);
 }
 
-// kernel uses ASID's and are managed by kernel
-// make sure tlb is completely cleared
+/*
+ * kernel uses ASID's and are managed by kernel
+ * make sure tlb is completely cleared
+ */
 void kkm_change_address_space(phys_addr_t pgd_pa)
 {
-	// change space
+	/* change space */
 	write_cr3(pgd_pa);
 
-	// flush TLB
+	/* flush TLB */
 	kkm_flush_tlb_all();
 }
 
+/*
+ * initialize redzone around guest kernel stack
+ */
 void kkm_init_guest_area_redzone(struct kkm_guest_area *ga)
 {
 	memset(ga->redzone_top, REDZONE_DATA, GUEST_STACK_REDZONE_SIZE);
 	memset(ga->redzone_bottom, REDZONE_DATA, GUEST_STACK_REDZONE_SIZE);
 }
 
+/*
+ * verify redzone around guest kernel stack
+ */
 void kkm_verify_guest_area_redzone(struct kkm_guest_area *ga)
 {
 	if (kkm_verify_bytes(ga->redzone_top, GUEST_STACK_REDZONE_SIZE,
@@ -80,6 +93,9 @@ void kkm_verify_guest_area_redzone(struct kkm_guest_area *ga)
 	}
 }
 
+/*
+ * verify buffer for known pattern
+ */
 bool kkm_verify_bytes(uint8_t *data, uint32_t count, uint8_t value)
 {
 	int i = 0;

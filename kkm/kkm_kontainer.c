@@ -21,8 +21,10 @@
 #include "kkm_mm.h"
 #include "kkm_entry.h"
 
-// PTI_USER_PGTABLE_MASK not visible to modules
-// make up our own
+/*
+ * PTI_USER_PGTABLE_MASK not visible to modules
+ * make up our own mask
+ */
 #define	KKM_USER_PGTABLE_BIT	(PAGE_SHIFT)
 #define	KKM_USER_PGTABLE_MASK	(1 << KKM_USER_PGTABLE_BIT)
 
@@ -30,6 +32,9 @@ int kkm_kontainer_init(struct kkm *kkm)
 {
 	int ret_val = 0;
 
+	/*
+	 * allocated pages for pml4
+	 */
 	ret_val = kkm_mm_allocate_pages(&kkm->guest_kernel_page,
 				       (void **)&kkm->guest_kernel_va,
 				       &kkm->guest_kernel_pa, 2);
@@ -51,7 +56,12 @@ int kkm_kontainer_init(struct kkm *kkm)
 		goto error;
 	}
 
-	// kernel code depends on kernel page table at even page and user page table at next(odd) page
+	/*
+	 * allocate 2 pages,
+	 *     kernel mode pml4
+	 *     guest mode pml4
+	 * kernel code depends on kernel page table at even page and user page table at next(odd) page
+	 */
 	kkm->guest_payload_va = kkm->guest_kernel_va + PAGE_SIZE;
 	kkm->guest_payload_pa += kkm->guest_kernel_pa + PAGE_SIZE;
 
@@ -67,6 +77,9 @@ error:
 	return ret_val;
 }
 
+/*
+ * cleanup
+ */
 void kkm_kontainer_cleanup(struct kkm *kkm)
 {
 	if (kkm->guest_kernel_page != NULL) {

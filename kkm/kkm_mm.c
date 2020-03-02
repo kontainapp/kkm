@@ -33,20 +33,25 @@ int kkm_mm_allocate_pages(struct page **page, void **virtual_address,
 		ret_val = -EINVAL;
 		goto error;
 	}
-	pow2count = order_base_2(count);
+	pow2count = order_base_2(count); /* convert page count to power of 2 */
 
 	if ((page == NULL) || (virtual_address == NULL)) {
 		ret_val = -EINVAL;
 		goto error;
 	}
 
+	/* allocate pages */
 	*page = alloc_pages(GFP_KERNEL | __GFP_ZERO, pow2count);
 	if (*page == NULL) {
 		ret_val = -ENOMEM;
 		goto error;
 	}
+
+	/* get kernel virtual address from page pointer */
 	*virtual_address = page_address(*page);
+
 	if (physical_address != NULL) {
+		/* get physical address if requested */
 		*physical_address = virt_to_phys(*virtual_address);
 	}
 

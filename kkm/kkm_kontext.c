@@ -30,11 +30,16 @@ DEFINE_PER_CPU(struct kkm_kontext *, current_kontext);
 void kkm_hw_debug_registers_save(uint64_t *registers);
 void kkm_hw_debug_registers_restore(uint64_t *registers);
 
+/*
+ * initialize context to execute payload
+ */
 int kkm_kontext_init(struct kkm_kontext *kkm_kontext)
 {
 	int ret_val = 0;
 
-	// stack0
+	/*
+	 * allocate guest private area
+	 */
 	ret_val = kkm_mm_allocate_pages(&kkm_kontext->guest_area_page,
 					&kkm_kontext->guest_area, NULL,
 					KKM_GUEST_AREA_PAGES);
@@ -45,6 +50,9 @@ int kkm_kontext_init(struct kkm_kontext *kkm_kontext)
 		goto error;
 	}
 
+	/*
+	 * get physical address of both pages allocated
+	 */
 	kkm_kontext->guest_area_page0_pa =
 		virt_to_phys(kkm_kontext->guest_area);
 	kkm_kontext->guest_area_page1_pa =
@@ -83,7 +91,9 @@ void kkm_kontext_cleanup(struct kkm_kontext *kkm_kontext)
 	}
 }
 
-// running in native kernel address space
+/*
+ * running in native kernel address space
+ */
 int kkm_kontext_switch_kernel(struct kkm_kontext *kkm_kontext)
 {
 	struct kkm *kkm = kkm_kontext->kkm;
@@ -113,17 +123,22 @@ int kkm_kontext_switch_kernel(struct kkm_kontext *kkm_kontext)
 #endif
 	printk(KERN_NOTICE "kkm_kontext_switch_kernel:\n");
 
-	// setup physical cpu kontain area to this kontex guest area
+	/*
+	 * setup physical cpu kontain area to this kontext guest area
+	 */
 	kkm_mmu_set_guest_area(kkm_kontext->guest_area_page0_pa,
 			       kkm_kontext->guest_area_page1_pa,
 			       (phys_addr_t)NULL, (phys_addr_t)NULL);
 
-	// do all kernel interaction before changing address space
+	/* do all kernel interaction before changing address space */
+	/*
+	 * fetch native and guest idt from cache
+	 */
 	kkm_idt_get_desc(&native_idt_desc, &guest_idt_desc);
 	ga->native_idt.size = native_idt_desc->size;
 	ga->native_idt.address = native_idt_desc->address;
 
-	// insert idt entry at specific va
+	/* insert idt entry at specific va */
 	kkm_mmu_set_idt((void *)guest_idt_desc->address);
 	ga->guest_idt.size = guest_idt_desc->size;
 #if 0
@@ -132,7 +147,9 @@ int kkm_kontext_switch_kernel(struct kkm_kontext *kkm_kontext)
 	ga->guest_idt.address = native_idt_desc->address;
 #endif
 
-	// disable interrupts
+	/*
+	 * disable interrupts
+	 */
 	local_irq_disable();
 
 	cpu = get_cpu();
@@ -145,12 +162,14 @@ int kkm_kontext_switch_kernel(struct kkm_kontext *kkm_kontext)
 	       (unsigned long long)ga->kkm_kontext, ga->guest_area_beg,
 	       ga->native_kernel_stack, ga->guest_stack_variable_address);
 
-	// save trampoline stack
+	// save native kernel trampoline stack
 	cea = get_cpu_entry_area(cpu);
 	memcpy(&ga->native_entry_stack, &cea->entry_stack_page.stack,
 	       sizeof(struct entry_stack));
 
-	// save native kernel address space
+	/*
+	 * save native kernel address space(cr3 and cr4)
+	 */
 	kkm_kontext->native_kernel_cr3 = __read_cr3();
 	kkm_kontext->native_kernel_cr4 = __read_cr4();
 	printk(KERN_NOTICE
@@ -162,10 +181,15 @@ int kkm_kontext_switch_kernel(struct kkm_kontext *kkm_kontext)
 
 	ga->guest_kernel_cr4 = __read_cr4();
 
-	// change to guest kernel address space
+	/*
+	 * change to guest kernel address space
+	 */
 	kkm_change_address_space(ga->guest_kernel_cr3);
 
 
+	/*
+	 * save native kernel segment registers
+	 */
 	savesegment(ds, kkm_kontext->native_kernel_ds);
 	savesegment(es, kkm_kontext->native_kernel_es);
 
@@ -189,9 +213,14 @@ int kkm_kontext_switch_kernel(struct kkm_kontext *kkm_kontext)
 
 	kkm_hw_debug_registers_save(kkm_kontext->native_debug_registers);
 
+	/*
+	 * switch to guest kernel
+	 * this code will switch stacks
+	 */
 	kkm_switch_to_gk_asm(ga, kkm_kontext,
 			     (unsigned long long)ga->redzone_bottom);
 
+	/* not reached used for debugging */
 	kkm_hw_debug_registers_restore(kkm_kontext->native_debug_registers);
 
 	printk(KERN_NOTICE
@@ -205,7 +234,10 @@ int kkm_kontext_switch_kernel(struct kkm_kontext *kkm_kontext)
 	return ret_val;
 }
 
-// running in guest kernel address space
+/*
+ * running in guest kernel address space
+ * running on guest private area stack
+ */
 void kkm_guest_kernel_start_payload(struct kkm_guest_area *ga)
 {
 	int cpu = 0x66;
@@ -223,12 +255,18 @@ void kkm_guest_kernel_start_payload(struct kkm_guest_area *ga)
 
 	ga->guest_stack_variable_address = (unsigned long long)&cpu;
 
+	/*
+	 * setup segments for switching to payload
+	 */
 	loadsegment(ds, 0);
 	loadsegment(es, 0);
 
 	loadsegment(fs, 0);
 	wrmsrl(MSR_FS_BASE, ga->sregs.fs.base);
 
+	/*
+	 * dont use km provided cs and ss, they control privilege
+	 */
 	ga->guest_payload_cs = __USER_CS;
 	ga->guest_payload_ss = __USER_DS;
 
@@ -240,8 +278,10 @@ void kkm_guest_kernel_start_payload(struct kkm_guest_area *ga)
 	       "kkm_guest_kernel_start_payload: rip %llx rsp %llx rflags %llx\n",
 	       ga->regs.rip, ga->regs.rsp, ga->regs.rflags);
 
-	// flags are from userland
-	// make sure interrupts are enabled, iopl is 0 and resume flag is set
+	/*
+	 * flags are from userland
+	 * make sure interrupts are enabled, iopl is 0 and resume flag is set
+	 */
 	if ((ga->regs.rflags & X86_EFLAGS_IF) == 0) {
 		printk(KERN_NOTICE
 		       "kkm_guest_kernel_start_payload: interrupts are disabled in rflags, enabling\n");
@@ -265,21 +305,31 @@ void kkm_guest_kernel_start_payload(struct kkm_guest_area *ga)
 
 	kkm_hw_debug_registers_restore(ga->debug.registers);
 
-	// verify stack redzone
+	/*
+	 * verify stack redzone
+	 */
 	kkm_verify_guest_area_redzone(ga);
 
-	// interrupts are disbled at the begining of switch_kernel
-	// set new idt
+	/*
+	 * interrupts are disbled at the begining of switch_kernel
+	 * set new idt
+	 */
 	load_idt(&ga->guest_idt);
 
-	// switch to guest payload address space is done in assembly
-	// just before switching to user space
-	// TODO: move flush to assembly
-	// flush TLB
+	/*
+	 * switch to guest payload address space is done in assembly
+	 * just before switching to user space
+	 * TODO: move flush to assembly
+	 * flush TLB
+	 */
 	kkm_flush_tlb_all();
 
-	// start payload
+	/*
+	 * start payload
+	 */
 	kkm_switch_to_gp_asm(ga);
+
+	/* never reaches, this code is used for debugging */
 
 	printk(KERN_NOTICE
 	       "kkm_guest_kernel_start_payload: returned from guest call\n");
@@ -292,8 +342,11 @@ void kkm_guest_kernel_start_payload(struct kkm_guest_area *ga)
 	//kkm_switch_to_host_kernel();
 }
 
-// should be called from trap code, with zero context
-// enters with guest kernel cr3
+/*
+ * should be called from trap code, with zero context
+ * enters with guest kernel cr3
+ * running on guest stack
+ */
 void kkm_switch_to_host_kernel(void)
 {
 	int cpu = -1;
@@ -319,13 +372,19 @@ void kkm_switch_to_host_kernel(void)
 	       kkm_kontext->native_kernel_gs_kern_base,
 	       kkm_kontext->native_kernel_ss);
 
-	// restore native kernel address space
+	/*
+	 * restore native kernel address space
+	 */
 	kkm_change_address_space(kkm_kontext->native_kernel_cr3);
 
-	// restore native kernel idt
+	/*
+	 * restore native kernel idt
+	 */
 	load_idt(&ga->native_idt);
 
-	// restore native kernel segment registers
+	/*
+	 * restore native kernel segment registers
+	 */
 	loadsegment(ds, kkm_kontext->native_kernel_ds);
 	loadsegment(es, kkm_kontext->native_kernel_es);
 
@@ -338,6 +397,9 @@ void kkm_switch_to_host_kernel(void)
 
 	loadsegment(ss, __KERNEL_DS);
 
+	/*
+	 * restore rest of the registers and switch stacks
+	 */
 	kkm_switch_to_hk_asm(kkm_kontext->guest_area);
 }
 
