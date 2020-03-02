@@ -21,7 +21,8 @@
  * %rsi -- pointer to kkm
  * %rdx -- stack start
  */
-ENTRY(kkm_switch_to_gk_asm)
+	.global kkm_switch_to_gk_asm
+kkm_switch_to_gk_asm:
 
 	pushq	%rbp
 	pushq	%rbx
@@ -51,12 +52,13 @@ ENTRY(kkm_switch_to_gk_asm)
 	popq	%rbp
 	retq
 
-END(kkm_switch_to_gk_asm)
+	.size kkm_switch_to_gk_asm, .-kkm_switch_to_gk_asm
 
 /*
  * %rdi -- guest private area
  */
-ENTRY(kkm_switch_to_hk_asm)
+	.global kkm_switch_to_hk_asm
+kkm_switch_to_hk_asm:
 
 	/* restore native kernel stack */
 	movq	OFF_NK_STACK(%rdi), %rsi
@@ -70,12 +72,13 @@ ENTRY(kkm_switch_to_hk_asm)
 	popq	%rbp
 	retq
 
-END(kkm_switch_to_hk_asm)
+	.size kkm_switch_to_hk_asm, .-kkm_switch_to_hk_asm
 
 /*
  * %rdi -- guest private area
  */
-ENTRY(kkm_switch_to_gp_asm)
+	.global kkm_switch_to_gp_asm
+kkm_switch_to_gp_asm:
 
 	pushq	%rbp
 	pushq	%rbx
@@ -151,9 +154,10 @@ ENTRY(kkm_switch_to_gp_asm)
 	retq
 #endif
 
-END(kkm_switch_to_gp_asm)
+	.size kkm_switch_to_gp_asm, .-kkm_switch_to_gp_asm
 
-ENTRY(kkm_trap_entry_asm)
+	.global kkm_trap_entry_asm
+kkm_trap_entry_asm:
 
 #swapgs
 	pushq	%rdi			# save %rdi on stack
@@ -192,4 +196,4 @@ ENTRY(kkm_trap_entry_asm)
 	retq
 #endif
 
-END(kkm_trap_entry_asm)
+	.size kkm_trap_entry_asm, .-kkm_trap_entry_asm
