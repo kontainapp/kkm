@@ -106,21 +106,6 @@ int kkm_kontext_switch_kernel(struct kkm_kontext *kkm_kontext)
 	struct desc_ptr *guest_idt_desc = NULL;
 	struct task_struct *tsk = current;
 
-#if 1
-	// delete
-	uint64_t efer = 0;
-	uint64_t star = 0;
-	uint64_t lstar = 0;
-
-	rdmsrl(MSR_EFER, efer);
-	rdmsrl(MSR_STAR, star);
-	rdmsrl(MSR_LSTAR, lstar);
-
-	printk(KERN_NOTICE
-	       "kkm_kontext_switch_kernel: EFER %llx STAR %llx LSTAR %llx stack %lx %lx\n",
-	       efer, star, lstar, (unsigned long)tsk->stack,
-	       (unsigned long)&efer);
-#endif
 	printk(KERN_NOTICE "kkm_kontext_switch_kernel:\n");
 
 	/*
