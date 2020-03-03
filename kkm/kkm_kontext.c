@@ -104,7 +104,6 @@ int kkm_kontext_switch_kernel(struct kkm_kontext *kkm_kontext)
 	struct cpu_entry_area *cea = NULL;
 	struct desc_ptr *native_idt_desc = NULL;
 	struct desc_ptr *guest_idt_desc = NULL;
-	struct task_struct *tsk = current;
 
 	printk(KERN_NOTICE "kkm_kontext_switch_kernel:\n");
 
