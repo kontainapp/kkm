@@ -106,6 +106,10 @@ static long kkm_from_user(void *dest, void *src, size_t size)
 	return ret_val;
 }
 
+/*
+ * ioctls on execution context anon fd
+ * all the copies go directly to/from guest private area
+ */
 static long kkm_execution_kontext_ioctl(struct file *file_p,
 					unsigned int ioctl_type,
 					unsigned long arg)
@@ -121,36 +125,44 @@ static long kkm_execution_kontext_ioctl(struct file *file_p,
 
 	switch (ioctl_type) {
 	case KKM_RUN:
+		/* switch to guest payload */
 		ret_val = kkm_run(kkm_kontext);
 		break;
 	case KKM_GET_REGS:
+		/* get guest state */
 		ret_val = kkm_to_user((void *)arg, &ga->regs,
 				      sizeof(struct kkm_regs));
 		break;
 	case KKM_SET_REGS:
+		/* set guest state */
 		ret_val = kkm_from_user(&ga->regs, (void *)arg,
 					sizeof(struct kkm_regs));
 		break;
 	case KKM_GET_SREGS:
+		/* get guest system registers and segment registers */
 		ret_val = kkm_to_user((void *)arg, &ga->sregs,
 				      sizeof(struct kkm_sregs));
 		break;
 	case KKM_SET_SREGS:
+		/* set guest system registers and segment registers */
 		ret_val = kkm_from_user(&ga->sregs, (void *)arg,
 					sizeof(struct kkm_sregs));
 		break;
 	case KKM_GET_FPU:
+		/* get guest fpu state */
 		ret_val = kkm_to_user((void *)arg, &ga->fpu,
 				      sizeof(struct kkm_fpu));
 		break;
 	case KKM_SET_FPU:
+		/* set guest fpu state */
 		ret_val = kkm_from_user(&ga->fpu, (void *)arg,
 					sizeof(struct kkm_fpu));
 		break;
 	case KKM_SET_CPUID:
-		// return success
+		/* return success */
 		break;
 	case KKM_SET_DEBUG:
+		/* set guest debug state */
 		ret_val = kkm_from_user(&ga->debug, (void *)arg,
 					sizeof(struct kkm_debug));
 		break;
@@ -208,6 +220,9 @@ struct file_operations kkm_execution_kontext_fops = {
 	.llseek = noop_llseek,
 };
 
+/*
+ * create execution context one per vcpu
+ */
 int kkm_add_execution_kontext(struct kkm *kkm)
 {
 	int ret_val = 0;
@@ -238,6 +253,9 @@ int kkm_add_execution_kontext(struct kkm *kkm)
 	kkm_kontext->task = current;
 	kkm_kontext->kkm = kkm;
 
+	/*
+	 * create anon fd for execution context
+	 */
 	snprintf(buffer, sizeof(buffer), "kkm-kontext:%d", i);
 	kkm_kontext->kontext_fd =
 		anon_inode_getfd(buffer, &kkm_execution_kontext_fops,
@@ -271,6 +289,9 @@ error:
 	return ret_val;
 }
 
+/*
+ * add physical memory
+ */
 int kkm_set_kontainer_memory(struct kkm *kkm, unsigned long arg)
 {
 	struct kkm_memory_region mr;
@@ -373,6 +394,9 @@ static int kkm_kontainer_release(struct inode *inode_p, struct file *file_p)
 	return 0;
 }
 
+/*
+ * ioctls for kontainer one instance per guest
+ */
 static long kkm_kontainer_ioctl(struct file *file_p, unsigned int ioctl_type,
 				unsigned long arg)
 {
@@ -383,13 +407,15 @@ static long kkm_kontainer_ioctl(struct file *file_p, unsigned int ioctl_type,
 
 	switch (ioctl_type) {
 	case KKM_ADD_EXECUTION_CONTEXT:
+		/* add one execution context */
 		ret_val = kkm_add_execution_kontext(kkm);
 		break;
-	case KKM_MEMORY: {
+	case KKM_MEMORY:
+		/* modify memory state */
 		ret_val = kkm_set_kontainer_memory(kkm, arg);
 		break;
-	}
 	case KKM_SET_ID_MAP_ADDR:
+		/* set id map area */
 		ret_val = kkm_set_id_map_addr(kkm, arg);
 		break;
 	default:
@@ -408,6 +434,9 @@ static struct file_operations kkm_kontainer_ops = {
 	.llseek = noop_llseek,
 };
 
+/*
+ * one call per guest
+ */
 int kkm_create_kontainer(unsigned long arg)
 {
 	int ret_val = 0;
@@ -422,6 +451,11 @@ int kkm_create_kontainer(unsigned long arg)
 		goto error;
 	}
 
+	/*
+	 * create anon fd and return it back to user
+	 * all further ioctls for this guest are on this fd
+	 * and kontext anon fd's
+	 */
 	kkm->kontainer_fd = anon_inode_getfd(
 		"kkm-kontainer", &kkm_kontainer_ops, kkm, O_CLOEXEC | O_RDWR);
 	if (kkm->kontainer_fd < 0) {
@@ -436,6 +470,9 @@ int kkm_create_kontainer(unsigned long arg)
 		goto error;
 	}
 
+	/*
+	 * setup pml4 for guest kernel and guest payload
+	 */
 	ret_val = kkm_mmu_copy_kernel_pgd(kkm);
 	if (ret_val != 0) {
 		printk(KERN_NOTICE
@@ -452,7 +489,11 @@ error:
 	return ret_val;
 }
 
-// support cpuid functions needed by km
+/*
+ * support cpuid functions needed by km
+ * cpuid functions used by monitor are in cpuid_functions array.
+ * execute on native cpu and return results to monitor
+ */
 static int kkm_get_native_cpuid(unsigned long arg)
 {
 	static uint32_t cpuid_functions[] = { 0x0,	0x80000001,
@@ -506,6 +547,9 @@ error:
 	return ret_val;
 }
 
+/*
+ * ioctl handler for /dev/kkm
+ */
 static long kkm_device_ioctl(struct file *file_p, unsigned int ioctl_type,
 			     unsigned long arg)
 {
@@ -545,22 +589,35 @@ static struct file_operations kkm_chardev_ops = {
 static struct miscdevice kkm_device = { MISC_DYNAMIC_MINOR, KKM_DEVICE_NAME,
 					&kkm_chardev_ops };
 
+/*
+ * called during insmod
+ * allocate required global data structures
+ */
 static int __init kkm_init(void)
 {
 	int ret_val = 0;
 
+	/*
+	 * register /dev/kkm
+	 */
 	ret_val = misc_register(&kkm_device);
 	if (ret_val != 0) {
 		printk(KERN_ERR "kkm_init: Cannot register kkm.\n");
 		return ret_val;
 	}
 
+	/*
+	 * initialize idt cache
+	 */
 	ret_val = kkm_idt_cache_init();
 	if (ret_val != 0) {
 		printk(KERN_ERR "kkm_init: Cannot initialize idt cache.\n");
 		return ret_val;
 	}
 
+	/*
+	 * intialize mmu, allocate kkm private area data structures
+	 */
 	ret_val = kkm_mmu_init();
 	if (ret_val != 0) {
 		printk(KERN_ERR "kkm_init: Cannot initialize mmu tables.\n");
@@ -574,6 +631,10 @@ static int __init kkm_init(void)
 
 module_init(kkm_init);
 
+/*
+ * called during module unload
+ * cleanup everything
+ */
 static void __exit kkm_exit(void)
 {
 	kkm_mmu_cleanup();
