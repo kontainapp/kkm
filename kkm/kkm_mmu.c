@@ -121,11 +121,12 @@ void kkm_mmu_insert_page(void *pt_va, int index, phys_addr_t pa, uint64_t flags)
 void kkm_mmu_set_guest_area(phys_addr_t pa0, phys_addr_t pa1, phys_addr_t pa2, phys_addr_t pa3)
 {
 	int page_index = kkm_mmu_get_per_cpu_start_index();
+	uint64_t flags = _PAGE_NX | _PAGE_RW | _PAGE_PRESENT;
 
-	kkm_mmu_insert_page(kkm_mmu.pt.va, page_index, pa0, _PAGE_RW | _PAGE_PRESENT);
-	kkm_mmu_insert_page(kkm_mmu.pt.va, page_index + 1, pa1, _PAGE_RW | _PAGE_PRESENT);
-	kkm_mmu_insert_page(kkm_mmu.pt.va, page_index + 2, pa2, _PAGE_RW | _PAGE_PRESENT);
-	kkm_mmu_insert_page(kkm_mmu.pt.va, page_index + 3, pa3, _PAGE_RW | _PAGE_PRESENT);
+	kkm_mmu_insert_page(kkm_mmu.pt.va, page_index, pa0, flags);
+	kkm_mmu_insert_page(kkm_mmu.pt.va, page_index + 1, pa1, flags);
+	kkm_mmu_insert_page(kkm_mmu.pt.va, page_index + 2, pa2, flags);
+	kkm_mmu_insert_page(kkm_mmu.pt.va, page_index + 3, pa3, flags);
 }
 
 /*
@@ -154,7 +155,7 @@ void kkm_mmu_set_idt(void *idt_va)
 	cpu = 0;
 #endif
 	idt_pa = virt_to_phys(idt_va);
-	kkm_mmu_insert_page(kkm_mmu.pt.va, cpu, idt_pa, _PAGE_PRESENT);
+	kkm_mmu_insert_page(kkm_mmu.pt.va, cpu, idt_pa, _PAGE_NX | _PAGE_PRESENT);
 }
 
 void *kkm_mmu_get_idt_va(void)
