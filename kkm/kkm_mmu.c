@@ -141,34 +141,19 @@ void *kkm_mmu_get_cur_cpu_guest_va(void)
 }
 
 /*
- * insert idt page at KKM_PRIVATE_START_VA
+ * insert idt page at KKM_IDT_START_VA
  */
-void kkm_mmu_set_idt(void *idt_va)
+void kkm_mmu_set_idt(phys_addr_t idt_pa)
 {
-	phys_addr_t idt_pa;
-	int cpu;
-
-	/* only one idt system wide */
-#if 0
-	cpu = get_cpu();
-#else
-	cpu = 0;
-#endif
-	idt_pa = virt_to_phys(idt_va);
-	kkm_mmu_insert_page(kkm_mmu.pt.va, cpu, idt_pa, _PAGE_NX | _PAGE_PRESENT);
+	/*
+	 * pte 0 corresponds to KKM_IDT_START_VA
+	 */
+	kkm_mmu_insert_page(kkm_mmu.pt.va, 0, idt_pa, _PAGE_NX | _PAGE_PRESENT);
 }
 
 void *kkm_mmu_get_idt_va(void)
 {
-	/* only one idt system wide */
-#if 0
-	int cpu;
-
-	cpu = get_cpu();
-	return (void *)(KKM_PRIVATE_START_VA + cpu * PAGE_SIZE);
-#else
 	return (void *)KKM_PRIVATE_START_VA;
-#endif
 }
 
 /*

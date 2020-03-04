@@ -15,6 +15,6 @@
 
 int kkm_idt_cache_init(void);
 void kkm_idt_cache_cleanup(void);
-int kkm_idt_get_desc(struct desc_ptr **native_desc, struct desc_ptr **guest_desc);
+int kkm_idt_get_desc(struct desc_ptr *native_desc, struct desc_ptr *guest_desc);
 
 #endif /* __KKM_MISC_CACHE_H__ */

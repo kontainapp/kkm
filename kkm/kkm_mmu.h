@@ -129,7 +129,7 @@ void kkm_mmu_set_guest_area(phys_addr_t pa0, phys_addr_t pa1, phys_addr_t pa2,
 			    phys_addr_t pa3);
 void *kkm_mmu_get_cur_cpu_guest_va(void);
 
-void kkm_mmu_set_idt(void *idt_va);
+void kkm_mmu_set_idt(phys_addr_t idt_pa);
 void *kkm_mmu_get_idt_va(void);
 
 int kkm_mmu_copy_kernel_pgd(struct kkm *kkm);

@@ -62,12 +62,12 @@ struct kkm_guest_area {
 
 			/* native kernel idt */
 			union {
-				struct desc_ptr native_idt;
+				struct desc_ptr native_idt_desc;
 				uint64_t native[2];
 			};
 			/* guest kernel idt */
 			union {
-				struct desc_ptr guest_idt;
+				struct desc_ptr guest_idt_desc;
 				uint64_t guest[2];
 			};
 

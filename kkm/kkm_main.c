@@ -18,8 +18,9 @@
 #include <linux/slab.h>
 #include <linux/anon_inodes.h>
 #include <linux/uaccess.h>
-
 #include <linux/mm.h>
+#include <asm/cpu_entry_area.h>
+#include <asm/desc.h>
 
 #include "kkm.h"
 #include "kkm_kontainer.h"
@@ -607,20 +608,20 @@ static int __init kkm_init(void)
 	}
 
 	/*
-	 * initialize idt cache
-	 */
-	ret_val = kkm_idt_cache_init();
-	if (ret_val != 0) {
-		printk(KERN_ERR "kkm_init: Cannot initialize idt cache.\n");
-		return ret_val;
-	}
-
-	/*
 	 * intialize mmu, allocate kkm private area data structures
 	 */
 	ret_val = kkm_mmu_init();
 	if (ret_val != 0) {
 		printk(KERN_ERR "kkm_init: Cannot initialize mmu tables.\n");
+		return ret_val;
+	}
+
+	/*
+	 * initialize idt cache
+	 */
+	ret_val = kkm_idt_cache_init();
+	if (ret_val != 0) {
+		printk(KERN_ERR "kkm_init: Cannot initialize idt cache.\n");
 		return ret_val;
 	}
 
@@ -637,8 +638,8 @@ module_init(kkm_init);
  */
 static void __exit kkm_exit(void)
 {
-	kkm_mmu_cleanup();
 	kkm_idt_cache_cleanup();
+	kkm_mmu_cleanup();
 	misc_deregister(&kkm_device);
 	printk(KERN_INFO "kkm_exit: De-Registered kkm.\n");
 }
