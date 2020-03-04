@@ -69,11 +69,11 @@
  *     - second page rest of the entry code
  * fourth page for global data mapped Read Write
  */
-#define KKM_IDT_TABLE	(1)
-#define KKM_IDT_TEXT	(2)
-#define KKM_IDT_GLBL	(1)
+#define KKM_IDT_TABLE (1)
+#define KKM_IDT_TEXT (2)
+#define KKM_IDT_GLBL (1)
 
-#define KKM_IDT_ALLOCATION_PAGES	(KKM_IDT_TABLE + KKM_IDT_TEXT + KKM_IDT_GLBL)
+#define KKM_IDT_ALLOCATION_PAGES (KKM_IDT_TABLE + KKM_IDT_TEXT + KKM_IDT_GLBL)
 
 /* IDT table start address */
 #define KKM_IDT_START_VA (KKM_PRIVATE_START_VA)
@@ -93,11 +93,14 @@
 
 /* IDT address end */
 
+/* PML4 convenience macros start */
+
 /*
  * out of 512 entries in pml4
  *     0-255 are used for user memory and
  *     256-511 are used for kernel memory
  */
+/* each entry in PML4 corresponds to 512GB */
 
 /* byte offset of first kernel pml4 entry(256 * 8) */
 #define KKM_PGD_KERNEL_OFFSET (2048)
@@ -119,6 +122,8 @@
 #define KKM_PGD_GUEST_PAYLOAD_OFFSET_255 (255 * 8)
 /* one pml4 entry */
 #define KKM_PGD_PAYLOAD_SIZE (8)
+
+/* PML4 convenience macros end */
 
 /*
  * convenience structure for pages allocated for managing memory hierarchy

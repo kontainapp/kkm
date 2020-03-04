@@ -75,8 +75,9 @@ int kkm_idt_descr_init(void)
 
 	idt_entry = &kkm_idt_cache->idt_entry;
 
-	ret_val = kkm_mm_allocate_page(&idt_entry->idt_page, &idt_entry->idt_va,
-				       &idt_entry->idt_pa);
+	ret_val = kkm_mm_allocate_pages(&idt_entry->idt_page,
+					&idt_entry->idt_va, &idt_entry->idt_pa,
+					KKM_IDT_ALLOCATION_PAGES);
 	if (ret_val != 0) {
 		printk(KERN_NOTICE
 		       "kkm_idt_descr_init: Failed to allocate memory for idt error(%d)\n",
@@ -149,7 +150,7 @@ int kkm_idt_cache_init(void)
 	int ret_val = 0;
 	int i = 0;
 
-	kkm_idt_cache = (struct kkm_idt_cache *)kzalloc(sizeof(struct kkm_idt_cache), GFP_KERNEL);
+	kkm_idt_cache = kzalloc(sizeof(struct kkm_idt_cache), GFP_KERNEL);
 	if (kkm_idt_cache == NULL) {
 		printk(KERN_NOTICE
 		       "kkm_idt_cache_init: kmalloc returned NULL\n");
