@@ -30,11 +30,11 @@
  *                   .
  *                   .
  *           --------------------  0xFFFFFE8000104000ULL
- *           |  redirect addr   |
+ *      RW   |  redirect addr   |
  *           --------------------  0xFFFFFE8000103000ULL
- *           |  INTR entry 8k   |
+ *      RWX  |  INTR entry 8k   |
  *           --------------------  0xFFFFFE8000101000ULL
- *           |  Guest IDT       |
+ *      R    |  Guest IDT       |
  *           --------------------  0xFFFFFE8000000000ULL
  *
  *   one pte of space allocated for guest private area

@@ -60,7 +60,7 @@ struct kkm_idt_cache {
 
 	struct kkm_idt_entry idt_entry;
 
-	struct kkm_desc_entry desc_entries[0];
+	struct kkm_desc_entry desc_entries[NR_CPUS];
 };
 
 struct kkm_idt_cache *kkm_idt_cache = NULL;
@@ -147,15 +147,9 @@ error:
 int kkm_idt_cache_init(void)
 {
 	int ret_val = 0;
-	int max_cpu_count = NR_CPUS;
-	size_t alloc_size = 0;
 	int i = 0;
 
-	alloc_size = sizeof(struct kkm_idt_cache) +
-		     sizeof(struct kkm_desc_entry) * max_cpu_count;
-	printk(KERN_NOTICE "kkm_idt_cache_init: NR_CPUS %d size %ld\n",
-	       max_cpu_count, alloc_size);
-	kkm_idt_cache = (struct kkm_idt_cache *)kzalloc(alloc_size, GFP_KERNEL);
+	kkm_idt_cache = (struct kkm_idt_cache *)kzalloc(sizeof(struct kkm_idt_cache), GFP_KERNEL);
 	if (kkm_idt_cache == NULL) {
 		printk(KERN_NOTICE
 		       "kkm_idt_cache_init: kmalloc returned NULL\n");
@@ -163,8 +157,8 @@ int kkm_idt_cache_init(void)
 		goto error;
 	}
 
-	kkm_idt_cache->n_entries = max_cpu_count;
-	for (i = 0; i < kkm_idt_cache->n_entries; i++) {
+	kkm_idt_cache->n_entries = NR_CPUS;
+	for (i = 0; i < NR_CPUS; i++) {
 		kkm_idt_cache->desc_entries[i].inited = false;
 	}
 
