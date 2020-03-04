@@ -60,20 +60,38 @@
 /* physical address mask to remove offset into page bits */
 #define KKM_PAGE_PA_MASK (0xFFFFFFFFF000ULL)
 
-/* IDT table address */
+/* IDT address start */
+
+/*
+ * First page for IDT mapped Read only
+ * second and thirt for code mapped Execute enable
+ *     - first page 256 * 16 bytes per entry
+ *     - second page rest of the entry code
+ * fourth page for global data mapped Read Write
+ */
+#define KKM_IDT_TABLE	(1)
+#define KKM_IDT_TEXT	(2)
+#define KKM_IDT_GLBL	(1)
+
+#define KKM_IDT_ALLOCATION_PAGES	(KKM_IDT_TABLE + KKM_IDT_TEXT + KKM_IDT_GLBL)
+
+/* IDT table start address */
 #define KKM_IDT_START_VA (KKM_PRIVATE_START_VA)
 /* IDT table size */
-#define KKM_IDT_SIZE (PAGE_SIZE)
-/* entry code needs to be mapped here */
+#define KKM_IDT_SIZE (KKM_IDT_TABLE * PAGE_SIZE)
+/* kx entry code start address */
 #define KKM_IDT_CODE_START_VA (KKM_IDT_START_VA + KKM_IDT_SIZE)
-/*
- * first page generic template
- * second page specialized handelers
- * third page data used to keep guest kernel symbol to jump to
- */
-#define KKM_IDT_CODE_SIZE (3 * PAGE_SIZE)
+/* kx entry code size */
+#define KKM_IDT_CODE_SIZE (KKM_IDT_TEXT * PAGE_SIZE)
+/* kx global data start address */
+#define KKM_IDT_GLOBAL_START (KKM_IDT_CODE_START_VA + KKM_IDT_CODE_SIZE)
+/* kx global data size */
+#define KKM_IDT_GLOBAL_SIZE (KKM_IDT_GLBL * PAGE_SIZE)
+
 /* 16 bytes is code generated for each intr entry */
 #define KKM_IDT_ENTRY_FUNCTION_SIZE (16)
+
+/* IDT address end */
 
 /*
  * out of 512 entries in pml4
