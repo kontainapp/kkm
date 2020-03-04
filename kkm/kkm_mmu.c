@@ -162,14 +162,41 @@ void *kkm_mmu_get_cur_cpu_guest_va(void)
 void kkm_mmu_set_idt(phys_addr_t idt_pa)
 {
 	/*
-	 * pte 0 corresponds to KKM_IDT_START_VA
+	 * pte KKM_PTE_INDEX_IDT corresponds to KKM_IDT_START_VA
 	 */
-	kkm_mmu_insert_page(kkm_mmu.pt.va, 0, idt_pa, _PAGE_NX | _PAGE_PRESENT);
+	kkm_mmu_insert_page(kkm_mmu.pt.va, KKM_PTE_INDEX_IDT, idt_pa,
+			    _PAGE_NX | _PAGE_PRESENT);
 }
 
 void *kkm_mmu_get_idt_va(void)
 {
 	return (void *)KKM_PRIVATE_START_VA;
+}
+
+/*
+ * insert idt page at KKM_IDT_CODE_START_VA
+ */
+void kkm_mmu_set_idt_text(phys_addr_t text_page0_pa, phys_addr_t text_page1_pa)
+{
+	/*
+	 * pte KKM_PTE_INDEX_TEXT_0 corresponds to KKM_IDT_GLOBAL_START
+	 */
+	kkm_mmu_insert_page(kkm_mmu.pt.va, KKM_PTE_INDEX_TEXT_0, text_page0_pa,
+			    _PAGE_PRESENT);
+	kkm_mmu_insert_page(kkm_mmu.pt.va, KKM_PTE_INDEX_TEXT_1, text_page1_pa,
+			    _PAGE_PRESENT);
+}
+
+/*
+ * insert idt page at KKM_IDT_GLOBAL_START
+ */
+void kkm_mmu_set_kx_global(phys_addr_t kx_global_pa)
+{
+	/*
+	 * pte KKM_PTE_INDEX_KX corresponds to KKM_IDT_GLOBAL_START
+	 */
+	kkm_mmu_insert_page(kkm_mmu.pt.va, KKM_PTE_INDEX_KX, kx_global_pa,
+			    _PAGE_NX | _PAGE_RW | _PAGE_PRESENT);
 }
 
 /*

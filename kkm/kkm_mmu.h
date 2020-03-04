@@ -50,10 +50,19 @@
 /* pml4 table entry offset for KKM_PRIVATE_START_VA */
 #define KKM_PGD_INDEX (509)
 
+/* page table indices start */
+
+#define KKM_PTE_INDEX_IDT (0)
+#define KKM_PTE_INDEX_TEXT_0 (1)
+#define KKM_PTE_INDEX_TEXT_1 (2)
+#define KKM_PTE_INDEX_KX (3)
+
 /* first page table entry index for physical cpu */
 #define KKM_CPU_GA_INDEX_START (256)
 /* number of page table entrie's for physical cpu */
 #define KKM_PER_CPU_GA_PAGE_COUNT (4)
+
+/* page table indices END */
 
 /* mask to remove incorrect flags */
 #define KKM_PAGE_FLAGS_MASK (0x800000000000001FULL)
@@ -154,6 +163,8 @@ void *kkm_mmu_get_cur_cpu_guest_va(void);
 
 void kkm_mmu_set_idt(phys_addr_t idt_pa);
 void *kkm_mmu_get_idt_va(void);
+void kkm_mmu_set_idt_text(phys_addr_t text_page0_pa, phys_addr_t text_page1_pa);
+void kkm_mmu_set_kx_global(phys_addr_t kx_global_pa);
 
 int kkm_mmu_copy_kernel_pgd(struct kkm *kkm);
 int kkm_mmu_sync(struct kkm *kkm);

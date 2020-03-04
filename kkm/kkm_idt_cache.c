@@ -17,6 +17,7 @@
 #include "kkm.h"
 #include "kkm_mm.h"
 #include "kkm_mmu.h"
+#include "kkm_intr.h"
 
 /*
  * There is one idt system wide.
@@ -32,7 +33,8 @@ struct kkm_idt_entry {
 	phys_addr_t idt_pa;
 
 	void *idt_text_va;
-	phys_addr_t idt_text_pa;
+	phys_addr_t idt_text_page0_pa;
+	phys_addr_t idt_text_page1_pa;
 
 	void *kx_global_va;
 	phys_addr_t kx_global_pa;
@@ -81,6 +83,9 @@ int kkm_idt_descr_init(void)
 
 	idt_entry = &kkm_idt_cache->idt_entry;
 
+	/*
+	 * allocate KKM_IDT_ALLOCATION_PAGES pages
+	 */
 	ret_val = kkm_mm_allocate_pages(&idt_entry->idt_page,
 					&idt_entry->idt_va, &idt_entry->idt_pa,
 					KKM_IDT_ALLOCATION_PAGES);
@@ -91,27 +96,37 @@ int kkm_idt_descr_init(void)
 		goto error;
 	}
 
+	/*
+	 * covneniece variables to track various addresses
+	 */
 	idt_entry->idt_text_va = idt_entry->idt_va + KKM_IDT_SIZE;
-	idt_entry->idt_text_pa = virt_to_phys(idt_entry->idt_text_va);
+	idt_entry->idt_text_page0_pa = virt_to_phys(idt_entry->idt_text_va);
+	idt_entry->idt_text_page1_pa =
+		virt_to_phys(idt_entry->idt_text_va + PAGE_SIZE);
 
 	idt_entry->kx_global_va = idt_entry->idt_text_va + KKM_IDT_CODE_SIZE;
 	idt_entry->kx_global_pa = virt_to_phys(idt_entry->kx_global_va);
 
 	printk(KERN_NOTICE
 	       "kkm_idt_descr_init: idt page %px va %px pa %llx "
-	       "intr entry va %px pa %llx kx global va %px pa %llx\n",
+	       "intr entry va %px pa0 %llx pa1 %llx kx global va %px pa %llx\n",
 	       idt_entry->idt_page, idt_entry->idt_va, idt_entry->idt_pa,
-	       idt_entry->idt_text_va, idt_entry->idt_text_pa,
-	       idt_entry->kx_global_va, idt_entry->kx_global_pa);
+	       idt_entry->idt_text_va, idt_entry->idt_text_page0_pa,
+	       idt_entry->idt_text_page1_pa, idt_entry->kx_global_va,
+	       idt_entry->kx_global_pa);
 
 	/*
 	 * insert idt page, idt text and kx global in kx area
 	 * idt in kx area is readonly
 	 */
 	kkm_mmu_set_idt(idt_entry->idt_pa);
-	//kkm_mmu_set_idt_text(idt_entry->idt_pa);
-	//kkm_mmu_set_kx_global(idt_entry->idt_pa);
+	kkm_mmu_set_idt_text(idt_entry->idt_text_page0_pa,
+			     idt_entry->idt_text_page1_pa);
+	kkm_mmu_set_kx_global(idt_entry->kx_global_pa);
 
+	/*
+	 * save native kernel idt descriptor
+	 */
 	store_idt(&idt_entry->native_idt_desc);
 
 	printk(KERN_NOTICE
@@ -155,6 +170,16 @@ int kkm_idt_descr_init(void)
 	       "kkm_idt_descr_init: guest kernel idt size %x base address %lx\n",
 	       idt_entry->guest_idt_desc.size,
 	       idt_entry->guest_idt_desc.address);
+
+	/*
+	 * copy interrupt entry code to kx area
+	 */
+	memcpy(idt_entry->idt_text_va, kkm_intr_start, KKM_IDT_CODE_SIZE);
+
+	/*
+	 * clear kx global area
+	 */
+	memset(idt_entry->kx_global_va, 0, KKM_IDT_GLOBAL_SIZE);
 
 	// replace needed idt entries
 
