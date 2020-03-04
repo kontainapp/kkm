@@ -29,34 +29,46 @@ int kkm_mmu_init(void)
 	memset(&kkm_mmu, 0, sizeof(struct kkm_mmu));
 
 	/* alocate page for pud */
-	ret_val = kkm_mm_allocate_page(&kkm_mmu.pud.page, &kkm_mmu.pud.va, &kkm_mmu.pud.pa);
+	ret_val = kkm_mm_allocate_page(&kkm_mmu.pud.page, &kkm_mmu.pud.va,
+				       &kkm_mmu.pud.pa);
 	if (ret_val != 0) {
-		printk(KERN_NOTICE "kkm_mmu_init: failed to allocate pud page error(%d)\n", ret_val);
+		printk(KERN_NOTICE
+		       "kkm_mmu_init: failed to allocate pud page error(%d)\n",
+		       ret_val);
 		goto error;
 	}
 	/* alocate page for pmd */
-	ret_val = kkm_mm_allocate_page(&kkm_mmu.pmd.page, &kkm_mmu.pmd.va, &kkm_mmu.pmd.pa);
+	ret_val = kkm_mm_allocate_page(&kkm_mmu.pmd.page, &kkm_mmu.pmd.va,
+				       &kkm_mmu.pmd.pa);
 	if (ret_val != 0) {
-		printk(KERN_NOTICE "kkm_mmu_init: failed to allocate pmd page error(%d)\n", ret_val);
+		printk(KERN_NOTICE
+		       "kkm_mmu_init: failed to allocate pmd page error(%d)\n",
+		       ret_val);
 		goto error;
 	}
 	/* alocate page for pt */
-	ret_val = kkm_mm_allocate_page(&kkm_mmu.pt.page, &kkm_mmu.pt.va, &kkm_mmu.pt.pa);
+	ret_val = kkm_mm_allocate_page(&kkm_mmu.pt.page, &kkm_mmu.pt.va,
+				       &kkm_mmu.pt.pa);
 	if (ret_val != 0) {
-		printk(KERN_NOTICE "kkm_mmu_init: failed to allocate pt page error(%d)\n", ret_val);
+		printk(KERN_NOTICE
+		       "kkm_mmu_init: failed to allocate pt page error(%d)\n",
+		       ret_val);
 		goto error;
 	}
 
 	/* pages are allocated and zeroed, __GFP_ZERO flag is used to allocate page */
 
 	/* createp pgd entry */
-	kkm_mmu.pgd_entry = (kkm_mmu.pud.pa & KKM_PAGE_PA_MASK) | _PAGE_USER | _PAGE_RW | _PAGE_PRESENT;
+	kkm_mmu.pgd_entry = (kkm_mmu.pud.pa & KKM_PAGE_PA_MASK) | _PAGE_USER |
+			    _PAGE_RW | _PAGE_PRESENT;
 
 	/* initialize first entry in pud */
-	kkm_mmu_insert_page(kkm_mmu.pud.va, 0, kkm_mmu.pmd.pa, _PAGE_USER | _PAGE_RW | _PAGE_PRESENT);
+	kkm_mmu_insert_page(kkm_mmu.pud.va, 0, kkm_mmu.pmd.pa,
+			    _PAGE_USER | _PAGE_RW | _PAGE_PRESENT);
 
 	/* initialie first entry in pmd */
-	kkm_mmu_insert_page(kkm_mmu.pmd.va, 0, kkm_mmu.pt.pa, _PAGE_USER | _PAGE_RW | _PAGE_PRESENT);
+	kkm_mmu_insert_page(kkm_mmu.pmd.va, 0, kkm_mmu.pt.pa,
+			    _PAGE_USER | _PAGE_RW | _PAGE_PRESENT);
 
 error:
 	if (ret_val != 0) {
@@ -93,7 +105,8 @@ uint64_t kkm_mmu_get_pgd_entry(void)
 int kkm_mmu_get_per_cpu_start_index(void)
 {
 	int cpu = get_cpu();
-	int page_index = KKM_CPU_GA_INDEX_START + cpu * KKM_PER_CPU_GA_PAGE_COUNT;
+	int page_index =
+		KKM_CPU_GA_INDEX_START + cpu * KKM_PER_CPU_GA_PAGE_COUNT;
 	return page_index;
 }
 
@@ -110,15 +123,18 @@ void kkm_mmu_set_entry(void *pt_va, int index, uint64_t entry)
  */
 void kkm_mmu_insert_page(void *pt_va, int index, phys_addr_t pa, uint64_t flags)
 {
-	printk(KERN_NOTICE "kkm_mmu_insert_page: pt va %lx index %x pa %llx flags %llx\n",
-		       (unsigned long)pt_va, index, pa, flags);
-	((uint64_t *)pt_va)[index] = (pa & KKM_PAGE_PA_MASK) | (flags & KKM_PAGE_FLAGS_MASK);
+	printk(KERN_NOTICE
+	       "kkm_mmu_insert_page: pt va %px index %x pa %llx flags %llx\n",
+	       pt_va, index, pa, flags);
+	((uint64_t *)pt_va)[index] =
+		(pa & KKM_PAGE_PA_MASK) | (flags & KKM_PAGE_FLAGS_MASK);
 }
 
 /*
  * set this physicl cpu private area page table entries
  */
-void kkm_mmu_set_guest_area(phys_addr_t pa0, phys_addr_t pa1, phys_addr_t pa2, phys_addr_t pa3)
+void kkm_mmu_set_guest_area(phys_addr_t pa0, phys_addr_t pa1, phys_addr_t pa2,
+			    phys_addr_t pa3)
 {
 	int page_index = kkm_mmu_get_per_cpu_start_index();
 	uint64_t flags = _PAGE_NX | _PAGE_RW | _PAGE_PRESENT;
@@ -160,9 +176,9 @@ void *kkm_mmu_get_idt_va(void)
  * copy range of bytes from one area to other
  */
 static void kkm_mmu_copy_range(unsigned long long src_base,
-			      unsigned long long src_offset,
-			      unsigned long long dest_base,
-			      unsigned long long dest_offset, size_t count)
+			       unsigned long long src_offset,
+			       unsigned long long dest_base,
+			       unsigned long long dest_offset, size_t count)
 {
 	memcpy((void *)dest_base + dest_offset, (void *)src_base + src_offset,
 	       count);
@@ -179,16 +195,18 @@ int kkm_mmu_copy_kernel_pgd(struct kkm *kkm)
 	unsigned long current_pgd_base = (unsigned long long)kkm->mm->pgd;
 
 	if (current_pgd_base == 0) {
-		printk(KERN_NOTICE "kkm_mmu_copy_kernel_pgd: PGD base is zero\n");
+		printk(KERN_NOTICE
+		       "kkm_mmu_copy_kernel_pgd: PGD base is zero\n");
 		return -EINVAL;
 	}
 
 	kkm_mmu_copy_range(current_pgd_base, KKM_PGD_KERNEL_OFFSET,
-			  kkm->guest_kernel_va, KKM_PGD_KERNEL_OFFSET,
-			  KKM_PGD_KERNEL_SIZE);
+			   kkm->guest_kernel_va, KKM_PGD_KERNEL_OFFSET,
+			   KKM_PGD_KERNEL_SIZE);
 
 	/* set private area in kernel pml4 area */
-	kkm_mmu_set_entry((void *)kkm->guest_kernel_va, KKM_PGD_INDEX, kkm_mmu.pgd_entry);
+	kkm_mmu_set_entry((void *)kkm->guest_kernel_va, KKM_PGD_INDEX,
+			  kkm_mmu.pgd_entry);
 
 	/*
 	 * point to user pgd.
@@ -196,11 +214,12 @@ int kkm_mmu_copy_kernel_pgd(struct kkm *kkm)
 	 * current_pgd_base += PAGE_SIZE;
 	 */
 	kkm_mmu_copy_range(current_pgd_base, KKM_PGD_KERNEL_OFFSET,
-			  kkm->guest_payload_va, KKM_PGD_KERNEL_OFFSET,
-			  KKM_PGD_KERNEL_SIZE);
+			   kkm->guest_payload_va, KKM_PGD_KERNEL_OFFSET,
+			   KKM_PGD_KERNEL_SIZE);
 
 	/* set private area in guest pml4 */
-	kkm_mmu_set_entry((void *)kkm->guest_payload_va, KKM_PGD_INDEX, kkm_mmu.pgd_entry);
+	kkm_mmu_set_entry((void *)kkm->guest_payload_va, KKM_PGD_INDEX,
+			  kkm_mmu.pgd_entry);
 
 	return 0;
 }
@@ -221,24 +240,28 @@ int kkm_mmu_sync(struct kkm *kkm)
 	 * entry 0 for code + data
 	 */
 	kkm_mmu_copy_range(current_pgd_base, KKM_PGD_MONITOR_PAYLOAD_OFFSET,
-			  kkm->guest_kernel_va, KKM_PGD_GUEST_PAYLOAD_OFFSET_0,
-			  KKM_PGD_PAYLOAD_SIZE);
+			   kkm->guest_kernel_va, KKM_PGD_GUEST_PAYLOAD_OFFSET_0,
+			   KKM_PGD_PAYLOAD_SIZE);
 	kkm_mmu_copy_range(current_pgd_base, KKM_PGD_MONITOR_PAYLOAD_OFFSET,
-			  kkm->guest_payload_va, KKM_PGD_GUEST_PAYLOAD_OFFSET_0,
-			  KKM_PGD_PAYLOAD_SIZE);
+			   kkm->guest_payload_va,
+			   KKM_PGD_GUEST_PAYLOAD_OFFSET_0,
+			   KKM_PGD_PAYLOAD_SIZE);
 
 	/* entry 255 for stack + mmap */
 	kkm_mmu_copy_range(current_pgd_base, KKM_PGD_MONITOR_PAYLOAD_OFFSET,
-			  kkm->guest_kernel_va, KKM_PGD_GUEST_PAYLOAD_OFFSET_255,
-			  KKM_PGD_PAYLOAD_SIZE);
+			   kkm->guest_kernel_va,
+			   KKM_PGD_GUEST_PAYLOAD_OFFSET_255,
+			   KKM_PGD_PAYLOAD_SIZE);
 	kkm_mmu_copy_range(current_pgd_base, KKM_PGD_MONITOR_PAYLOAD_OFFSET,
-			  kkm->guest_payload_va, KKM_PGD_GUEST_PAYLOAD_OFFSET_255,
-			  KKM_PGD_PAYLOAD_SIZE);
+			   kkm->guest_payload_va,
+			   KKM_PGD_GUEST_PAYLOAD_OFFSET_255,
+			   KKM_PGD_PAYLOAD_SIZE);
 
 	/* change pml4 entry 0 to allow execution */
 	pgd_pointer = (unsigned long long *)kkm->guest_payload_va;
 	if (pgd_pointer[0] & _PAGE_NX) {
-		printk(KERN_NOTICE "kkm_mmu_sync: entry 0 has execute disable set, enable it.\n");
+		printk(KERN_NOTICE
+		       "kkm_mmu_sync: entry 0 has execute disable set, enable it.\n");
 		pgd_pointer[0] &= ~_PAGE_NX;
 	}
 

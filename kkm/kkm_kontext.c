@@ -59,9 +59,8 @@ int kkm_kontext_init(struct kkm_kontext *kkm_kontext)
 		virt_to_phys(kkm_kontext->guest_area + PAGE_SIZE);
 
 	printk(KERN_NOTICE
-	       "kkm_kontext_init: stack0 page %lx va %lx pa0 %llx pa1 %llx\n",
-	       (unsigned long)kkm_kontext->guest_area_page,
-	       (unsigned long)kkm_kontext->guest_area,
+	       "kkm_kontext_init: stack0 page %px va %px pa0 %llx pa1 %llx\n",
+	       kkm_kontext->guest_area_page, kkm_kontext->guest_area,
 	       kkm_kontext->guest_area_page0_pa,
 	       kkm_kontext->guest_area_page1_pa);
 
@@ -131,13 +130,13 @@ int kkm_kontext_switch_kernel(struct kkm_kontext *kkm_kontext)
 
 	cpu = get_cpu();
 	per_cpu(current_kontext, cpu) = kkm_kontext;
-	printk(KERN_NOTICE "kkm_kontext_switch_kernel: cpu %d %llx\n", cpu,
-	       (unsigned long long)&cpu);
+	printk(KERN_NOTICE "kkm_kontext_switch_kernel: cpu %d %px\n", cpu,
+	       &cpu);
 
 	printk(KERN_NOTICE
-	       "kkm_kontext_switch_kernel: before %llx %llx %llx %llx\n",
-	       (unsigned long long)ga->kkm_kontext, ga->guest_area_beg,
-	       ga->native_kernel_stack, ga->guest_stack_variable_address);
+	       "kkm_kontext_switch_kernel: before %px %llx %llx %llx\n",
+	       ga->kkm_kontext, ga->guest_area_beg, ga->native_kernel_stack,
+	       ga->guest_stack_variable_address);
 
 	// save native kernel trampoline stack
 	cea = get_cpu_entry_area(cpu);
@@ -162,7 +161,6 @@ int kkm_kontext_switch_kernel(struct kkm_kontext *kkm_kontext)
 	 * change to guest kernel address space
 	 */
 	kkm_change_address_space(ga->guest_kernel_cr3);
-
 
 	/*
 	 * save native kernel segment registers
@@ -201,12 +199,12 @@ int kkm_kontext_switch_kernel(struct kkm_kontext *kkm_kontext)
 	kkm_hw_debug_registers_restore(kkm_kontext->native_debug_registers);
 
 	printk(KERN_NOTICE
-	       "kkm_kontext_switch_kernel: after %llx %llx %llx %llx\n",
-	       (unsigned long long)ga->kkm_kontext, ga->guest_area_beg,
-	       ga->native_kernel_stack, ga->guest_stack_variable_address);
+	       "kkm_kontext_switch_kernel: after %px %llx %llx %llx\n",
+	       ga->kkm_kontext, ga->guest_area_beg, ga->native_kernel_stack,
+	       ga->guest_stack_variable_address);
 
-	printk(KERN_NOTICE "kkm_kontext_switch_kernel: ret_val %d %llx\n",
-	       ret_val, (unsigned long long)&ret_val);
+	printk(KERN_NOTICE "kkm_kontext_switch_kernel: ret_val %d %px\n",
+	       ret_val, &ret_val);
 
 	return ret_val;
 }
@@ -220,15 +218,17 @@ void kkm_guest_kernel_start_payload(struct kkm_guest_area *ga)
 	int cpu = 0x66;
 	struct cpu_entry_area *cea = NULL;
 
-	printk(KERN_NOTICE "kkm_guest_kernel_start_payload: ga %llx\n", (unsigned long long)ga);
+	printk(KERN_NOTICE "kkm_guest_kernel_start_payload: ga %px\n", ga);
 	ga = kkm_mmu_get_cur_cpu_guest_va();
-	printk(KERN_NOTICE "kkm_guest_kernel_start_payload: ga kontain private area %llx\n", (unsigned long long)ga);
+	printk(KERN_NOTICE
+	       "kkm_guest_kernel_start_payload: ga kontain private area %px\n",
+	       ga);
 
 	cpu = get_cpu();
 	cea = get_cpu_entry_area(cpu);
 	printk(KERN_NOTICE
-	       "kkm_guest_kernel_start_payload: cpu %d %llx cea %llx\n",
-	       cpu, (unsigned long long)&cpu, (unsigned long long)cea);
+	       "kkm_guest_kernel_start_payload: cpu %d %px cea %px\n",
+	       cpu, &cpu, cea);
 
 	ga->guest_stack_variable_address = (unsigned long long)&cpu;
 
@@ -334,8 +334,9 @@ void kkm_switch_to_host_kernel(void)
 	kkm_kontext = per_cpu(current_kontext, cpu);
 	ga = (struct kkm_guest_area *)kkm_kontext->guest_area;
 
-	printk(KERN_NOTICE "kkm_switch_to_host_kernel: cpu %d stack address %llx ga %llx\n", cpu,
-	       (unsigned long long)&cpu, (unsigned long long)ga);
+	printk(KERN_NOTICE
+	       "kkm_switch_to_host_kernel: cpu %d stack address %px ga %px\n",
+	       cpu, &cpu, ga);
 
 	kkm_hw_debug_registers_save(ga->debug.registers);
 

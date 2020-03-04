@@ -31,6 +31,12 @@ struct kkm_idt_entry {
 	void *idt_va;
 	phys_addr_t idt_pa;
 
+	void *idt_text_va;
+	phys_addr_t idt_text_pa;
+
+	void *kx_global_va;
+	phys_addr_t kx_global_pa;
+
 	/*
 	 * save native kernel idt descriptor
 	 */
@@ -84,16 +90,27 @@ int kkm_idt_descr_init(void)
 		       ret_val);
 		goto error;
 	}
-	printk(KERN_NOTICE "kkm_idt_descr_init: idt page %lx va %lx pa %lx\n",
-	       (unsigned long)idt_entry->idt_page,
-	       (unsigned long)idt_entry->idt_va,
-	       (unsigned long)idt_entry->idt_pa);
+
+	idt_entry->idt_text_va = idt_entry->idt_va + KKM_IDT_SIZE;
+	idt_entry->idt_text_pa = virt_to_phys(idt_entry->idt_text_va);
+
+	idt_entry->kx_global_va = idt_entry->idt_text_va + KKM_IDT_CODE_SIZE;
+	idt_entry->kx_global_pa = virt_to_phys(idt_entry->kx_global_va);
+
+	printk(KERN_NOTICE
+	       "kkm_idt_descr_init: idt page %px va %px pa %llx "
+	       "intr entry va %px pa %llx kx global va %px pa %llx\n",
+	       idt_entry->idt_page, idt_entry->idt_va, idt_entry->idt_pa,
+	       idt_entry->idt_text_va, idt_entry->idt_text_pa,
+	       idt_entry->kx_global_va, idt_entry->kx_global_pa);
 
 	/*
-	 * insert idt page int kx area
+	 * insert idt page, idt text and kx global in kx area
 	 * idt in kx area is readonly
 	 */
 	kkm_mmu_set_idt(idt_entry->idt_pa);
+	//kkm_mmu_set_idt_text(idt_entry->idt_pa);
+	//kkm_mmu_set_kx_global(idt_entry->idt_pa);
 
 	store_idt(&idt_entry->native_idt_desc);
 

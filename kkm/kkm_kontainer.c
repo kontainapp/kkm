@@ -25,8 +25,8 @@
  * PTI_USER_PGTABLE_MASK not visible to modules
  * make up our own mask
  */
-#define	KKM_USER_PGTABLE_BIT	(PAGE_SHIFT)
-#define	KKM_USER_PGTABLE_MASK	(1 << KKM_USER_PGTABLE_BIT)
+#define KKM_USER_PGTABLE_BIT (PAGE_SHIFT)
+#define KKM_USER_PGTABLE_MASK (1 << KKM_USER_PGTABLE_BIT)
 
 int kkm_kontainer_init(struct kkm *kkm)
 {
@@ -36,8 +36,8 @@ int kkm_kontainer_init(struct kkm *kkm)
 	 * allocated pages for pml4
 	 */
 	ret_val = kkm_mm_allocate_pages(&kkm->guest_kernel_page,
-				       (void **)&kkm->guest_kernel_va,
-				       &kkm->guest_kernel_pa, 2);
+					(void **)&kkm->guest_kernel_va,
+					&kkm->guest_kernel_pa, 2);
 	if (ret_val != 0) {
 		printk(KERN_NOTICE
 		       "kkm_kontainer_init: Failed to allocate memory for guest kernel page table error(%d)\n",
@@ -46,12 +46,14 @@ int kkm_kontainer_init(struct kkm *kkm)
 	}
 
 	printk(KERN_NOTICE
-	       "kkm_kontainer_init: guest kernel page %lx va %lx pa %llx\n",
-	       (unsigned long)kkm->guest_kernel_page, kkm->guest_kernel_va,
+	       "kkm_kontainer_init: guest kernel page %px va %lx pa %llx\n",
+	       kkm->guest_kernel_page, kkm->guest_kernel_va,
 	       kkm->guest_kernel_pa);
 
-	if ((kkm->guest_kernel_va & KKM_USER_PGTABLE_MASK) == KKM_USER_PGTABLE_MASK) {
-		printk(KERN_ERR "kkm_kontainer_init: unexpected odd start page address\n");
+	if ((kkm->guest_kernel_va & KKM_USER_PGTABLE_MASK) ==
+	    KKM_USER_PGTABLE_MASK) {
+		printk(KERN_ERR
+		       "kkm_kontainer_init: unexpected odd start page address\n");
 		ret_val = -EINVAL;
 		goto error;
 	}
@@ -66,8 +68,8 @@ int kkm_kontainer_init(struct kkm *kkm)
 	kkm->guest_payload_pa += kkm->guest_kernel_pa + PAGE_SIZE;
 
 	printk(KERN_NOTICE
-	       "kkm_kontainer_init: guest payload page %lx va %lx pa %llx\n",
-	       (unsigned long)kkm->guest_payload_page, kkm->guest_payload_va,
+	       "kkm_kontainer_init: guest payload page %px va %lx pa %llx\n",
+	       kkm->guest_payload_page, kkm->guest_payload_va,
 	       kkm->guest_payload_pa);
 
 error:
