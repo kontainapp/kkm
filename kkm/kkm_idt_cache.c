@@ -16,6 +16,7 @@
 
 #include "kkm.h"
 #include "kkm_mm.h"
+#include "kkm_mmu.h"
 
 struct kkm_idt_entry {
 	bool inited;
@@ -79,11 +80,15 @@ void kkm_idt_cache_cleanup(void)
 	kkm_idt_cache = NULL;
 }
 
-int kkm_idt_get_desc(struct desc_ptr **native_desc, struct desc_ptr **guest_desc)
+int kkm_idt_get_desc(struct desc_ptr **native_desc,
+		     struct desc_ptr **guest_desc)
 {
 	int ret_val = 0;
 	int cpu = -1;
 	struct kkm_idt_entry *entry;
+	int i = 0;
+	struct gate_struct *gs;
+	uint64_t intr_entry_addr = 0;
 
 	cpu = get_cpu();
 	if (cpu >= kkm_idt_cache->n_entries) {
@@ -123,6 +128,23 @@ int kkm_idt_get_desc(struct desc_ptr **native_desc, struct desc_ptr **guest_desc
 
 		memcpy(entry->idt_va, (void *)entry->native_idt_desc.address,
 		       PAGE_SIZE);
+		gs = (struct gate_struct *)entry->idt_va;
+		for (i = 0; i < NR_VECTORS; i++) {
+			intr_entry_addr = KKM_IDT_CODE_START_VA +
+					  KKM_IDT_ENTRY_FUNCTION_SIZE * i;
+
+			gs[i].offset_low = intr_entry_addr & 0xFFFF;
+			gs[i].segment = __KERNEL_CS;
+			gs[i].bits.ist = 0;
+			gs[i].bits.zero = 0;
+			gs[i].bits.type = GATE_INTERRUPT;
+			gs[i].bits.dpl = 0;
+			gs[i].bits.p = 1;
+			gs[i].offset_middle = (intr_entry_addr >> 16) & 0xFFFF;
+			gs[i].offset_high =
+				(intr_entry_addr >> 32) & 0xFFFFFFFF;
+			gs[i].reserved = 0;
+		}
 
 		entry->guest_idt_desc.size = entry->native_idt_desc.size;
 		entry->guest_idt_desc.address = (unsigned long)entry->idt_va;

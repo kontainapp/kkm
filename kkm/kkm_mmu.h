@@ -27,6 +27,13 @@
  *           --------------------  0xFFFFFE8000104000ULL
  *           | CPU 0 area(16k)  |
  *           --------------------  0xFFFFFE8000100000ULL
+ *                   .
+ *                   .
+ *           --------------------  0xFFFFFE8000104000ULL
+ *           |  redirect addr   |
+ *           --------------------  0xFFFFFE8000103000ULL
+ *           |  INTR entry 8k   |
+ *           --------------------  0xFFFFFE8000101000ULL
  *           |  Guest IDT       |
  *           --------------------  0xFFFFFE8000000000ULL
  *
@@ -52,6 +59,21 @@
 #define KKM_PAGE_FLAGS_MASK (0x800000000000001FULL)
 /* physical address mask to remove offset into page bits */
 #define KKM_PAGE_PA_MASK (0xFFFFFFFFF000ULL)
+
+/* IDT table address */
+#define KKM_IDT_START_VA (KKM_PRIVATE_START_VA)
+/* IDT table size */
+#define KKM_IDT_SIZE (PAGE_SIZE)
+/* entry code needs to be mapped here */
+#define KKM_IDT_CODE_START_VA (KKM_IDT_START_VA + KKM_IDT_SIZE)
+/*
+ * first page generic template
+ * second page specialized handelers
+ * third page data used to keep guest kernel symbol to jump to
+ */
+#define KKM_IDT_CODE_SIZE (3 * PAGE_SIZE)
+/* 16 bytes is code generated for each intr entry */
+#define KKM_IDT_ENTRY_FUNCTION_SIZE (16)
 
 /*
  * out of 512 entries in pml4
