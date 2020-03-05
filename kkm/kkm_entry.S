@@ -107,6 +107,10 @@ kkm_switch_to_hk_asm:
  *
  * register context is set by monitor using KKM_SET_REGS and KKM_SET_SREGS
  * in guest private area. move them from guest private area to registers.
+ *
+ * on entry we are using guest kernel stack
+ * in the middle switch to iret stack
+ * by the end of this function we are running on guest payload stack
  */
 	.global kkm_switch_to_gp_asm
 kkm_switch_to_gp_asm:
@@ -166,6 +170,20 @@ kkm_switch_to_gp_asm:
 	 */
 	movq	%rax, %rsp
 
+	/*
+	 * setup iret stack
+	 *      ----------- bottom of stack
+	 *      |   SS    |
+	 *      ----------
+	 *      |   RSP   |
+	 *      -----------
+	 *      |  RFLAGS |
+	 *      -----------
+	 *      |   CS    |
+	 *      -----------
+	 *      |   RIP   |
+	 *      ----------- top of stack
+	 */
 	pushq	OFF_GP_SS(%rdi)
 	pushq	OFF_RSP(%rdi)
 	pushq	OFF_RFLAGS(%rdi)
@@ -200,7 +218,13 @@ kkm_switch_to_gp_asm:
 	 * set kernel thread local storage to NULL
 	 */
 	swapgs
+
+	/*
+	 * start payload with context picked up from stack
+	 */
 	iretq
+
+	/* NOTREACHED */
 #else
 	/*
 	 * following code is for testing return path
@@ -222,6 +246,11 @@ kkm_switch_to_gp_asm:
 
 	.size kkm_switch_to_gp_asm, .-kkm_switch_to_gp_asm
 
+/*
+ * save user context to guest private area
+ * running in guest kernel address space
+ * running on guest kernel stack
+ */
 	.global kkm_trap_entry_asm
 kkm_trap_entry_asm:
 
@@ -259,6 +288,7 @@ kkm_trap_entry_asm:
 	iretq
 #else
 	call	kkm_switch_to_host_kernel
+	/* NOTREACHED */
 	retq
 #endif
 
