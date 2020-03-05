@@ -20,10 +20,19 @@
  * %rdi -- guest private area
  * %rsi -- pointer to kkm
  * %rdx -- stack start
+ *
+ * get a clean break in CPU context here
+ * C-ABI allows us to discard all other registers
+ * only calee saved registers are pushed to stack
+ * we are on native kernel stack on entry and
+ * guest kernel stack before calling C functions
  */
 	.global kkm_switch_to_gk_asm
 kkm_switch_to_gk_asm:
 
+	/*
+	 * save callee saved registers according to C-ABI
+	 /
 	pushq	%rbp
 	pushq	%rbx
 	pushq	%r12
@@ -35,15 +44,24 @@ kkm_switch_to_gk_asm:
 	movq	%rsi, OFF_KONTEXT(%rdi)
 	/* save guest private pointer */
 	movq	%rdi, OFF_GAB(%rdi)
-	/* save native kernel stack */
+	/* save native kernel stack in guest private area */
 	movq	%rsp, OFF_NK_STACK(%rdi)
 
+	/*
+	 * switch stacks
+	 *    old - native kernel stack
+	 *    new - guest kernel stack
+	 */
 	mov	%rdx, %rsp
 
 	/* guest private area is still in %rdi */
 	call kkm_guest_kernel_start_payload
 
-	/* following code never executes */
+	/* NOTREACHED */
+
+	/*
+	 * following code is for testing return path
+	 */
 	popq	%r15
 	popq	%r14
 	popq	%r13
@@ -56,14 +74,24 @@ kkm_switch_to_gk_asm:
 
 /*
  * %rdi -- guest private area
+ *
+ * on entry we are using guest kernel stack
+ * we are on native kernel stack before returning to kernel functions
  */
 	.global kkm_switch_to_hk_asm
 kkm_switch_to_hk_asm:
 
-	/* restore native kernel stack */
+	/*
+	 * switch stacks
+	 *    old - guest kernel stack
+	 *    new - native kernel stack
+	 */
 	movq	OFF_NK_STACK(%rdi), %rsi
 	mov	%rsi, %rsp
 
+	/*
+	 * restore calee saved registers
+	 */
 	popq	%r15
 	popq	%r14
 	popq	%r13
@@ -76,6 +104,9 @@ kkm_switch_to_hk_asm:
 
 /*
  * %rdi -- guest private area
+ *
+ * register context is set by monitor using KKM_SET_REGS and KKM_SET_SREGS
+ * in guest private area. move them from guest private area to registers.
  */
 	.global kkm_switch_to_gp_asm
 kkm_switch_to_gp_asm:
@@ -98,7 +129,11 @@ kkm_switch_to_gp_asm:
 	movq	OFF_R8(%rdi), %r8
 
 	movq	OFF_RBP(%rdi), %rbp
-	# use %rsi as scratch register. It is not yet loaded
+
+	/*
+	 * we need some temporary registers to
+	 * setup iret stack. save them on the stack
+	 */
 	movq	OFF_RSP(%rdi), %rsi	# move %rsp from guest_private_area to scratch(%rsi)
 	pushq	%rsi			# save %rsp=scratch(%rsi) on stack
 	movq	OFF_RDI(%rdi), %rsi	# move %rdi from guest_private_area to scratch(%rsi)
@@ -111,11 +146,24 @@ kkm_switch_to_gp_asm:
 	movq	OFF_RAX(%rdi), %rax
 
 
-	movq	%rsp, %rbx		# save guest kernel stack in %rbx
+	/*
+	 * save current stack pointer
+	 * used for testing
+	 */
+	movq	%rsp, %rbx
 
-	# using %rdi->payload_entry_stack as trampoline
+	/*
+	 * load ga->payload_entry_stack
+	 * this is our iret stack. this needs to be 16 byte aligned
+	 */
 	movq	%rdi, %rax
 	addq	$OFF_PAY_ENT_STK, %rax
+
+	/*
+	 * switch stacks
+	 *    old - guest kernel stack
+	 *    new - iret stack
+	 */
 	movq	%rax, %rsp
 
 	pushq	OFF_GP_SS(%rdi)
@@ -124,21 +172,39 @@ kkm_switch_to_gp_asm:
 	pushq	OFF_GP_CS(%rdi)
 	pushq	OFF_RIP(%rdi)
 
+	/*
+	 * put scratch registers on iret stack
+	 */
 	pushq	OFF_RDI(%rdi)	# user %rdi
 	pushq	OFF_RAX(%rdi)	# user %rax
 	pushq	OFF_RBX(%rdi)	# user %rbx
 
+	/*
+	 * switch address space
+	 *    old - guest kernel address space
+	 *    new - guest payload address space
+	 */
 	movq	OFF_GP_CR3(%rdi), %rax
 	movq	%rax, %cr3
 
 #if 1
+	/*
+	 * we used these three for scratch space.
+	 * pop to set corect conext when starting guest
+	 */
 	popq	%rbx
 	popq	%rax
 	popq	%rdi
 
+	/*
+	 * set kernel thread local storage to NULL
+	 */
 	swapgs
 	iretq
 #else
+	/*
+	 * following code is for testing return path
+	 */
 	movq	%rbx, %rsp
 
 	popq	%rdi

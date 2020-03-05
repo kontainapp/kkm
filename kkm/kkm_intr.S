@@ -17,7 +17,8 @@
 
 /*
  * This code will be physically copied to 
- * kx entry area which starts right above IDT
+ * kx entry area which starts right next to IDT
+ * This code is running on stack from tss->stack0.
  */
 	.text
 	.align 4096
@@ -25,8 +26,8 @@
 kkm_intr_start:
 	irqnumber=0
 	.rept (TOTAL_IRQ-FIRST_IRQ)
-	pushq irqnumber
-	jmp kkm_intr_entry_asm
+	pushq	irqnumber
+	jmp	kkm_intr_entry_asm
 	.align 8
 	irqnumber=irqnumber+1
 	.endr
@@ -34,6 +35,37 @@ kkm_intr_start:
 
 	.global kkm_intr_entry_asm
 kkm_intr_entry_asm:
+	/*
+	 * set flags we cant depend on guest
+	 */
+	clac
+	clc
+
+	/*
+	 * change kernel thread local storage
+	 */
+	swapgs
+
+	/*
+	 * create temporary register
+	 */
+	pushq	%rdi
+
+	/*
+	 * switch to guest kernel address space
+	 * we allocated kernel and payload next to each
+	 * other in physical memory.
+	 * no need to flush TLB
+	 * new address space is superset of old address space
+	 */
+	movq	%cr3, %rdi
+	andq	$0xffffffffffffefff, %rdi
+	mov	%rdi, %cr3
+
+	/*
+	 * load kx area to temporary register
+	 */
+
 	# save registers
 	iretq
 	.size kkm_intr_entry_asm, .-kkm_intr_entry_asm
