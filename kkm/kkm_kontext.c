@@ -294,14 +294,6 @@ void kkm_guest_kernel_start_payload(struct kkm_guest_area *ga)
 	load_idt(&ga->guest_idt_desc);
 
 	/*
-	 * switch to guest payload address space is done in assembly
-	 * just before switching to user space
-	 * TODO: move flush to assembly
-	 * flush TLB
-	 */
-	kkm_flush_tlb_all();
-
-	/*
 	 * start payload
 	 */
 	kkm_switch_to_gp_asm(ga);

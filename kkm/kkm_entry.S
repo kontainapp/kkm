@@ -205,10 +205,21 @@ kkm_switch_to_gp_asm:
 	movq	OFF_GP_CR3(%rdi), %rax
 	movq	%rax, %cr3
 
+	/*
+	 * invlidate TLB
+	 * toggle CR4_PGE bit and then restore
+	 */
+	movq	%cr4, %rax
+	pushq	%rax
+	xorq	$0x80, %rax
+	movq	%rax, %cr4
+	popq	%rax
+	movq	%rax, %cr4
+
 #if 1
 	/*
-	 * we used these three for scratch space.
-	 * pop to set corect conext when starting guest
+	 * rbx, rax, rdi were used as scratch registers.
+	 * pop to set correct conext
 	 */
 	popq	%rbx
 	popq	%rax

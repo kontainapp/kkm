@@ -53,10 +53,10 @@ kkm_intr_entry_asm:
 
 	/*
 	 * switch to guest kernel address space
-	 * we allocated kernel and payload next to each
-	 * other in physical memory.
+	 * kernel and payload PML4 are allocated next to each
+	 * other(even page is kernel, odd page is guest) in physical memory.
 	 * no need to flush TLB
-	 * new address space is superset of old address space
+	 * guest kernel address space is superset of guest payload address space
 	 */
 	movq	%cr3, %rdi
 	andq	$0xffffffffffffefff, %rdi
