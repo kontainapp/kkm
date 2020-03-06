@@ -10,6 +10,11 @@
  * permission of Kontain Inc.
  */
 
+#include <linux/linkage.h>
+#include <asm/percpu.h>
+#include <asm/asm-offsets.h>
+#include "kkm_offsets.h"
+
 
 #define	FIRST_IRQ	(0)
 #define	TOTAL_IRQ	(256)
@@ -36,20 +41,27 @@ kkm_intr_start:
 	.global kkm_intr_entry_asm
 kkm_intr_entry_asm:
 	/*
-	 * set flags we cant depend on guest
+	 * set flags, entered from unknown code
 	 */
 	clac
 	clc
 
 	/*
-	 * change kernel thread local storage
+	 * change to kernel thread local storage
 	 */
 	swapgs
 
 	/*
-	 * create temporary register
+	 * create scratch registers
 	 */
 	pushq	%rdi
+	pushq	%rsi
+
+	/*
+	 * save current stack top to rsi
+	 * we need this to save trap information
+	 */
+	movq	%rsp, %rsi
 
 	/*
 	 * switch to guest kernel address space
@@ -63,10 +75,65 @@ kkm_intr_entry_asm:
 	mov	%rdi, %cr3
 
 	/*
-	 * load kx area to temporary register
+	 * TODO : get cpu id and add it to private area
 	 */
 
-	# save registers
+	/*
+	 * set stack to guest kernel stack in kkm_guest_area
+	 * move all the registers to guest regs
+	 * move all the sregs to guest sregs
+	 * move fault area to ga
+	 * call kernel restore
+	 */
+	movq	$0xFFFFFE8000103000, %rdi
+	/* add cpu offset to this to get cpu private data */
+
+	/*
+	 * kkm_guest_area is in rdi
+	 */
+	movq	(%rdi), %rdi
+	addq	OFF_GUEST_STK, %rdi
+
+	/*
+	 * switch stacks
+	 *    old - intr context stack
+	 *    new - guest kernel stack
+	 */
+	movq	%rdi, %rsp
+
+	/*
+	 * save registers to kkm_guest_area
+	 */
+	movq	%r15, OFF_R15(%rdi)
+	movq	%r14, OFF_R14(%rdi)
+	movq	%r13, OFF_R13(%rdi)
+	movq	%r12, OFF_R12(%rdi)
+
+	movq	%r11, OFF_R11(%rdi)
+	movq	%r10, OFF_R10(%rdi)
+	movq	%r9, OFF_R9(%rdi)
+	movq	%r8, OFF_R8(%rdi)
+
+	movq	%rbp, OFF_RBP(%rdi)
+	/*
+	 * guest %rsi, %rsp, %rdi are on interrupt stack
+	 * save them using %rsi which has interrupt stack
+	 * use %rbp as scratch register
+	 */
+	movq	8(%rsi), %rbp
+	movq	%rbp, OFF_RSI(%rdi)
+
+	movq	16(%rsi), %rbp
+	movq	%rbp, OFF_RDI(%rdi)
+
+	movq	48(%rsi), %rbp
+	movq	%rsi, OFF_RSI(%rdi)
+
+	movq	%rdx, OFF_RDX(%rdi)
+	movq	%rcx, OFF_RCX(%rdi)
+	movq	%rbx, OFF_RBX(%rdi)
+	movq	%rax, OFF_RAX(%rdi)
+
 	iretq
 	.size kkm_intr_entry_asm, .-kkm_intr_entry_asm
 

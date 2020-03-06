@@ -28,7 +28,7 @@
 #define OFF_GP_CS (8 * 7) /* guest_payload_cs */
 #define OFF_GP_SS (8 * 8) /* guest_payload_ss */
 
-#define	REG_BASE_OFF	(128)
+#define REG_BASE_OFF (128)
 
 #define OFF_RAX ((REG_BASE_OFF) + 8 * 0) /* regs.rax */
 #define OFF_RBX ((REG_BASE_OFF) + 8 * 1) /* regs.rbx */
@@ -53,6 +53,7 @@
 #define OFF_RIP ((REG_BASE_OFF) + 8 * 16) /* regs.rip */
 #define OFF_RFLAGS ((REG_BASE_OFF) + 8 * 17) /* regs.rflags */
 
-#define OFF_PAY_ENT_STK	(4096)	/* payload_entry_stack bottom */
+#define OFF_PAY_ENT_STK (4096) /* payload_entry_stack bottom */
+#define OFF_GUEST_STK (7936) /* guest kernel stack bottom */
 
 #endif /* __KKM_OFFSETS_H__ */
