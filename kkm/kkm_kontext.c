@@ -218,6 +218,7 @@ void kkm_guest_kernel_start_payload(struct kkm_guest_area *ga)
 {
 	int cpu = 0x66;
 	struct cpu_entry_area *cea = NULL;
+	uint64_t estack_start = 0;
 
 	printk(KERN_NOTICE "kkm_guest_kernel_start_payload: ga %px\n", ga);
 	ga = kkm_mmu_get_cur_cpu_guest_va();
@@ -289,6 +290,23 @@ void kkm_guest_kernel_start_payload(struct kkm_guest_area *ga)
 	kkm_verify_guest_area_redzone(ga);
 
 	/*
+	 * save native kernel tss sp0 (intr stack)
+	 */
+	ga->native_save_tss_sp0 = cea->tss.x86_tss.sp0;
+
+	/*
+	 * ga is pointing to kx area
+	 * replace tss stack 0 with payload_entry_stack,
+	 * we can identify ga location from this.
+	 */
+	estack_start = (uint64_t)((void *)&ga->payload_entry_stack + sizeof(ga->payload_entry_stack));
+	load_sp0(estack_start);
+
+	printk(KERN_NOTICE
+	       "kkm_guest_kernel_start_payload: swap sp0 native %llx guest %llx\n",
+	       ga->native_save_tss_sp0, estack_start);
+
+	/*
 	 * interrupts are disbled at the begining of switch_kernel
 	 * set new idt
 	 */
@@ -320,10 +338,12 @@ void kkm_guest_kernel_start_payload(struct kkm_guest_area *ga)
 void kkm_switch_to_host_kernel(void)
 {
 	int cpu = -1;
+	struct cpu_entry_area *cea = NULL;
 	struct kkm_kontext *kkm_kontext = NULL;
 	struct kkm_guest_area *ga = NULL;
 
 	cpu = get_cpu();
+	cea = get_cpu_entry_area(cpu);
 	kkm_kontext = per_cpu(current_kontext, cpu);
 	ga = (struct kkm_guest_area *)kkm_kontext->guest_area;
 
@@ -342,6 +362,11 @@ void kkm_switch_to_host_kernel(void)
 	       kkm_kontext->native_kernel_gs_base,
 	       kkm_kontext->native_kernel_gs_kern_base,
 	       kkm_kontext->native_kernel_ss);
+
+	/*
+	 * restore native kernel tss sp0 (intr stack)
+	 */
+	load_sp0(ga->native_save_tss_sp0);
 
 	/*
 	 * restore native kernel address space
