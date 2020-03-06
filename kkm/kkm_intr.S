@@ -56,6 +56,28 @@ kkm_intr_entry_asm:
 	 */
 	pushq	%rdi
 	pushq	%rsi
+	/*
+	 * trap stack looks like this now
+	 *      ----------- bottom of stack
+	 *      |   SS    |
+	 *      ----------
+	 *      |   RSP   |
+	 *      -----------
+	 *      |  RFLAGS |
+	 *      -----------
+	 *      |   CS    |
+	 *      -----------
+	 *      |   RIP   |
+	 *      -----------
+	 *      |  ERROR  |
+	 *      -----------
+	 *      | INTR NO |
+	 *      -----------
+	 *      |   RDI   |
+	 *      -----------
+	 *      |   RSI   |
+	 *      ----------- top of stack
+	 */
 
 	/*
 	 * save current stack top to rsi
