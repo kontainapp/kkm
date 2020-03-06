@@ -53,7 +53,30 @@
 #define OFF_RIP ((REG_BASE_OFF) + 8 * 16) /* regs.rip */
 #define OFF_RFLAGS ((REG_BASE_OFF) + 8 * 17) /* regs.rflags */
 
+#define OFF_TI_SS ((REG_BASE_OFF) + 8 * 67) /* trap_info.ss */
+#define OFF_TI_RSP ((REG_BASE_OFF) + 8 * 68) /* trap_info.ss */
+#define OFF_TI_RFLAGS ((REG_BASE_OFF) + 8 * 69) /* trap_info.ss */
+#define OFF_TI_CS ((REG_BASE_OFF) + 8 * 70) /* trap_info.ss */
+#define OFF_TI_RIP ((REG_BASE_OFF) + 8 * 71) /* trap_info.ss */
+#define OFF_TI_ERROR ((REG_BASE_OFF) + 8 * 72) /* trap_info.ss */
+
+#define OFF_TI_INTR_NO ((REG_BASE_OFF) + 8 * 73) /* kkm_intr_no */
+
+
 #define OFF_PAY_ENT_STK (4096) /* payload_entry_stack bottom */
 #define OFF_GUEST_STK (7936) /* guest kernel stack bottom */
+
+
+/* trap stack offsets from top of stack before switching stacks */
+
+#define OFF_TS_RSI	(8 * 1)
+#define OFF_TS_RDI	(8 * 2)
+#define OFF_TS_INTR_NO	(8 * 3)
+#define OFF_TS_ERROR	(8 * 4)
+#define OFF_TS_RIP	(8 * 5)
+#define OFF_TS_CS	(8 * 6)
+#define OFF_TS_RFLAGS	(8 * 7)
+#define OFF_TS_RSP	(8 * 8)
+#define OFF_TS_SS	(8 * 9)
 
 #endif /* __KKM_OFFSETS_H__ */

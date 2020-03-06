@@ -24,6 +24,7 @@
 #include "kkm_entry.h"
 #include "kkm_idt_cache.h"
 #include "kkm_run.h"
+#include "kkm_offsets.h"
 
 DEFINE_PER_CPU(struct kkm_kontext *, current_kontext);
 
@@ -36,6 +37,9 @@ void kkm_hw_debug_registers_restore(uint64_t *registers);
 int kkm_kontext_init(struct kkm_kontext *kkm_kontext)
 {
 	int ret_val = 0;
+
+	printk(KERN_NOTICE
+	       "kkm_kontext_init: trap_info %px %d\n", &((struct kkm_guest_area  *)0)->trap_info.error, OFF_TI_ERROR);
 
 	/*
 	 * allocate guest private area

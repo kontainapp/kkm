@@ -120,19 +120,46 @@ kkm_intr_entry_asm:
 	 * save them using %rsi which has interrupt stack
 	 * use %rbp as scratch register
 	 */
-	movq	8(%rsi), %rbp
-	movq	%rbp, OFF_RSI(%rdi)
+	movq	OFF_TS_RSP(%rsi), %rbp
+	movq	%rbp, OFF_RSP(%rdi)
 
-	movq	16(%rsi), %rbp
+	movq	OFF_TS_RDI(%rsi), %rbp
 	movq	%rbp, OFF_RDI(%rdi)
 
-	movq	48(%rsi), %rbp
-	movq	%rsi, OFF_RSI(%rdi)
+	movq	OFF_TS_RSI(%rsi), %rbp
+	movq	%rbp, OFF_RSI(%rdi)
 
 	movq	%rdx, OFF_RDX(%rdi)
 	movq	%rcx, OFF_RCX(%rdi)
 	movq	%rbx, OFF_RBX(%rdi)
 	movq	%rax, OFF_RAX(%rdi)
+
+	/*
+	 * save trap information from trap stack to kkm_guest_area
+	 */
+	movq	OFF_TS_ERROR(%rsi), %rbp
+	movq	%rbp, OFF_TI_ERROR(%rdi)
+
+	movq	OFF_TS_RIP(%rsi), %rbp
+	movq	%rbp, OFF_TI_RIP(%rdi)
+
+	movq	OFF_TS_CS(%rsi), %rbp
+	movq	%rbp, OFF_TI_CS(%rdi)
+
+	movq	OFF_TS_RFLAGS(%rsi), %rbp
+	movq	%rbp, OFF_TI_RFLAGS(%rdi)
+
+	movq	OFF_TS_RSP(%rsi), %rbp
+	movq	%rbp, OFF_TI_RSP(%rdi)
+
+	movq	OFF_TS_SS(%rsi), %rbp
+	movq	%rbp, OFF_TI_SS(%rdi)
+
+	/*
+	 * save interrupt no
+	 */
+	movq	OFF_TS_INTR_NO(%rsi), %rbp
+	movq	%rbp, OFF_TI_INTR_NO(%rdi)
 
 	iretq
 	.size kkm_intr_entry_asm, .-kkm_intr_entry_asm

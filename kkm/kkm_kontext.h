@@ -29,6 +29,15 @@
 
 #define REDZONE_DATA (0xa5)
 
+struct kkm_trap_info {
+	uint64_t ss;
+	uint64_t rsp;
+	uint64_t rflags;
+	uint64_t cs;
+	uint64_t rip;
+	uint64_t error;
+};
+
 /*
  * per vcpu guest private area,
  * used for switching in and out of kontext payload
@@ -82,8 +91,11 @@ struct kkm_guest_area {
 			struct kkm_sregs sregs;
 			struct kkm_debug debug;
 			struct kkm_fpu fpu;
+			struct kkm_trap_info trap_info;
 
-			uint8_t reserved[2408];
+			uint64_t kkm_intr_no;
+
+			uint8_t reserved[2352];
 
 			/* keep these two entries at the end
 			 * first page of guest area(0xE00 - 0x1000)
