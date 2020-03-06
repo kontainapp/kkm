@@ -38,9 +38,6 @@ int kkm_kontext_init(struct kkm_kontext *kkm_kontext)
 {
 	int ret_val = 0;
 
-	printk(KERN_NOTICE
-	       "kkm_kontext_init: trap_info %px %d\n", &((struct kkm_guest_area  *)0)->trap_info.error, OFF_TI_ERROR);
-
 	/*
 	 * allocate guest private area
 	 */

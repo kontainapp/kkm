@@ -183,6 +183,9 @@ kkm_intr_entry_asm:
 	movq	OFF_TS_INTR_NO(%rsi), %rbp
 	movq	%rbp, OFF_TI_INTR_NO(%rdi)
 
+	call	kkm_switch_to_host_kernel
+
+	/* NOTREACHED */
 	iretq
 	.size kkm_intr_entry_asm, .-kkm_intr_entry_asm
 
