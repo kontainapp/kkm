@@ -69,14 +69,14 @@
 
 /* trap stack offsets from top of stack before switching stacks */
 
-#define OFF_TS_RSI	(8 * 1)
-#define OFF_TS_RDI	(8 * 2)
-#define OFF_TS_INTR_NO	(8 * 3)
-#define OFF_TS_ERROR	(8 * 4)
-#define OFF_TS_RIP	(8 * 5)
-#define OFF_TS_CS	(8 * 6)
-#define OFF_TS_RFLAGS	(8 * 7)
-#define OFF_TS_RSP	(8 * 8)
-#define OFF_TS_SS	(8 * 9)
+#define OFF_TS_RSI	(8 * 0)
+#define OFF_TS_RDI	(8 * 1)
+#define OFF_TS_INTR_NO	(8 * 2)
+#define OFF_TS_ERROR	(8 * 3)
+#define OFF_TS_RIP	(8 * 4)
+#define OFF_TS_CS	(8 * 5)
+#define OFF_TS_RFLAGS	(8 * 6)
+#define OFF_TS_RSP	(8 * 7)
+#define OFF_TS_SS	(8 * 8)
 
 #endif /* __KKM_OFFSETS_H__ */

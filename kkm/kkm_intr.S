@@ -52,6 +52,11 @@ kkm_intr_entry_asm:
 	swapgs
 
 	/*
+	 * store dummy error code to stack
+	 */
+	pushq	$-1
+
+	/*
 	 * create scratch registers
 	 */
 	pushq	%rdi
@@ -97,24 +102,11 @@ kkm_intr_entry_asm:
 	mov	%rdi, %cr3
 
 	/*
-	 * TODO : get cpu id and add it to private area
+	 * %rsp is currently in guest area
+	 * masking off bottom 12 bits points to ga in kx area
 	 */
-
-	/*
-	 * set stack to guest kernel stack in kkm_guest_area
-	 * move all the registers to guest regs
-	 * move all the sregs to guest sregs
-	 * move fault area to ga
-	 * call kernel restore
-	 */
-	movq	$0xFFFFFE8000103000, %rdi
-	/* add cpu offset to this to get cpu private data */
-
-	/*
-	 * kkm_guest_area is in rdi
-	 */
-	movq	(%rdi), %rdi
-	addq	OFF_GUEST_STK, %rdi
+	movq	%rsp, %rdi
+	andq	$0xffffffffffffe000, %rdi
 
 	/*
 	 * switch stacks
@@ -122,6 +114,7 @@ kkm_intr_entry_asm:
 	 *    new - guest kernel stack
 	 */
 	movq	%rdi, %rsp
+	addq	OFF_GUEST_STK, %rsp
 
 	/*
 	 * save registers to kkm_guest_area
