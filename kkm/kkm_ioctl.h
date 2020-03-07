@@ -39,6 +39,8 @@
 #define KKM_GET_SREGS _IOR(KKM_IO, 0x83, struct kkm_sregs)
 #define KKM_SET_SREGS _IOW(KKM_IO, 0x84, struct kkm_sregs)
 
+#define KKM_SET_MSRS _IOW(KKM_IO, 0x89, struct kkm_msrs)
+
 #define KKM_GET_FPU _IOR(KKM_IO, 0x8c, struct kkm_fpu)
 #define KKM_SET_FPU _IOW(KKM_IO, 0x8d, struct kkm_fpu)
 
@@ -116,6 +118,19 @@ struct kkm_dtable {
 	uint64_t base;
 	uint16_t limit;
 	uint16_t reserved[3];
+};
+
+struct kkm_msr_entry {
+	uint32_t index;
+	uint32_t reserved;
+	uint64_t data;
+};
+
+struct kkm_msrs {
+	uint32_t nmsrs;
+	uint32_t pad;
+
+	struct kkm_msr_entry entries[0];
 };
 
 struct kkm_sregs {

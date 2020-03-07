@@ -149,6 +149,9 @@ static long kkm_execution_kontext_ioctl(struct file *file_p,
 		ret_val = kkm_from_user(&ga->sregs, (void *)arg,
 					sizeof(struct kkm_sregs));
 		break;
+	case KKM_SET_MSRS:
+		/* return success */
+		break;
 	case KKM_GET_FPU:
 		/* get guest fpu state */
 		ret_val = kkm_to_user((void *)arg, &ga->fpu,
