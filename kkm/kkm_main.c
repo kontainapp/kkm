@@ -36,6 +36,12 @@ void kkm_destroy_app(struct kkm *kkm)
 	kfree(kkm);
 }
 
+void kkm_reference_count_init(struct kkm *kkm)
+{
+	printk(KERN_NOTICE "kkm_reference_count_init:\n");
+	refcount_set(&kkm->reference_count, 1);
+}
+
 void kkm_reference_count_up(struct kkm *kkm)
 {
 	printk(KERN_NOTICE "kkm_reference_count_up: before %d\n",
@@ -485,7 +491,7 @@ int kkm_create_kontainer(unsigned long arg)
 		goto error;
 	}
 
-	kkm_reference_count_up(kkm);
+	kkm_reference_count_init(kkm);
 
 	return kkm->kontainer_fd;
 
