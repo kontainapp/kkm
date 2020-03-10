@@ -32,7 +32,7 @@ kkm_switch_to_gk_asm:
 
 	/*
 	 * save callee saved registers according to C-ABI
-	 /
+	 */
 	pushq	%rbp
 	pushq	%rbx
 	pushq	%r12
@@ -59,8 +59,9 @@ kkm_switch_to_gk_asm:
 
 	/* NOTREACHED */
 
+kkm_restore_label:
 	/*
-	 * following code is for testing return path
+	 * following code is for return path
 	 */
 	popq	%r15
 	popq	%r14
@@ -73,7 +74,7 @@ kkm_switch_to_gk_asm:
 	.size kkm_switch_to_gk_asm, .-kkm_switch_to_gk_asm
 
 /*
- * %rdi -- guest private area
+ * %rdi -- saved stack
  *
  * on entry we are using guest kernel stack
  * we are on native kernel stack before returning to kernel functions
@@ -86,19 +87,10 @@ kkm_switch_to_hk_asm:
 	 *    old - guest kernel stack
 	 *    new - native kernel stack
 	 */
-	movq	OFF_NK_STACK(%rdi), %rsi
-	mov	%rsi, %rsp
+	mov	%rdi, %rsp
+	jmp	kkm_restore_label
 
-	/*
-	 * restore calee saved registers
-	 */
-	popq	%r15
-	popq	%r14
-	popq	%r13
-	popq	%r12
-	popq	%rbx
-	popq	%rbp
-	retq
+	/* NOTREACHED */
 
 	.size kkm_switch_to_hk_asm, .-kkm_switch_to_hk_asm
 

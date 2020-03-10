@@ -197,7 +197,7 @@ int kkm_kontext_switch_kernel(struct kkm_kontext *kkm_kontext)
 	kkm_switch_to_gk_asm(ga, kkm_kontext,
 			     (unsigned long long)ga->redzone_bottom);
 
-	/* not reached used for debugging */
+	/* code is from intr/fault return path */
 	kkm_hw_debug_registers_restore(kkm_kontext->native_debug_registers);
 
 	printk(KERN_NOTICE
@@ -397,7 +397,7 @@ void kkm_switch_to_host_kernel(void)
 	/*
 	 * restore rest of the registers and switch stacks
 	 */
-	kkm_switch_to_hk_asm(kkm_kontext->guest_area);
+	kkm_switch_to_hk_asm(((struct kkm_guest_area *)kkm_kontext->guest_area)->native_kernel_stack);
 }
 
 void kkm_hw_debug_registers_save(uint64_t *registers)
