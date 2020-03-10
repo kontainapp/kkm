@@ -25,6 +25,7 @@
 #include "kkm_idt_cache.h"
 #include "kkm_run.h"
 #include "kkm_offsets.h"
+#include "kkm_intr.h"
 
 DEFINE_PER_CPU(struct kkm_kontext *, current_kontext);
 
@@ -299,7 +300,7 @@ void kkm_guest_kernel_start_payload(struct kkm_guest_area *ga)
 	 * replace tss stack 0 with payload_entry_stack,
 	 * we can identify ga location from this.
 	 */
-	estack_start = (uint64_t)((void *)&ga->payload_entry_stack + sizeof(ga->payload_entry_stack));
+	estack_start = (uint64_t)(&ga->redzone_bottom);
 	load_sp0(estack_start);
 
 	printk(KERN_NOTICE
