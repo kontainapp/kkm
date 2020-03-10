@@ -99,7 +99,7 @@ kkm_intr_entry_asm:
 	 */
 	movq	%cr3, %rdi
 	andq	$0xffffffffffffefff, %rdi
-	mov	%rdi, %cr3
+	movq	%rdi, %cr3
 
 	/*
 	 * %rsp is currently in guest area
