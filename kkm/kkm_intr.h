@@ -15,5 +15,6 @@
 
 void kkm_intr_start(void);
 void kkm_intr_fill(void);
+void kkm_intr_entry_asm(void);
 
 #endif /* __KKM_INTR_H__ */
