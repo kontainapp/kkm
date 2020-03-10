@@ -321,3 +321,20 @@ end
 document show_idt
 	"Usage show_idt idt-va"
 end
+
+define add_trap_breaks
+	set $base = 0xfffffe8000001000
+	set $count = 16
+	set $index = 0
+	while $index < $count
+		set $baddr = $base + $index * 0x10
+		break *$baddr
+		set $index = $index + 1
+	end
+	info breaks
+end
+
+document add_trap_breaks
+	"Usage add breakpoints on first 15 traps"
+end
+
