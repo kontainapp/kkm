@@ -64,6 +64,8 @@ struct kkm_kontext {
 
 	unsigned short native_kernel_ss; /* native kernel ss */
 
+	uint64_t native_kernel_entry_syscall_64; /* native kernel 64bit syscall entry point */
+
 	uint64_t native_debug_registers[8];
 
 	struct desc_ptr native_gdt_descr; /* native gdt */

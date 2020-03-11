@@ -248,49 +248,9 @@ kkm_switch_to_gp_asm:
 	.size kkm_switch_to_gp_asm, .-kkm_switch_to_gp_asm
 
 /*
- * save user context to guest private area
- * running in guest kernel address space
- * running on guest kernel stack
+ * syscall 64 entry point
  */
-	.global kkm_trap_entry_asm
-kkm_trap_entry_asm:
+	.global kkm_syscall_entry_asm
+kkm_syscall_entry_asm:
+	.size kkm_syscall_entry_asm, .-kkm_syscall_entry_asm
 
-#swapgs
-	pushq	%rdi			# save %rdi on stack
-
-	movq	%rsp, %rdi
-	andq	$0xffffffffffffe000, %rdi	# begining of current stack is register save area
-
-	movq	%r15, OFF_R15(%rdi)
-	movq	%r14, OFF_R14(%rdi)
-	movq	%r13, OFF_R13(%rdi)
-	movq	%r12, OFF_R12(%rdi)
-
-	movq	%r11, OFF_R11(%rdi)
-	movq	%r10, OFF_R10(%rdi)
-	movq	%r9, OFF_R9(%rdi)
-	movq	%r8, OFF_R8(%rdi)
-
-	movq	%rbp, OFF_RBP(%rdi)
-	movq	%rsp, OFF_RSP(%rdi)
-	# rbp is already saved use %rbp as scratch
-	movq	(%rsp), %rbp		# move %rdi from stack to scratch reg
-	movq	%rbp, OFF_RDI(%rdi)	# move scratch(%rdi) to register save area
-	movq	%rsi, OFF_RSI(%rdi)
-
-	movq	%rdx, OFF_RDX(%rdi)
-	movq	%rcx, OFF_RCX(%rdi)
-	movq	%rbx, OFF_RBX(%rdi)
-	movq	%rax, OFF_RAX(%rdi)
-
-	popq	%rdi
-
-#if 0
-	iretq
-#else
-	call	kkm_switch_to_host_kernel
-	/* NOTREACHED */
-	retq
-#endif
-
-	.size kkm_trap_entry_asm, .-kkm_trap_entry_asm

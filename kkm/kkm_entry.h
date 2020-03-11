@@ -17,6 +17,6 @@ void kkm_switch_to_gk_asm(struct kkm_guest_area *ga,
 			  uint64_t stack);
 void kkm_switch_to_hk_asm(uint64_t stack);
 void kkm_switch_to_gp_asm(struct kkm_guest_area *ga);
-void kkm_trap_entry_asm(void);
+void kkm_syscall_entry_asm(void);
 
 #endif /* __KKM_ENTRY_H__ */

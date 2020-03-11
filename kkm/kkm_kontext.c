@@ -187,6 +187,11 @@ int kkm_kontext_switch_kernel(struct kkm_kontext *kkm_kontext)
 
 	savesegment(ss, kkm_kontext->native_kernel_ss);
 
+	/*
+	 * save native kernel SYSCALL target address
+	 */
+	rdmsrl(MSR_LSTAR, kkm_kontext->native_kernel_entry_syscall_64);
+
 	printk(KERN_NOTICE
 	       "kkm_kontext_switch_kernel: segments ds %x es %x fs %x fsbase %lx gs %x gsbase %lx gskernbase %lx ss %x\n",
 	       kkm_kontext->native_kernel_ds, kkm_kontext->native_kernel_es,
@@ -256,6 +261,11 @@ void kkm_guest_kernel_start_payload(struct kkm_guest_area *ga)
 
 	loadsegment(fs, 0);
 	wrmsrl(MSR_FS_BASE, ga->sregs.fs.base);
+
+	/*
+	 * set guest 64bit SYSCALL target address
+	 */
+	wrmsrl(MSR_LSTAR, (uint64_t)kkm_syscall_entry_asm);
 
 	/*
 	 * dont use km provided cs and ss, they control privilege
@@ -331,6 +341,7 @@ void kkm_guest_kernel_start_payload(struct kkm_guest_area *ga)
 	 */
 	kkm_switch_to_gp_asm(ga);
 
+	/* NOTREACHED */
 	/* never reaches, this code is used for debugging */
 
 	printk(KERN_NOTICE
@@ -339,9 +350,6 @@ void kkm_guest_kernel_start_payload(struct kkm_guest_area *ga)
 	cea = get_cpu_entry_area(cpu);
 	memcpy(&ga->payload_entry_stack, &cea->entry_stack_page.stack,
 	       sizeof(struct entry_stack));
-
-	kkm_trap_entry_asm();
-	//kkm_switch_to_host_kernel();
 }
 
 /*
@@ -391,6 +399,12 @@ void kkm_switch_to_host_kernel(void)
 	 * restore native kernel idt
 	 */
 	load_idt(&ga->native_idt_desc);
+
+	/*
+	 * save native kernel SYSCALL target address
+	 */
+	wrmsrl(MSR_LSTAR, kkm_kontext->native_kernel_entry_syscall_64);
+
 
 	/*
 	 * restore native kernel segment registers
