@@ -252,5 +252,34 @@ kkm_switch_to_gp_asm:
  */
 	.global kkm_syscall_entry_asm
 kkm_syscall_entry_asm:
+
+	/*
+	 * change to kernel thread local storage
+	 */
+	swapgs
+
+	/*
+	 * switch to guest kernel address space
+	 * kernel and payload PML4 are allocated next to each
+	 * other(even page is kernel, odd page is guest) in physical memory.
+	 * no need to flush TLB
+	 * guest kernel address space is superset of guest payload address space
+	 */
+	movq	%cr3, %rdi
+	andq	$0xffffffffffffefff, %rdi
+	movq	%rdi, %cr3
+
+	/*
+	 * %rsp is currently in guest area
+	 * masking off bottom 12 bits points to ga in kx area
+	 */
+	movq	%rsp, %rdi
+	andq	$0xffffffffffffe000, %rdi
+
+	/*
+	 * TODO save registers
+	 */
+	call	kkm_switch_to_host_kernel
+
 	.size kkm_syscall_entry_asm, .-kkm_syscall_entry_asm
 
