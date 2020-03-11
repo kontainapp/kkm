@@ -111,7 +111,6 @@ int kkm_kontext_switch_kernel(struct kkm_kontext *kkm_kontext)
 	struct kkm_guest_area *ga =
 		(struct kkm_guest_area *)kkm_kontext->guest_area;
 	int cpu = -1;
-	struct cpu_entry_area *cea = NULL;
 
 	printk(KERN_NOTICE "kkm_kontext_switch_kernel:\n");
 
@@ -128,12 +127,6 @@ int kkm_kontext_switch_kernel(struct kkm_kontext *kkm_kontext)
 	 */
 	kkm_idt_get_desc(&ga->native_idt_desc, &ga->guest_idt_desc);
 
-#if 0
-	// delete this once kx area is correctly set up
-	// before debugging interrupts and traps
-	ga->guest_idt_desc.address = ga->native_idt_desc.address;
-#endif
-
 	/*
 	 * disable interrupts
 	 */
@@ -148,11 +141,6 @@ int kkm_kontext_switch_kernel(struct kkm_kontext *kkm_kontext)
 	       "kkm_kontext_switch_kernel: before %px %llx %llx %llx\n",
 	       ga->kkm_kontext, ga->guest_area_beg, ga->native_kernel_stack,
 	       ga->guest_stack_variable_address);
-
-	// save native kernel trampoline stack
-	cea = get_cpu_entry_area(cpu);
-	memcpy(&ga->native_entry_stack, &cea->entry_stack_page.stack,
-	       sizeof(struct entry_stack));
 
 	/*
 	 * save native kernel address space(cr3 and cr4)
@@ -346,10 +334,6 @@ void kkm_guest_kernel_start_payload(struct kkm_guest_area *ga)
 
 	printk(KERN_NOTICE
 	       "kkm_guest_kernel_start_payload: returned from guest call\n");
-
-	cea = get_cpu_entry_area(cpu);
-	memcpy(&ga->payload_entry_stack, &cea->entry_stack_page.stack,
-	       sizeof(struct entry_stack));
 }
 
 /*
