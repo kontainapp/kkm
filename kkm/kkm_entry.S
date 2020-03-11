@@ -18,8 +18,7 @@
 	.text
 /*
  * %rdi -- guest private area
- * %rsi -- pointer to kkm
- * %rdx -- stack start
+ * %rsi -- stack start
  *
  * get a clean break in CPU context here
  * C-ABI allows us to discard all other registers
@@ -40,11 +39,10 @@ kkm_switch_to_gk_asm:
 	pushq	%r14
 	pushq	%r15
 
-	/* save kkm */
-	movq	%rsi, OFF_KONTEXT(%rdi)
-	/* save guest private pointer */
-	movq	%rdi, OFF_GAB(%rdi)
-	/* save native kernel stack in guest private area */
+	/*
+	 * save native kernel stack top in guest private area
+	 * use stack to to restore to native kernel
+	 */
 	movq	%rsp, OFF_NK_STACK(%rdi)
 
 	/*
@@ -52,7 +50,7 @@ kkm_switch_to_gk_asm:
 	 *    old - native kernel stack
 	 *    new - guest kernel stack
 	 */
-	mov	%rdx, %rsp
+	mov	%rsi, %rsp
 
 	/* guest private area is still in %rdi */
 	call kkm_guest_kernel_start_payload

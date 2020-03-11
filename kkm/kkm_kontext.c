@@ -38,6 +38,7 @@ void kkm_hw_debug_registers_restore(uint64_t *registers);
 int kkm_kontext_init(struct kkm_kontext *kkm_kontext)
 {
 	int ret_val = 0;
+	struct kkm_guest_area *ga = NULL;
 
 	/*
 	 * allocate guest private area
@@ -68,6 +69,14 @@ int kkm_kontext_init(struct kkm_kontext *kkm_kontext)
 
 	kkm_init_guest_area_redzone(
 		(struct kkm_guest_area *)kkm_kontext->guest_area);
+
+	ga = (struct kkm_guest_area *)kkm_kontext->guest_area;
+	/*
+	 * save kva's in ga
+	 * used when ga is mapped to kx area
+	 */
+	ga->kkm_kontext = kkm_kontext;
+	ga->guest_area_beg = (uint64_t)ga;
 
 #if 0
 	// store_gdt not available in aws kernels
@@ -119,7 +128,7 @@ int kkm_kontext_switch_kernel(struct kkm_kontext *kkm_kontext)
 	 */
 	kkm_idt_get_desc(&ga->native_idt_desc, &ga->guest_idt_desc);
 
-#if 1
+#if 0
 	// delete this once kx area is correctly set up
 	// before debugging interrupts and traps
 	ga->guest_idt_desc.address = ga->native_idt_desc.address;
@@ -194,8 +203,7 @@ int kkm_kontext_switch_kernel(struct kkm_kontext *kkm_kontext)
 	 * switch to guest kernel
 	 * this code will switch stacks
 	 */
-	kkm_switch_to_gk_asm(ga, kkm_kontext,
-			     (unsigned long long)ga->redzone_bottom);
+	kkm_switch_to_gk_asm(ga, (uint64_t)ga->redzone_bottom);
 
 	/* code is from intr/fault return path */
 	kkm_hw_debug_registers_restore(kkm_kontext->native_debug_registers);
@@ -207,6 +215,11 @@ int kkm_kontext_switch_kernel(struct kkm_kontext *kkm_kontext)
 
 	printk(KERN_NOTICE "kkm_kontext_switch_kernel: ret_val %d %px\n",
 	       ret_val, &ret_val);
+
+	/*
+	 * enable interrupts
+	 */
+	local_irq_enable();
 
 	return ret_val;
 }
