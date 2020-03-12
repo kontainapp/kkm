@@ -93,11 +93,10 @@ kkm_switch_to_hk_asm:
 	 * toggle CR4_PGE bit and then restore
 	 */
 	movq	%cr4, %rax
-	pushq	%rax
+	movq	%rax, %rbx
 	xorq	$0x80, %rax
 	movq	%rax, %cr4
-	popq	%rax
-	movq	%rax, %cr4
+	movq	%rbx, %cr4
 
 	/*
 	 * switch stacks
