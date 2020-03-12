@@ -31,9 +31,9 @@
 kkm_intr_start:
 	irqnumber=0
 	.rept (TOTAL_IRQ-FIRST_IRQ)
+	.align 16
 	pushq	irqnumber
 	jmp	kkm_intr_entry_asm
-	.align 8
 	irqnumber=irqnumber+1
 	.endr
 	.size kkm_intr_start, .-kkm_intr_start
