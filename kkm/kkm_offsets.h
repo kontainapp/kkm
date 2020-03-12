@@ -68,21 +68,19 @@
 
 #define OFF_TI_INTR_NO ((REG_BASE_OFF) + 8 * 73) /* kkm_intr_no */
 
-
 #define OFF_PAY_ENT_STK (4096) /* payload_entry_stack bottom */
 #define OFF_GUEST_STK (7936) /* guest kernel stack bottom */
 
-
 /* trap stack offsets from top of stack before switching stacks */
 
-#define OFF_TS_RSI	(8 * 0)
-#define OFF_TS_RDI	(8 * 1)
-#define OFF_TS_INTR_NO	(8 * 2)
-#define OFF_TS_ERROR	(8 * 3)
-#define OFF_TS_RIP	(8 * 4)
-#define OFF_TS_CS	(8 * 5)
-#define OFF_TS_RFLAGS	(8 * 6)
-#define OFF_TS_RSP	(8 * 7)
-#define OFF_TS_SS	(8 * 8)
+#define OFF_TS_RSI (8 * 0)
+#define OFF_TS_RDI (8 * 1)
+#define OFF_TS_INTR_NO (8 * 2)
+#define OFF_TS_ERROR (8 * 3)
+#define OFF_TS_RIP (8 * 4)
+#define OFF_TS_CS (8 * 5)
+#define OFF_TS_RFLAGS (8 * 6)
+#define OFF_TS_RSP (8 * 7)
+#define OFF_TS_SS (8 * 8)
 
 #endif /* __KKM_OFFSETS_H__ */

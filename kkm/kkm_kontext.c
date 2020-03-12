@@ -390,7 +390,6 @@ void kkm_switch_to_host_kernel(void)
 	 */
 	wrmsrl(MSR_LSTAR, kkm_kontext->native_kernel_entry_syscall_64);
 
-
 	/*
 	 * restore native kernel segment registers
 	 */
@@ -411,7 +410,8 @@ void kkm_switch_to_host_kernel(void)
 	 * restore rest of the registers and switch stacks
 	 */
 	kkm_switch_to_hk_asm(kkm_kontext->native_kernel_cr3,
-			((struct kkm_guest_area *)kkm_kontext->guest_area)->native_kernel_stack);
+			     ((struct kkm_guest_area *)kkm_kontext->guest_area)
+				     ->native_kernel_stack);
 }
 
 void kkm_hw_debug_registers_save(uint64_t *registers)

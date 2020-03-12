@@ -24,7 +24,7 @@
  * return allocated page address, kernel virtual address of the page and physical address
  */
 int kkm_mm_allocate_pages(struct page **page, void **virtual_address,
-			 phys_addr_t *physical_address, int count)
+			  phys_addr_t *physical_address, int count)
 {
 	int ret_val = 0;
 	int pow2count = 0;
@@ -66,5 +66,6 @@ error:
 int kkm_mm_allocate_page(struct page **page, void **virtual_address,
 			 phys_addr_t *physical_address)
 {
-	return kkm_mm_allocate_pages(page, virtual_address, physical_address, 1);
+	return kkm_mm_allocate_pages(page, virtual_address, physical_address,
+				     1);
 }

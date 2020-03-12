@@ -32,7 +32,8 @@ struct kkm_kontext_mmap_area {
 struct kkm_kontext {
 	bool used;
 	int kontext_fd;
-	struct task_struct *task; /* kernel task associated with this kontain kontext */
+	struct task_struct
+		*task; /* kernel task associated with this kontain kontext */
 	struct kkm *kkm; /* back pointer to kontainer */
 
 	struct kkm_kontext_mmap_area mmap_area[KKM_CONTEXT_MAP_PAGE_COUNT];
@@ -42,14 +43,17 @@ struct kkm_kontext {
 	 */
 	struct page *guest_area_page; /* guest area page pointer */
 	void *guest_area; /* virtual address of guest area */
-	phys_addr_t  guest_area_page0_pa; /* physical address of page 0 of guest private area */
-	phys_addr_t  guest_area_page1_pa; /* physical address of page 1 of guest private area */
+	phys_addr_t
+		guest_area_page0_pa; /* physical address of page 0 of guest private area */
+	phys_addr_t
+		guest_area_page1_pa; /* physical address of page 1 of guest private area */
 
 	/*
 	 * saved during switch to guest kernel.
 	 * restore during switch back to native kernel
 	 */
-	unsigned long native_kernel_cr3; /* native kernel cr3 values, not the same as pml4 pointer */
+	unsigned long
+		native_kernel_cr3; /* native kernel cr3 values, not the same as pml4 pointer */
 	unsigned long native_kernel_cr4; /* native kernel cr4 */
 
 	unsigned short native_kernel_ds; /* native kernel ds */
@@ -60,7 +64,8 @@ struct kkm_kontext {
 
 	unsigned short native_kernel_gs; /* native kernel gs */
 	unsigned long native_kernel_gs_base; /* native kernel gs base */
-	unsigned long native_kernel_gs_kern_base; /* native kernel gs base when in user mode */
+	unsigned long
+		native_kernel_gs_kern_base; /* native kernel gs base when in user mode */
 
 	unsigned short native_kernel_ss; /* native kernel ss */
 
@@ -88,7 +93,7 @@ struct kkm {
 	int kontainer_fd;
 	refcount_t reference_count;
 
-	struct mm_struct *mm;	/* kernel address space pointer */
+	struct mm_struct *mm; /* kernel address space pointer */
 
 	/*
 	 * physical memory management
@@ -119,7 +124,6 @@ struct kkm {
 	struct page *guest_payload_page;
 	unsigned long guest_payload_va;
 	phys_addr_t guest_payload_pa;
-
 };
 
 #endif /* __KKM_H__ */
