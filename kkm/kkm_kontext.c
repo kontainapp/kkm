@@ -357,6 +357,12 @@ void kkm_switch_to_host_kernel(void)
 	       "kkm_switch_to_host_kernel: cpu %d stack address %px ga %px\n",
 	       cpu, &cpu, ga);
 
+	/*
+	 * adjust registers from trap info
+	 */
+	ga->regs.rip = ga->trap_info.rip;
+	ga->regs.rflags = ga->trap_info.rflags;
+
 	kkm_hw_debug_registers_save(ga->debug.registers);
 
 	printk(KERN_NOTICE

@@ -2347,11 +2347,6 @@ kkm_intr_entry_asm:
 	swapgs
 
 	/*
-	 * store dummy error code to stack
-	 */
-	pushq	$-1
-
-	/*
 	 * create scratch registers
 	 */
 	pushq	%rdi
@@ -2402,16 +2397,6 @@ kkm_intr_entry_asm:
 	 */
 	movq	%rsp, %rdi
 	andq	$0xffffffffffffe000, %rdi
-
-	/* delete eventually.
-	 * moved to a larger interrupt stack
-	 * we dont need to switch stack
-	 * switch stacks
-	 *    old - intr context stack
-	 *    new - guest kernel stack
-	 */
-	//movq	%rdi, %rsp
-	//addq	OFF_GUEST_STK, %rsp
 
 	/*
 	 * save registers to kkm_guest_area
