@@ -17,7 +17,11 @@
 #include "kkm.h"
 #include "kkm_mm.h"
 #include "kkm_mmu.h"
+#include "kkm_kontext.h"
+#include "kkm_entry.h"
 #include "kkm_intr.h"
+
+#include "kkm_intr_table.c"
 
 /*
  * There is one idt system wide.
@@ -145,8 +149,12 @@ int kkm_idt_descr_init(void)
 	 */
 	gs = (struct gate_struct *)idt_entry->idt_va;
 	for (i = 0; i < NR_VECTORS; i++) {
+#if 0
 		intr_entry_addr =
 			KKM_IDT_CODE_START_VA + KKM_IDT_ENTRY_FUNCTION_SIZE * i;
+#else
+		intr_entry_addr = intr_function_pointers[i];
+#endif
 
 		gs[i].offset_low = intr_entry_addr & 0xFFFF;
 		gs[i].segment = __KERNEL_CS;
@@ -174,7 +182,7 @@ int kkm_idt_descr_init(void)
 	/*
 	 * copy interrupt entry code to kx area
 	 */
-	memcpy(idt_entry->idt_text_va, kkm_intr_start, KKM_IDT_CODE_SIZE);
+	memcpy(idt_entry->idt_text_va, kkm_intr_entry_0, KKM_IDT_CODE_SIZE);
 
 	/*
 	 * clear kx global area

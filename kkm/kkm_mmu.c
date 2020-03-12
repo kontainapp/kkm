@@ -182,9 +182,9 @@ void kkm_mmu_set_idt_text(phys_addr_t text_page0_pa, phys_addr_t text_page1_pa)
 	 * pte KKM_PTE_INDEX_TEXT_0 corresponds to KKM_IDT_GLOBAL_START
 	 */
 	kkm_mmu_insert_page(kkm_mmu.pt.va, KKM_PTE_INDEX_TEXT_0, text_page0_pa,
-			    _PAGE_USER | _PAGE_RW | _PAGE_PRESENT);
+			    _PAGE_RW | _PAGE_PRESENT);
 	kkm_mmu_insert_page(kkm_mmu.pt.va, KKM_PTE_INDEX_TEXT_1, text_page1_pa,
-			    _PAGE_USER | _PAGE_RW | _PAGE_PRESENT);
+			    _PAGE_RW | _PAGE_PRESENT);
 }
 
 /*
