@@ -21,8 +21,7 @@
 #include "kkm_entry.h"
 #include "kkm_intr.h"
 
-#include "kkm_intr_table.c"
-
+extern uint64_t intr_function_pointers[NR_VECTORS];
 /*
  * There is one idt system wide.
  * save the native kernel idt descriptor here
