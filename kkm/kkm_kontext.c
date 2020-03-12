@@ -148,7 +148,7 @@ int kkm_kontext_switch_kernel(struct kkm_kontext *kkm_kontext)
 	kkm_kontext->native_kernel_cr3 = __read_cr3();
 	kkm_kontext->native_kernel_cr4 = __read_cr4();
 	printk(KERN_NOTICE
-	       "kkm_kontext_switch_kernel: native kernel cr3 %lx cr4 %lx\n",
+	       "kkm_kontext_switch_kernel: native kernel cr3 %llx cr4 %llx\n",
 	       kkm_kontext->native_kernel_cr3, kkm_kontext->native_kernel_cr4);
 
 	ga->guest_kernel_cr3 = kkm->guest_kernel_pa;
@@ -181,7 +181,7 @@ int kkm_kontext_switch_kernel(struct kkm_kontext *kkm_kontext)
 	rdmsrl(MSR_LSTAR, kkm_kontext->native_kernel_entry_syscall_64);
 
 	printk(KERN_NOTICE
-	       "kkm_kontext_switch_kernel: segments ds %x es %x fs %x fsbase %lx gs %x gsbase %lx gskernbase %lx ss %x\n",
+	       "kkm_kontext_switch_kernel: segments ds %x es %x fs %x fsbase %llx gs %x gsbase %llx gskernbase %llx ss %x\n",
 	       kkm_kontext->native_kernel_ds, kkm_kontext->native_kernel_es,
 	       kkm_kontext->native_kernel_fs,
 	       kkm_kontext->native_kernel_fs_base,
@@ -366,7 +366,7 @@ void kkm_switch_to_host_kernel(void)
 	kkm_hw_debug_registers_save(ga->debug.registers);
 
 	printk(KERN_NOTICE
-	       "kkm_switch_to_host_kernel: segments ds %x es %x fs %x fsbase %lx gs %x gsbase %lx gskernbase %lx ss %x\n",
+	       "kkm_switch_to_host_kernel: segments ds %x es %x fs %x fsbase %llx gs %x gsbase %llx gskernbase %llx ss %x\n",
 	       kkm_kontext->native_kernel_ds, kkm_kontext->native_kernel_es,
 	       kkm_kontext->native_kernel_fs,
 	       kkm_kontext->native_kernel_fs_base,

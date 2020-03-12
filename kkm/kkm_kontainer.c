@@ -46,7 +46,7 @@ int kkm_kontainer_init(struct kkm *kkm)
 	}
 
 	printk(KERN_NOTICE
-	       "kkm_kontainer_init: guest kernel page %px va %lx pa %llx\n",
+	       "kkm_kontainer_init: guest kernel page %px va %llx pa %llx\n",
 	       kkm->guest_kernel_page, kkm->guest_kernel_va,
 	       kkm->guest_kernel_pa);
 
@@ -68,7 +68,7 @@ int kkm_kontainer_init(struct kkm *kkm)
 	kkm->guest_payload_pa += kkm->guest_kernel_pa + PAGE_SIZE;
 
 	printk(KERN_NOTICE
-	       "kkm_kontainer_init: guest payload page %px va %lx pa %llx\n",
+	       "kkm_kontainer_init: guest payload page %px va %llx pa %llx\n",
 	       kkm->guest_payload_page, kkm->guest_payload_va,
 	       kkm->guest_payload_pa);
 

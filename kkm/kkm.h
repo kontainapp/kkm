@@ -52,22 +52,20 @@ struct kkm_kontext {
 	 * saved during switch to guest kernel.
 	 * restore during switch back to native kernel
 	 */
-	unsigned long
-		native_kernel_cr3; /* native kernel cr3 values, not the same as pml4 pointer */
-	unsigned long native_kernel_cr4; /* native kernel cr4 */
+	uint64_t native_kernel_cr3; /* native kernel cr3 values, not the same as pml4 pointer */
+	uint64_t native_kernel_cr4; /* native kernel cr4 */
 
-	unsigned short native_kernel_ds; /* native kernel ds */
-	unsigned short native_kernel_es; /* native kernel es */
+	uint16_t native_kernel_ds; /* native kernel ds */
+	uint16_t native_kernel_es; /* native kernel es */
 
-	unsigned short native_kernel_fs; /* native kernel fs */
-	unsigned long native_kernel_fs_base; /* native kernel fs base TLS */
+	uint16_t native_kernel_fs; /* native kernel fs */
+	uint64_t native_kernel_fs_base; /* native kernel fs base TLS */
 
-	unsigned short native_kernel_gs; /* native kernel gs */
-	unsigned long native_kernel_gs_base; /* native kernel gs base */
-	unsigned long
-		native_kernel_gs_kern_base; /* native kernel gs base when in user mode */
+	uint16_t native_kernel_gs; /* native kernel gs */
+	uint64_t native_kernel_gs_base; /* native kernel gs base */
+	uint64_t native_kernel_gs_kern_base; /* native kernel gs base when in user mode */
 
-	unsigned short native_kernel_ss; /* native kernel ss */
+	uint16_t native_kernel_ss; /* native kernel ss */
 
 	uint64_t native_kernel_entry_syscall_64; /* native kernel 64bit syscall entry point */
 
@@ -76,7 +74,7 @@ struct kkm_kontext {
 	struct desc_ptr native_gdt_descr; /* native gdt */
 	uint64_t native_tr; /* native task register */
 
-	char scratch_buffer[256];
+	uint8_t scratch_buffer[256];
 };
 
 struct kkm_mem_slot {
@@ -115,14 +113,14 @@ struct kkm {
 	 * guest kernel pml4 page
 	 */
 	struct page *guest_kernel_page;
-	unsigned long guest_kernel_va;
+	uint64_t guest_kernel_va;
 	phys_addr_t guest_kernel_pa;
 
 	/*
 	 * guest payload pml4 page
 	 */
 	struct page *guest_payload_page;
-	unsigned long guest_payload_va;
+	uint64_t guest_payload_va;
 	phys_addr_t guest_payload_pa;
 };
 
