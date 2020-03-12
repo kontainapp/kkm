@@ -15,7 +15,7 @@
 
 void kkm_switch_to_gk_asm(struct kkm_guest_area *ga,
 			  uint64_t stack);
-void kkm_switch_to_hk_asm(uint64_t stack);
+void kkm_switch_to_hk_asm(uint64_t nativer_kernel_cr3, uint64_t stack);
 void kkm_switch_to_gp_asm(struct kkm_guest_area *ga);
 void kkm_syscall_entry_asm(void);
 

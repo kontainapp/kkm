@@ -375,11 +375,6 @@ void kkm_switch_to_host_kernel(void)
 	load_sp0(ga->native_save_tss_sp0);
 
 	/*
-	 * restore native kernel address space
-	 */
-	kkm_change_address_space(kkm_kontext->native_kernel_cr3);
-
-	/*
 	 * restore native kernel idt
 	 */
 	load_idt(&ga->native_idt_desc);
@@ -406,9 +401,11 @@ void kkm_switch_to_host_kernel(void)
 	loadsegment(ss, __KERNEL_DS);
 
 	/*
+	 * restore native kernel address space
 	 * restore rest of the registers and switch stacks
 	 */
-	kkm_switch_to_hk_asm(((struct kkm_guest_area *)kkm_kontext->guest_area)->native_kernel_stack);
+	kkm_switch_to_hk_asm(kkm_kontext->native_kernel_cr3,
+			((struct kkm_guest_area *)kkm_kontext->guest_area)->native_kernel_stack);
 }
 
 void kkm_hw_debug_registers_save(uint64_t *registers)

@@ -72,7 +72,8 @@ kkm_restore_label:
 	.size kkm_switch_to_gk_asm, .-kkm_switch_to_gk_asm
 
 /*
- * %rdi -- saved stack
+ * %rdi -- native kernel cr3
+ * %rsi -- saved stack
  *
  * on entry we are using guest kernel stack
  * we are on native kernel stack before returning to kernel functions
@@ -81,11 +82,29 @@ kkm_restore_label:
 kkm_switch_to_hk_asm:
 
 	/*
+	 * switch address space
+	 *    old - guest kernel address space
+	 *    new - native kernel address space
+	 */
+	mov	%rdi, %cr3
+
+	/*
+	 * invlidate TLB
+	 * toggle CR4_PGE bit and then restore
+	 */
+	movq	%cr4, %rax
+	pushq	%rax
+	xorq	$0x80, %rax
+	movq	%rax, %cr4
+	popq	%rax
+	movq	%rax, %cr4
+
+	/*
 	 * switch stacks
 	 *    old - guest kernel stack
 	 *    new - native kernel stack
 	 */
-	mov	%rdi, %rsp
+	mov	%rsi, %rsp
 	jmp	kkm_restore_label
 
 	/* NOTREACHED */
