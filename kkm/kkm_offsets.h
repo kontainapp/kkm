@@ -53,6 +53,12 @@
 #define OFF_RIP ((REG_BASE_OFF) + 8 * 16) /* regs.rip */
 #define OFF_RFLAGS ((REG_BASE_OFF) + 8 * 17) /* regs.rflags */
 
+#define OFF_CR0 ((REG_BASE_OFF) + 8 * 46) /* sregs.cr0 */
+#define OFF_CR2 ((REG_BASE_OFF) + 8 * 47) /* sregs.cr2 */
+#define OFF_CR3 ((REG_BASE_OFF) + 8 * 48) /* sregs.cr3 */
+#define OFF_CR4 ((REG_BASE_OFF) + 8 * 49) /* sregs.cr4 */
+#define OFF_CR8 ((REG_BASE_OFF) + 8 * 50) /* sregs.cr8 */
+
 #define OFF_TI_SS ((REG_BASE_OFF) + 8 * 67) /* trap_info.ss */
 #define OFF_TI_RSP ((REG_BASE_OFF) + 8 * 68) /* trap_info.ss */
 #define OFF_TI_RFLAGS ((REG_BASE_OFF) + 8 * 69) /* trap_info.ss */

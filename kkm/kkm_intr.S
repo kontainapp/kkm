@@ -2432,6 +2432,20 @@ kkm_intr_entry_asm:
 	movq	%rax, OFF_RAX(%rdi)
 
 	/*
+	 * save control registers
+	 */
+	movq    %cr0, %rax
+	movq    %rax, OFF_CR0(%rdi)
+	movq    %cr2, %rax
+	movq    %rax, OFF_CR2(%rdi)
+	movq    %cr3, %rax
+	movq    %rax, OFF_CR3(%rdi)
+	movq    %cr4, %rax
+	movq    %rax, OFF_CR4(%rdi)
+	movq    %cr8, %rax
+	movq    %rax, OFF_CR8(%rdi)
+
+	/*
 	 * save trap information from trap stack to kkm_guest_area
 	 */
 	movq	OFF_TS_ERROR(%rsi), %rbp
