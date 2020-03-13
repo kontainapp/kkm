@@ -239,7 +239,7 @@ void kkm_guest_kernel_start_payload(struct kkm_guest_area *ga)
 	       "kkm_guest_kernel_start_payload: cpu %d %px cea %px\n",
 	       cpu, &cpu, cea);
 
-	ga->guest_stack_variable_address = (unsigned long long)&cpu;
+	ga->guest_stack_variable_address = (uint64_t)&cpu;
 
 	/*
 	 * setup segments for switching to payload

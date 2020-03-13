@@ -200,7 +200,7 @@ struct kkm_ec_events {
 		uint8_t latched_init;
 	} smi;
 	uint8_t reserved[27];
-	uint8_t excepption_has_payload;
+	uint8_t exception_has_payload;
 	uint64_t exception_payload;
 };
 

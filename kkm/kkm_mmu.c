@@ -151,7 +151,7 @@ void kkm_mmu_set_guest_area(phys_addr_t pa0, phys_addr_t pa1, phys_addr_t pa2,
 void *kkm_mmu_get_cur_cpu_guest_va(void)
 {
 	int page_index = kkm_mmu_get_per_cpu_start_index();
-	unsigned long long va = KKM_PRIVATE_START_VA + page_index * PAGE_SIZE;
+	uint64_t va = KKM_PRIVATE_START_VA + page_index * PAGE_SIZE;
 
 	return (void *)va;
 }
@@ -202,10 +202,10 @@ void kkm_mmu_set_kx_global(phys_addr_t kx_global_pa)
 /*
  * copy range of bytes from one area to other
  */
-static void kkm_mmu_copy_range(unsigned long long src_base,
-			       unsigned long long src_offset,
-			       unsigned long long dest_base,
-			       unsigned long long dest_offset, size_t count)
+static void kkm_mmu_copy_range(uint64_t src_base,
+			       uint64_t src_offset,
+			       uint64_t dest_base,
+			       uint64_t dest_offset, size_t count)
 {
 	memcpy((void *)dest_base + dest_offset, (void *)src_base + src_offset,
 	       count);
@@ -219,7 +219,7 @@ static void kkm_mmu_copy_range(unsigned long long src_base,
 int kkm_mmu_copy_kernel_pgd(struct kkm *kkm)
 {
 	/* when running in kernel mode we are expected to have kernel pgd */
-	unsigned long current_pgd_base = (unsigned long long)kkm->mm->pgd;
+	uint64_t current_pgd_base = (uint64_t)kkm->mm->pgd;
 
 	if (current_pgd_base == 0) {
 		printk(KERN_NOTICE
@@ -237,7 +237,13 @@ int kkm_mmu_copy_kernel_pgd(struct kkm *kkm)
 
 	/*
 	 * point to user pgd.
-	 * keep all memory map for now.
+	 * linux kernel allocates kernel and user pml4 tables
+	 * next to each other.
+	 * kernel pml4 is even page
+	 * user pml4 is odd page
+	 */
+
+	/* keep all memory map for now.
 	 * current_pgd_base += PAGE_SIZE;
 	 */
 	kkm_mmu_copy_range(current_pgd_base, KKM_PGD_KERNEL_OFFSET,
@@ -259,8 +265,8 @@ int kkm_mmu_copy_kernel_pgd(struct kkm *kkm)
  */
 int kkm_mmu_sync(struct kkm *kkm)
 {
-	unsigned long current_pgd_base = (unsigned long long)kkm->mm->pgd;
-	unsigned long long *pgd_pointer = NULL;
+	uint64_t current_pgd_base = (uint64_t)kkm->mm->pgd;
+	uint64_t *pgd_pointer = NULL;
 
 	/*
 	 * keep kernel and user pgd same for payload area
@@ -285,7 +291,7 @@ int kkm_mmu_sync(struct kkm *kkm)
 			   KKM_PGD_PAYLOAD_SIZE);
 
 	/* change pml4 entry 0 to allow execution */
-	pgd_pointer = (unsigned long long *)kkm->guest_payload_va;
+	pgd_pointer = (uint64_t *)kkm->guest_payload_va;
 	if (pgd_pointer[0] & _PAGE_NX) {
 		printk(KERN_NOTICE
 		       "kkm_mmu_sync: entry 0 has execute disable set, enable it.\n");

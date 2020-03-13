@@ -108,11 +108,11 @@ struct kkm_guest_area {
 			struct entry_stack
 				payload_entry_stack; /* stack used for switching to payload */
 		};
-		char data[GUEST_PRIVATE_DATA_SIZE];
+		uint8_t data[GUEST_PRIVATE_DATA_SIZE];
 	};
-	char redzone_top[GUEST_STACK_REDZONE_SIZE];
-	char stack[GUEST_STACK_SIZE]; /* guest kernel stack */
-	char redzone_bottom[GUEST_STACK_REDZONE_SIZE];
+	uint8_t redzone_top[GUEST_STACK_REDZONE_SIZE];
+	uint8_t stack[GUEST_STACK_SIZE]; /* guest kernel stack */
+	uint8_t redzone_bottom[GUEST_STACK_REDZONE_SIZE];
 };
 static_assert(sizeof(struct kkm_guest_area) == 8192, "Size is not correct");
 
