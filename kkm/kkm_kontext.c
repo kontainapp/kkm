@@ -529,6 +529,11 @@ int kkm_process_general_protection(struct kkm_kontext *kkm_kontext,
 		kkm_run->io.data_offset = PAGE_SIZE;
 		data_address = (uint32_t *)kkm_kontext->mmap_area[1].kvaddr;
 		data_address[0] = ga->regs.rax;
+
+		/*
+		 * adjust ip by 1 byte
+		 */
+		ga->regs.rip += 1;
 	}
 error:
 	return ret_val;
