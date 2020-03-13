@@ -202,10 +202,9 @@ void kkm_mmu_set_kx_global(phys_addr_t kx_global_pa)
 /*
  * copy range of bytes from one area to other
  */
-static void kkm_mmu_copy_range(uint64_t src_base,
-			       uint64_t src_offset,
-			       uint64_t dest_base,
-			       uint64_t dest_offset, size_t count)
+static void kkm_mmu_copy_range(uint64_t src_base, uint64_t src_offset,
+			       uint64_t dest_base, uint64_t dest_offset,
+			       size_t count)
 {
 	memcpy((void *)dest_base + dest_offset, (void *)src_base + src_offset,
 	       count);

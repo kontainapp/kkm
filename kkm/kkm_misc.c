@@ -17,6 +17,7 @@
 #include <asm/cpu_entry_area.h>
 
 #include "kkm.h"
+#include "kkm_run.h"
 #include "kkm_kontext.h"
 #include "kkm_misc.h"
 

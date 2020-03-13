@@ -18,13 +18,13 @@
 #include <asm/traps.h>
 
 #include "kkm.h"
+#include "kkm_run.h"
 #include "kkm_kontext.h"
 #include "kkm_mm.h"
 #include "kkm_mmu.h"
 #include "kkm_misc.h"
 #include "kkm_entry.h"
 #include "kkm_idt_cache.h"
-#include "kkm_run.h"
 #include "kkm_offsets.h"
 #include "kkm_intr.h"
 
@@ -460,21 +460,30 @@ void kkm_hw_debug_registers_restore(uint64_t *registers)
 int kkm_process_intr(struct kkm_kontext *kkm_kontext)
 {
 	int ret_val = 0;
-	struct kkm_guest_area *ga = (struct kkm_guest_area *)kkm_kontext->guest_area;
+	struct kkm_guest_area *ga =
+		(struct kkm_guest_area *)kkm_kontext->guest_area;
+	struct kkm_run *kkm_run = NULL;
 
-	printk(KERN_NOTICE "kkm_process_intr: trap information intr no %llx ss %llx rsp %llx rflags %llx cs %llx rip %llx error %llx\n",
-			ga->kkm_intr_no, ga->trap_info.ss, ga->trap_info.rsp, ga->trap_info.rflags,
-			ga->trap_info.ss, ga->trap_info.rip, ga->trap_info.error);
+	printk(KERN_NOTICE
+	       "kkm_process_intr: trap information intr no %llx ss %llx rsp %llx rflags %llx cs %llx rip %llx error %llx\n",
+	       ga->kkm_intr_no, ga->trap_info.ss, ga->trap_info.rsp,
+	       ga->trap_info.rflags, ga->trap_info.ss, ga->trap_info.rip,
+	       ga->trap_info.error);
 
-	switch(ga->kkm_intr_no) {
+	kkm_run->exit_reason = KKM_EXIT_UNKNOWN;
+
+	switch (ga->kkm_intr_no) {
 	case X86_TRAP_GP:
-		ret_val = kkm_process_general_protection(kkm_kontext);
+		ret_val = kkm_process_general_protection(kkm_kontext, ga,
+							 kkm_run);
 		break;
 	case X86_TRAP_PF:
-		ret_val = kkm_process_trap(kkm_kontext);
+		ret_val = kkm_process_trap(kkm_kontext, ga, kkm_run);
 		break;
 	default:
-		printk(KERN_NOTICE "kkm_process_intr: unexpected exception (%llx)\n", ga->kkm_intr_no);
+		printk(KERN_NOTICE
+		       "kkm_process_intr: unexpected exception (%llx)\n",
+		       ga->kkm_intr_no);
 		ret_val = -EOPNOTSUPP;
 		break;
 	}
@@ -482,10 +491,11 @@ int kkm_process_intr(struct kkm_kontext *kkm_kontext)
 	return ret_val;
 }
 
-int kkm_process_general_protection(struct kkm_kontext *kkm_kontext)
+int kkm_process_general_protection(struct kkm_kontext *kkm_kontext,
+				   struct kkm_guest_area *ga,
+				   struct kkm_run *kkm_run)
 {
 	int ret_val;
-	struct kkm_guest_area *ga = (struct kkm_guest_area *)kkm_kontext->guest_area;
 	uint64_t monitor_fault_address = 0;
 
 	/*
@@ -496,24 +506,27 @@ int kkm_process_general_protection(struct kkm_kontext *kkm_kontext)
 	/*
 	 * fetch offending instruction byte
 	 */
-	if (copy_from_user(ga->instruction_decode, (void *)monitor_fault_address, sizeof(uint8_t))) {
+	if (copy_from_user(ga->instruction_decode,
+			   (void *)monitor_fault_address, sizeof(uint8_t))) {
 		ret_val = -EFAULT;
 		goto error;
 	}
 
-	printk(KERN_NOTICE "kkm_process_general_protection: offending byte %02x\n",
-			ga->instruction_decode[0]);
+	printk(KERN_NOTICE
+	       "kkm_process_general_protection: offending byte %02x\n",
+	       ga->instruction_decode[0]);
 
-	/*
 	if (ga->instruction_decode[0] == KKM_OUT_OPCODE) {
-		printk(KERN_NOTICE "kkm_process_general_protection: it is out\n");
+		printk(KERN_NOTICE
+		       "kkm_process_general_protection: it is out!\n");
+		kkm_run->exit_reason = KKM_EXIT_IO;
 	}
-	*/
 error:
 	return ret_val;
 }
 
-int kkm_process_trap(struct kkm_kontext *kkm_kontext)
+int kkm_process_trap(struct kkm_kontext *kkm_kontext, struct kkm_guest_area *ga,
+		     struct kkm_run *kkm_run)
 {
 	int ret_val = 0;
 
@@ -524,13 +537,15 @@ int kkm_process_trap(struct kkm_kontext *kkm_kontext)
  * folowing is copied from km_mem.h
  * need to be kept in sync with monitor
  */
-#define KKM_MIB	(0x100000ULL)
-#define	KKM_GIB	(0x40000000ULL)
-#define	KKM_TIB	(0x10000000000ULL)
-#define KKM_KM_USER_MEM_BASE	(0x100000000000ULL)	/* keep in sync with KM_USER_MEM_BASE */
+#define KKM_MIB (0x100000ULL)
+#define KKM_GIB (0x40000000ULL)
+#define KKM_TIB (0x10000000000ULL)
+#define KKM_KM_USER_MEM_BASE                                                   \
+	(0x100000000000ULL) /* keep in sync with KM_USER_MEM_BASE */
 #define KKM_GUEST_MEM_TOP_VA (128 * KKM_TIB - 2 * KKM_MIB)
-#define KKM_GUEST_MAX_PHYS_MEM	(0x8000000000ULL)
-#define KKM_GUEST_VA_OFFSET (KKM_GUEST_MEM_TOP_VA - (KKM_GUEST_MAX_PHYS_MEM - 2 * KKM_MIB))
+#define KKM_GUEST_MAX_PHYS_MEM (0x8000000000ULL)
+#define KKM_GUEST_VA_OFFSET                                                    \
+	(KKM_GUEST_MEM_TOP_VA - (KKM_GUEST_MAX_PHYS_MEM - 2 * KKM_MIB))
 
 uint64_t kkm_gva_to_gpa_nocheck(uint64_t guest_address)
 {

@@ -23,6 +23,7 @@
 #include <asm/desc.h>
 
 #include "kkm.h"
+#include "kkm_run.h"
 #include "kkm_kontainer.h"
 #include "kkm_kontext.h"
 #include "kkm_mm.h"

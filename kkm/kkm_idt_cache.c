@@ -15,6 +15,7 @@
 #include <asm/desc.h>
 
 #include "kkm.h"
+#include "kkm_run.h"
 #include "kkm_mm.h"
 #include "kkm_mmu.h"
 #include "kkm_kontext.h"
