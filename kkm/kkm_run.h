@@ -13,6 +13,9 @@
 #ifndef __KKM_RUN_H__
 #define __KKM_RUN_H__
 
+#define KKM_EXIT_IO_IN (0)
+#define KKM_EXIT_IO_OUT (1)
+
 enum kkm_exit_status {
 	KKM_EXIT_UNKNOWN = 0,
 	KKM_EXIT_EXCEPTION = 1,

@@ -470,6 +470,7 @@ int kkm_process_intr(struct kkm_kontext *kkm_kontext)
 	       ga->trap_info.rflags, ga->trap_info.ss, ga->trap_info.rip,
 	       ga->trap_info.error);
 
+	kkm_run = (struct kkm_run *)kkm_kontext->mmap_area[0].kvaddr;
 	kkm_run->exit_reason = KKM_EXIT_UNKNOWN;
 
 	switch (ga->kkm_intr_no) {
@@ -497,6 +498,7 @@ int kkm_process_general_protection(struct kkm_kontext *kkm_kontext,
 {
 	int ret_val;
 	uint64_t monitor_fault_address = 0;
+	uint32_t *data_address = NULL;
 
 	/*
 	 * convert guest address to monitor address
@@ -520,6 +522,13 @@ int kkm_process_general_protection(struct kkm_kontext *kkm_kontext,
 		printk(KERN_NOTICE
 		       "kkm_process_general_protection: it is out!\n");
 		kkm_run->exit_reason = KKM_EXIT_IO;
+		kkm_run->io.direction = KKM_EXIT_IO_OUT;
+		kkm_run->io.size = 4;
+		kkm_run->io.port = ga->regs.rdx & 0xFFFF;
+		kkm_run->io.count = 1;
+		kkm_run->io.data_offset = PAGE_SIZE;
+		data_address = (uint32_t *)kkm_kontext->mmap_area[1].kvaddr;
+		data_address[0] = ga->regs.rax;
 	}
 error:
 	return ret_val;
