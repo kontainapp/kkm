@@ -29,6 +29,8 @@
 
 #define REDZONE_DATA (0xa5)
 
+#define	KKM_GUEST_COPY_BUFFER	(128)
+
 struct kkm_trap_info {
 	uint64_t ss;
 	uint64_t rsp;
@@ -97,9 +99,16 @@ struct kkm_guest_area {
 
 			uint64_t kkm_intr_no;
 
-			uint8_t reserved[2352];
+			uint8_t reserved[2224];
 
-			/* keep these two entries at the end
+			/*
+			 * copy buffer
+			 * used for instruction decoding
+			 */
+			uint8_t instruction_decode[KKM_GUEST_COPY_BUFFER];
+
+			/*
+			 * keep these two entries at the end
 			 * first page of guest area(0xE00 - 0x1000)
 			 * payload_entry_stack is used in kkm_entry.S
 			 */
@@ -121,5 +130,10 @@ void kkm_kontext_cleanup(struct kkm_kontext *kkm_kontext);
 int kkm_kontext_switch_kernel(struct kkm_kontext *kkm_kontext);
 void kkm_guest_kernel_start_payload(struct kkm_guest_area *ga);
 void kkm_switch_to_host_kernel(void);
+
+int kkm_process_intr(struct kkm_kontext *kkm_kontext);
+int kkm_process_general_protection(struct kkm_kontext *kkm_kontext);
+int kkm_process_trap(struct kkm_kontext *kkm_kontext);
+uint64_t kkm_guest_to_monitor_address(uint64_t guest_addres);
 
 #endif /* KKM_KONTEXT_H__ */
