@@ -205,7 +205,6 @@ begin:
 	       ga->kkm_kontext, ga->guest_area_beg, ga->native_kernel_stack,
 	       ga->guest_stack_variable_address, ga->kkm_intr_no);
 
-
 	/*
 	 * enable interrupts
 	 */
@@ -553,7 +552,10 @@ int kkm_process_page_fault(struct kkm_kontext *kkm_kontext,
 	/*
 	 * convert guest address to monitor address
 	 */
-	monitor_fault_address = kkm_guest_va_to_monitor_va(ga->trap_info.rip);
+	monitor_fault_address = kkm_guest_va_to_monitor_va(ga->sregs.cr2);
+
+	printk(KERN_NOTICE "kkm_process_page_fault: fault monitor va %llx\n",
+	       monitor_fault_address);
 
 	/*
 	 * TODO: implement a virtual address check.
