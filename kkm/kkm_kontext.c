@@ -105,9 +105,9 @@ int kkm_kontext_switch_kernel(struct kkm_kontext *kkm_kontext)
 	struct kkm_guest_area *ga = NULL;
 	int cpu = -1;
 
+begin:
 	printk(KERN_NOTICE "kkm_kontext_switch_kernel:\n");
 
-begin:
 	ret_val = 0;
 	ga = (struct kkm_guest_area *)kkm_kontext->guest_area;
 	cpu = -1;
@@ -210,6 +210,9 @@ begin:
 	 */
 	local_irq_enable();
 
+	printk(KERN_NOTICE "kkm_kontext_switch_kernel: before cpu %d ga %px ret_val %d %px\n",
+	       cpu, ga, ret_val, &ret_val);
+
 	ret_val = kkm_process_intr(kkm_kontext);
 	if (ret_val == KKM_KONTEXT_FAULT_PROCESS_DONE) {
 		printk(KERN_NOTICE
@@ -217,8 +220,8 @@ begin:
 		goto begin;
 	}
 
-	printk(KERN_NOTICE "kkm_kontext_switch_kernel: ret_val %d %px\n",
-	       ret_val, &ret_val);
+	printk(KERN_NOTICE "kkm_kontext_switch_kernel: after cpu %d ga %px ret_val %d %px\n",
+	       cpu, ga, ret_val, &ret_val);
 
 	return ret_val;
 }
@@ -467,10 +470,10 @@ int kkm_process_intr(struct kkm_kontext *kkm_kontext)
 	struct kkm_run *kkm_run = NULL;
 
 	printk(KERN_NOTICE
-	       "kkm_process_intr: trap information intr no %llx ss %llx rsp %llx rflags %llx cs %llx rip %llx error %llx\n",
-	       ga->kkm_intr_no, ga->trap_info.ss, ga->trap_info.rsp,
+	       "kkm_process_intr: trap information ga %px intr no %llx ss %llx rsp %llx rflags %llx cs %llx rip %llx error %llx cr2 %llx\n",
+	       ga, ga->kkm_intr_no, ga->trap_info.ss, ga->trap_info.rsp,
 	       ga->trap_info.rflags, ga->trap_info.ss, ga->trap_info.rip,
-	       ga->trap_info.error);
+	       ga->trap_info.error, ga->sregs.cr2);
 
 	kkm_run = (struct kkm_run *)kkm_kontext->mmap_area[0].kvaddr;
 	kkm_run->exit_reason = KKM_EXIT_UNKNOWN;
