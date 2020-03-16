@@ -224,7 +224,6 @@ kkm_switch_to_gp_asm:
 	popq	%rax
 	movq	%rax, %cr4
 
-#if 1
 	/*
 	 * rbx, rax, rdi were used as scratch registers.
 	 * pop to set correct conext
@@ -242,26 +241,6 @@ kkm_switch_to_gp_asm:
 	 * start payload with context picked up from stack
 	 */
 	iretq
-
-	/* NOTREACHED */
-#else
-	/*
-	 * following code is for testing return path
-	 */
-	movq	%rbx, %rsp
-
-	popq	%rdi
-	popq	%rax
-
-	popq	%r15
-	popq	%r14
-	popq	%r13
-	popq	%r12
-	popq	%rbx
-	popq	%rbp
-
-	retq
-#endif
 
 	.size kkm_switch_to_gp_asm, .-kkm_switch_to_gp_asm
 
@@ -298,6 +277,8 @@ kkm_syscall_entry_asm:
 	 * TODO save registers
 	 */
 	call	kkm_switch_to_host_kernel
+
+	/* NOTREACHED */
 
 	.size kkm_syscall_entry_asm, .-kkm_syscall_entry_asm
 

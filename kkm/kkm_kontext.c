@@ -79,13 +79,6 @@ int kkm_kontext_init(struct kkm_kontext *kkm_kontext)
 	ga->kkm_kontext = kkm_kontext;
 	ga->guest_area_beg = (uint64_t)ga;
 
-#if 0
-	// store_gdt not available in aws kernels
-	store_gdt(&kkm_kontext->native_gdt_descr);
-	printk(KERN_NOTICE "kkm_kontainer_init: native kernel gdt size %x base %lx\n",
-	       kkm_kontext->native_gdt_descr.size, kkm_kontext->native_gdt_descr.address);
-#endif
-
 error:
 	if (ret_val != 0) {
 		kkm_kontext_cleanup(kkm_kontext);
