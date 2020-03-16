@@ -102,11 +102,15 @@ int kkm_kontext_switch_kernel(struct kkm_kontext *kkm_kontext)
 {
 	struct kkm *kkm = kkm_kontext->kkm;
 	int ret_val = 0;
-	struct kkm_guest_area *ga =
-		(struct kkm_guest_area *)kkm_kontext->guest_area;
+	struct kkm_guest_area *ga = NULL;
 	int cpu = -1;
 
 	printk(KERN_NOTICE "kkm_kontext_switch_kernel:\n");
+
+begin:
+	ret_val = 0;
+	ga = (struct kkm_guest_area *)kkm_kontext->guest_area;
+	cpu = -1;
 
 	/*
 	 * setup physical cpu kontain area to this kontext guest area
@@ -201,15 +205,21 @@ int kkm_kontext_switch_kernel(struct kkm_kontext *kkm_kontext)
 	       ga->kkm_kontext, ga->guest_area_beg, ga->native_kernel_stack,
 	       ga->guest_stack_variable_address, ga->kkm_intr_no);
 
-	printk(KERN_NOTICE "kkm_kontext_switch_kernel: ret_val %d %px\n",
-	       ret_val, &ret_val);
 
 	/*
 	 * enable interrupts
 	 */
 	local_irq_enable();
 
-	kkm_process_intr(kkm_kontext);
+	ret_val = kkm_process_intr(kkm_kontext);
+	if (ret_val == KKM_KONTEXT_FAULT_PROCESS_DONE) {
+		printk(KERN_NOTICE
+		       "kkm_kontext_switch_kernel: fault process done restarting guest\n");
+		goto begin;
+	}
+
+	printk(KERN_NOTICE "kkm_kontext_switch_kernel: ret_val %d %px\n",
+	       ret_val, &ret_val);
 
 	return ret_val;
 }
@@ -472,7 +482,7 @@ int kkm_process_intr(struct kkm_kontext *kkm_kontext)
 							 kkm_run);
 		break;
 	case X86_TRAP_PF:
-		ret_val = kkm_process_trap(kkm_kontext, ga, kkm_run);
+		ret_val = kkm_process_page_fault(kkm_kontext, ga, kkm_run);
 		break;
 	default:
 		printk(KERN_NOTICE
@@ -489,14 +499,14 @@ int kkm_process_general_protection(struct kkm_kontext *kkm_kontext,
 				   struct kkm_guest_area *ga,
 				   struct kkm_run *kkm_run)
 {
-	int ret_val;
+	int ret_val = 0;
 	uint64_t monitor_fault_address = 0;
 	uint32_t *data_address = NULL;
 
 	/*
 	 * convert guest address to monitor address
 	 */
-	monitor_fault_address = kkm_guest_to_monitor_address(ga->trap_info.rip);
+	monitor_fault_address = kkm_guest_va_to_monitor_va(ga->trap_info.rip);
 
 	/*
 	 * fetch offending instruction byte
@@ -528,15 +538,53 @@ int kkm_process_general_protection(struct kkm_kontext *kkm_kontext,
 		 */
 		ga->regs.rip += 1;
 	}
+
 error:
 	return ret_val;
 }
 
-int kkm_process_trap(struct kkm_kontext *kkm_kontext, struct kkm_guest_area *ga,
-		     struct kkm_run *kkm_run)
+int kkm_process_page_fault(struct kkm_kontext *kkm_kontext,
+			   struct kkm_guest_area *ga, struct kkm_run *kkm_run)
 {
 	int ret_val = 0;
+	uint64_t error_code = ga->trap_info.error;
+	uint64_t monitor_fault_address = 0;
 
+	/*
+	 * convert guest address to monitor address
+	 */
+	monitor_fault_address = kkm_guest_va_to_monitor_va(ga->trap_info.rip);
+
+	/*
+	 * TODO: implement a virtual address check.
+	 * allow to process faults in user range only
+	 */
+
+	if ((error_code & X86_PF_USER) == X86_PF_USER) {
+		/*
+		 * copy 1 bytes from monitor virtual address
+		 * this will trigger native kernel page fault
+		 */
+		if (copy_from_user(ga->instruction_decode,
+				   (void *)monitor_fault_address,
+				   sizeof(uint8_t))) {
+			ret_val = -EFAULT;
+			goto error;
+		}
+
+		if ((error_code & X86_PF_WRITE) == X86_PF_WRITE) {
+			if (copy_to_user((void *)monitor_fault_address,
+					 ga->instruction_decode,
+					 sizeof(uint8_t))) {
+				ret_val = -EFAULT;
+				goto error;
+			}
+		}
+
+		ret_val = KKM_KONTEXT_FAULT_PROCESS_DONE;
+	}
+
+error:
 	return ret_val;
 }
 
@@ -562,7 +610,7 @@ uint64_t kkm_gva_to_gpa_nocheck(uint64_t guest_address)
 	return guest_address;
 }
 
-uint64_t kkm_guest_to_monitor_address(uint64_t guest_address)
+uint64_t kkm_guest_va_to_monitor_va(uint64_t guest_address)
 {
 	return KKM_KM_USER_MEM_BASE + kkm_gva_to_gpa_nocheck(guest_address);
 }

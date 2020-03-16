@@ -31,6 +31,7 @@
 
 #define KKM_GUEST_COPY_BUFFER (128)
 
+#define KKM_KONTEXT_FAULT_PROCESS_DONE (256)
 #define KKM_OUT_OPCODE (0xEF)
 
 struct kkm_trap_info {
@@ -137,8 +138,9 @@ int kkm_process_intr(struct kkm_kontext *kkm_kontext);
 int kkm_process_general_protection(struct kkm_kontext *kkm_kontext,
 				   struct kkm_guest_area *ga,
 				   struct kkm_run *kkm_run);
-int kkm_process_trap(struct kkm_kontext *kkm_kontext, struct kkm_guest_area *ga,
-		     struct kkm_run *kkm_run);
-uint64_t kkm_guest_to_monitor_address(uint64_t guest_addres);
+int kkm_process_page_fault(struct kkm_kontext *kkm_kontext,
+			   struct kkm_guest_area *ga, struct kkm_run *kkm_run);
+
+uint64_t kkm_guest_va_to_monitor_va(uint64_t guest_addres);
 
 #endif /* KKM_KONTEXT_H__ */
