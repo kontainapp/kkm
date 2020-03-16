@@ -66,7 +66,7 @@ int kkm_mmu_init(void)
 	kkm_mmu_insert_page(kkm_mmu.pud.va, 0, kkm_mmu.pmd.pa,
 			    _PAGE_USER | _PAGE_RW | _PAGE_PRESENT);
 
-	/* initialie first entry in pmd */
+	/* initialize first entry in pmd */
 	kkm_mmu_insert_page(kkm_mmu.pmd.va, 0, kkm_mmu.pt.pa,
 			    _PAGE_USER | _PAGE_RW | _PAGE_PRESENT);
 
