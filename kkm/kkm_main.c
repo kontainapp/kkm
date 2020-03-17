@@ -313,6 +313,8 @@ int kkm_set_kontainer_memory(struct kkm *kkm, unsigned long arg)
 			   sizeof(struct kkm_memory_region))) {
 		return -EFAULT;
 	}
+	printk("kkm_set_kontainer_memory: mr slot %d flags %x gpa %llx size %llx uva %llx\n",
+			mr.slot, mr.flags, mr.guest_phys_addr, mr.memory_size, mr.userspace_addr);
 
 	if (mr.slot > KKM_MAX_MEMORY_SLOTS) {
 		return -EINVAL;
@@ -333,8 +335,8 @@ int kkm_set_kontainer_memory(struct kkm *kkm, unsigned long arg)
 		goto error;
 	}
 	if (mr.memory_size == 0) {
-		memset(&kkm->mem_slot[mr.slot].mr, 0,
-		       sizeof(struct kkm_memory_region));
+		memset(&kkm->mem_slot[mr.slot], 0,
+			sizeof(struct kkm_mem_slot));
 		kkm->mem_slot_count--;
 	} else {
 		// fail if there are overlaps
@@ -374,6 +376,9 @@ int kkm_set_kontainer_memory(struct kkm *kkm, unsigned long arg)
 	kkm_mmu_sync(kkm);
 error:
 	mutex_unlock(&kkm->mem_lock);
+	if (ret_val != 0) {
+		printk(KERN_NOTICE "kkm_set_kontainer_memory: ret_val %d slot %d\n", ret_val, mr.slot);
+	}
 	return ret_val;
 }
 
