@@ -331,6 +331,12 @@ define add_trap_breaks
 		break *$baddr
 		set $index = $index + 1
 	end
+	set $baddr = 0xfffffe8000001000 + kkm_intr_entry_general_protection - kkm_intr_entry_0
+	break *$baddr
+	set $baddr = 0xfffffe8000001000 + kkm_intr_entry_page_fault - kkm_intr_entry_0
+	break *$baddr
+	set $baddr = 0xfffffe8000001000 + kkm_syscall_entry_asm - kkm_intr_entry_0
+	break *$baddr
 	info breaks
 end
 
