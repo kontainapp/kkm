@@ -289,8 +289,6 @@ int kkm_mmu_sync(struct kkm *kkm)
 	/* change pml4 entry 0 to allow execution */
 	pgd_pointer = (uint64_t *)kkm->guest_payload_va;
 	if (pgd_pointer[0] & _PAGE_NX) {
-		printk(KERN_NOTICE
-		       "kkm_mmu_sync: entry 0 has execute disable set, enable it.\n");
 		pgd_pointer[0] &= ~_PAGE_NX;
 	}
 

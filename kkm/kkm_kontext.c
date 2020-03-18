@@ -185,8 +185,6 @@ begin:
 
 	ret_val = kkm_process_intr(kkm_kontext);
 	if (ret_val == KKM_KONTEXT_FAULT_PROCESS_DONE) {
-		printk(KERN_DEBUG
-		       "kkm_kontext_switch_kernel: fault process done restarting guest\n");
 		goto begin;
 	}
 
@@ -397,11 +395,13 @@ int kkm_process_intr(struct kkm_kontext *kkm_kontext)
 		(struct kkm_guest_area *)kkm_kontext->guest_area;
 	struct kkm_run *kkm_run = NULL;
 
-	printk(KERN_DEBUG
+#if 0
+	printk(KERN_INFO
 	       "kkm_process_intr: trap information ga %px intr no %llx ss %llx rsp %llx rflags %llx cs %llx rip %llx error %llx cr2 %llx\n",
 	       ga, ga->kkm_intr_no, ga->trap_info.ss, ga->trap_info.rsp,
 	       ga->trap_info.rflags, ga->trap_info.ss, ga->trap_info.rip,
 	       ga->trap_info.error, ga->sregs.cr2);
+#endif
 
 	kkm_run = (struct kkm_run *)kkm_kontext->mmap_area[0].kvaddr;
 	kkm_run->exit_reason = KKM_EXIT_UNKNOWN;
