@@ -141,6 +141,7 @@ int kkm_process_general_protection(struct kkm_kontext *kkm_kontext,
 int kkm_process_page_fault(struct kkm_kontext *kkm_kontext,
 			   struct kkm_guest_area *ga, struct kkm_run *kkm_run);
 
-uint64_t kkm_guest_va_to_monitor_va(uint64_t guest_addres);
+bool kkm_guest_va_to_monitor_va(struct kkm_kontext *kkm_kontext,
+				uint64_t guest_va, uint64_t *monitor_va);
 
 #endif /* KKM_KONTEXT_H__ */

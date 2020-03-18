@@ -210,7 +210,8 @@ begin:
 	 */
 	local_irq_enable();
 
-	printk(KERN_NOTICE "kkm_kontext_switch_kernel: before cpu %d ga %px ret_val %d %px\n",
+	printk(KERN_NOTICE
+	       "kkm_kontext_switch_kernel: before cpu %d ga %px ret_val %d %px\n",
 	       cpu, ga, ret_val, &ret_val);
 
 	ret_val = kkm_process_intr(kkm_kontext);
@@ -220,7 +221,8 @@ begin:
 		goto begin;
 	}
 
-	printk(KERN_NOTICE "kkm_kontext_switch_kernel: after cpu %d ga %px ret_val %d %px\n",
+	printk(KERN_NOTICE
+	       "kkm_kontext_switch_kernel: after cpu %d ga %px ret_val %d %px\n",
 	       cpu, ga, ret_val, &ret_val);
 
 	return ret_val;
@@ -508,7 +510,11 @@ int kkm_process_general_protection(struct kkm_kontext *kkm_kontext,
 	/*
 	 * convert guest address to monitor address
 	 */
-	monitor_fault_address = kkm_guest_va_to_monitor_va(ga->trap_info.rip);
+	if (kkm_guest_va_to_monitor_va(kkm_kontext, ga->trap_info.rip,
+				       &monitor_fault_address) == false) {
+		ret_val = -EFAULT;
+		goto error;
+	}
 
 	/*
 	 * fetch offending instruction byte
@@ -555,10 +561,15 @@ int kkm_process_page_fault(struct kkm_kontext *kkm_kontext,
 	/*
 	 * convert guest address to monitor address
 	 */
-	monitor_fault_address = kkm_guest_va_to_monitor_va(ga->sregs.cr2);
+	if (kkm_guest_va_to_monitor_va(kkm_kontext, ga->sregs.cr2,
+				       &monitor_fault_address) == false) {
+		ret_val = -EFAULT;
+		goto error;
+	}
 
-	printk(KERN_NOTICE "kkm_process_page_fault: fault monitor va %llx\n",
-	       monitor_fault_address);
+	printk(KERN_NOTICE
+	       "kkm_process_page_fault: fault guest va %llx monitor va %llx\n",
+	       ga->sregs.cr2, monitor_fault_address);
 
 	/*
 	 * TODO: implement a virtual address check.
@@ -600,22 +611,73 @@ error:
 #define KKM_MIB (0x100000ULL)
 #define KKM_GIB (0x40000000ULL)
 #define KKM_TIB (0x10000000000ULL)
-#define KKM_KM_USER_MEM_BASE                                                   \
-	(0x100000000000ULL) /* keep in sync with KM_USER_MEM_BASE */
+
+/*
+ * bottom portion of guest address space
+ */
+#define KKM_GUEST_MEM_START_VA (2 * KKM_MIB)
+#define KKM_GUEST_MAX_PHYS_MEM (512 * KKM_GIB)
+
+/*
+ * top portion of guest address space
+ */
 #define KKM_GUEST_MEM_TOP_VA (128 * KKM_TIB - 2 * KKM_MIB)
-#define KKM_GUEST_MAX_PHYS_MEM (0x8000000000ULL)
 #define KKM_GUEST_VA_OFFSET                                                    \
 	(KKM_GUEST_MEM_TOP_VA - (KKM_GUEST_MAX_PHYS_MEM - 2 * KKM_MIB))
 
-uint64_t kkm_gva_to_gpa_nocheck(uint64_t guest_address)
-{
-	if (guest_address > KKM_GUEST_VA_OFFSET) {
-		guest_address -= KKM_GUEST_VA_OFFSET;
-	}
-	return guest_address;
-}
+/*
+ * monitor mapping area for guest physical memory
+ */
+#define KKM_KM_USER_MEM_BASE                                                   \
+	(0x100000000000ULL) /* keep in sync with KM_USER_MEM_BASE */
 
-uint64_t kkm_guest_va_to_monitor_va(uint64_t guest_address)
+/*
+ * VDSO handling
+ */
+#define KKM_KM_RSRV_VDSOSLOT (41)
+#define KKM_GUEST_VVAR_VDSO_BASE_VA (KKM_GUEST_MEM_TOP_VA + (1 * KKM_MIB))
+
+bool kkm_guest_va_to_monitor_va(struct kkm_kontext *kkm_kontext,
+				uint64_t guest_va, uint64_t *monitor_va)
 {
-	return KKM_KM_USER_MEM_BASE + kkm_gva_to_gpa_nocheck(guest_address);
+	struct kkm_mem_slot *mem_slot = NULL;
+	bool ret_val = false;
+
+	*monitor_va = 0;
+
+	if (guest_va >= KKM_GUEST_MEM_START_VA &&
+	    guest_va < KKM_GUEST_MAX_PHYS_MEM) {
+		*monitor_va = KKM_KM_USER_MEM_BASE + guest_va;
+		ret_val = true;
+		goto end;
+	}
+
+	if (guest_va >= KKM_GUEST_VA_OFFSET &&
+	    guest_va < KKM_GUEST_MEM_TOP_VA) {
+		*monitor_va =
+			KKM_KM_USER_MEM_BASE + (guest_va - KKM_GUEST_VA_OFFSET);
+		ret_val = true;
+		goto end;
+	}
+
+	printk(KERN_NOTICE
+	       "kkm_guest_va_to_monitor_va: fault guest va %llx is not in normal space\n",
+	       guest_va);
+
+	mem_slot = &kkm_kontext->kkm->mem_slot[KKM_KM_RSRV_VDSOSLOT];
+	if (mem_slot->used == true && guest_va >= KKM_GUEST_VVAR_VDSO_BASE_VA &&
+	    guest_va <
+		    (KKM_GUEST_VVAR_VDSO_BASE_VA + mem_slot->mr.memory_size)) {
+		*monitor_va = guest_va - KKM_GUEST_VVAR_VDSO_BASE_VA +
+			      mem_slot->mr.userspace_addr;
+		ret_val = true;
+		goto end;
+	}
+
+end:
+	printk(KERN_NOTICE
+	       "kkm_guest_va_to_monitor_va: faulted guest va %llx monitor va %llx ret_val %d\n",
+	       guest_va, *monitor_va, ret_val);
+
+	return ret_val;
 }
