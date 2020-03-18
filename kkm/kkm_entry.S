@@ -47,8 +47,8 @@ kkm_switch_to_gk_asm:
 
 	/*
 	 * switch stacks
-	 *    old - native kernel stack
-	 *    new - guest kernel stack
+	 *	old - native kernel stack
+	 *	new - guest kernel stack
 	 */
 	mov	%rsi, %rsp
 
@@ -83,8 +83,8 @@ kkm_switch_to_hk_asm:
 
 	/*
 	 * switch address space
-	 *    old - guest kernel address space
-	 *    new - native kernel address space
+	 *	old - guest kernel address space
+	 *	new - native kernel address space
 	 */
 	mov	%rdi, %cr3
 
@@ -100,8 +100,8 @@ kkm_switch_to_hk_asm:
 
 	/*
 	 * switch stacks
-	 *    old - guest kernel stack
-	 *    new - native kernel stack
+	 *	old - guest kernel stack
+	 *	new - native kernel stack
 	 */
 	mov	%rsi, %rsp
 	jmp	kkm_restore_label
@@ -173,24 +173,24 @@ kkm_switch_to_gp_asm:
 
 	/*
 	 * switch stacks
-	 *    old - guest kernel stack
-	 *    new - iret stack
+	 *	old - guest kernel stack
+	 *	new - iret stack
 	 */
 	movq	%rax, %rsp
 
 	/*
 	 * setup iret stack
-	 *      ----------- bottom of stack
-	 *      |   SS    |
-	 *      ----------
-	 *      |   RSP   |
-	 *      -----------
-	 *      |  RFLAGS |
-	 *      -----------
-	 *      |   CS    |
-	 *      -----------
-	 *      |   RIP   |
-	 *      ----------- top of stack
+	 *	----------- bottom of stack
+	 *	|   SS    |
+	 *	-----------
+	 *	|   RSP   |
+	 *	-----------
+	 *	|  RFLAGS |
+	 *	-----------
+	 *	|   CS    |
+	 *	-----------
+	 *	|   RIP   |
+	 *	----------- top of stack
 	 */
 	pushq	OFF_GP_SS(%rdi)
 	pushq	OFF_RSP(%rdi)
@@ -207,8 +207,8 @@ kkm_switch_to_gp_asm:
 
 	/*
 	 * switch address space
-	 *    old - guest kernel address space
-	 *    new - guest payload address space
+	 *	old - guest kernel address space
+	 *	new - guest payload address space
 	 */
 	movq	OFF_GP_CR3(%rdi), %rax
 	movq	%rax, %cr3
