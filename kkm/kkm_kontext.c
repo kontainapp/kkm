@@ -106,8 +106,6 @@ int kkm_kontext_switch_kernel(struct kkm_kontext *kkm_kontext)
 	int cpu = -1;
 
 begin:
-	printk(KERN_NOTICE "kkm_kontext_switch_kernel:\n");
-
 	ret_val = 0;
 	ga = (struct kkm_guest_area *)kkm_kontext->guest_area;
 	cpu = -1;
@@ -132,22 +130,12 @@ begin:
 
 	cpu = get_cpu();
 	per_cpu(current_kontext, cpu) = kkm_kontext;
-	printk(KERN_NOTICE "kkm_kontext_switch_kernel: cpu %d %px\n", cpu,
-	       &cpu);
-
-	printk(KERN_NOTICE
-	       "kkm_kontext_switch_kernel: before %px %llx %llx %llx\n",
-	       ga->kkm_kontext, ga->guest_area_beg, ga->native_kernel_stack,
-	       ga->guest_stack_variable_address);
 
 	/*
 	 * save native kernel address space(cr3 and cr4)
 	 */
 	kkm_kontext->native_kernel_cr3 = __read_cr3();
 	kkm_kontext->native_kernel_cr4 = __read_cr4();
-	printk(KERN_NOTICE
-	       "kkm_kontext_switch_kernel: native kernel cr3 %llx cr4 %llx\n",
-	       kkm_kontext->native_kernel_cr3, kkm_kontext->native_kernel_cr4);
 
 	ga->guest_kernel_cr3 = kkm->guest_kernel_pa;
 	ga->guest_payload_cr3 = kkm->guest_payload_pa;
@@ -178,16 +166,6 @@ begin:
 	 */
 	rdmsrl(MSR_LSTAR, kkm_kontext->native_kernel_entry_syscall_64);
 
-	printk(KERN_NOTICE
-	       "kkm_kontext_switch_kernel: segments ds %x es %x fs %x fsbase %llx gs %x gsbase %llx gskernbase %llx ss %x\n",
-	       kkm_kontext->native_kernel_ds, kkm_kontext->native_kernel_es,
-	       kkm_kontext->native_kernel_fs,
-	       kkm_kontext->native_kernel_fs_base,
-	       kkm_kontext->native_kernel_gs,
-	       kkm_kontext->native_kernel_gs_base,
-	       kkm_kontext->native_kernel_gs_kern_base,
-	       kkm_kontext->native_kernel_ss);
-
 	kkm_hw_debug_registers_save(kkm_kontext->native_debug_registers);
 
 	ga->kkm_intr_no = -1;
@@ -200,30 +178,17 @@ begin:
 	/* code is from intr/fault return path */
 	kkm_hw_debug_registers_restore(kkm_kontext->native_debug_registers);
 
-	printk(KERN_NOTICE
-	       "kkm_kontext_switch_kernel: after %px %llx %llx %llx intr no %llx\n",
-	       ga->kkm_kontext, ga->guest_area_beg, ga->native_kernel_stack,
-	       ga->guest_stack_variable_address, ga->kkm_intr_no);
-
 	/*
 	 * enable interrupts
 	 */
 	local_irq_enable();
 
-	printk(KERN_NOTICE
-	       "kkm_kontext_switch_kernel: before cpu %d ga %px ret_val %d %px\n",
-	       cpu, ga, ret_val, &ret_val);
-
 	ret_val = kkm_process_intr(kkm_kontext);
 	if (ret_val == KKM_KONTEXT_FAULT_PROCESS_DONE) {
-		printk(KERN_NOTICE
+		printk(KERN_DEBUG
 		       "kkm_kontext_switch_kernel: fault process done restarting guest\n");
 		goto begin;
 	}
-
-	printk(KERN_NOTICE
-	       "kkm_kontext_switch_kernel: after cpu %d ga %px ret_val %d %px\n",
-	       cpu, ga, ret_val, &ret_val);
 
 	return ret_val;
 }
@@ -234,22 +199,15 @@ begin:
  */
 void kkm_guest_kernel_start_payload(struct kkm_guest_area *ga)
 {
-	int cpu = 0x66;
+	int cpu = -1;
 	struct cpu_entry_area *cea = NULL;
 	uint64_t estack_start = 0;
 	uint64_t syscall_entry_addr = 0;
 
-	printk(KERN_NOTICE "kkm_guest_kernel_start_payload: ga %px\n", ga);
 	ga = kkm_mmu_get_cur_cpu_guest_va();
-	printk(KERN_NOTICE
-	       "kkm_guest_kernel_start_payload: ga kontain private area %px\n",
-	       ga);
 
 	cpu = get_cpu();
 	cea = get_cpu_entry_area(cpu);
-	printk(KERN_NOTICE
-	       "kkm_guest_kernel_start_payload: cpu %d %px cea %px\n",
-	       cpu, &cpu, cea);
 
 	ga->guest_stack_variable_address = (uint64_t)&cpu;
 
@@ -274,36 +232,20 @@ void kkm_guest_kernel_start_payload(struct kkm_guest_area *ga)
 	ga->guest_payload_cs = __USER_CS;
 	ga->guest_payload_ss = __USER_DS;
 
-	printk(KERN_NOTICE
-	       "kkm_guest_kernel_start_payload: fsbase %llx usercs %llx userss %llx\n",
-	       ga->sregs.fs.base, ga->guest_payload_cs, ga->guest_payload_ss);
-
-	printk(KERN_NOTICE
-	       "kkm_guest_kernel_start_payload: rip %llx rsp %llx rflags %llx\n",
-	       ga->regs.rip, ga->regs.rsp, ga->regs.rflags);
-
 	/*
 	 * flags are from userland
 	 * make sure interrupts are enabled, iopl is 0 and resume flag is set
 	 */
 	if ((ga->regs.rflags & X86_EFLAGS_IF) == 0) {
-		printk(KERN_NOTICE
-		       "kkm_guest_kernel_start_payload: interrupts are disabled in rflags, enabling\n");
 		// keep interrupts disabled till trap handlers are completely working
 		// ga->regs.rflags |= X86_EFLAGS_IF;
 	}
 	// TODO: delete this
 	ga->regs.rflags &= ~(X86_EFLAGS_IF);
 	if ((ga->regs.rflags & X86_EFLAGS_IOPL) != 0) {
-		printk(KERN_NOTICE
-		       "kkm_guest_kernel_start_payload: user provided iopl 0x%llx, changing to 0\n",
-		       (ga->regs.rflags & X86_EFLAGS_IOPL) >>
-			       X86_EFLAGS_IOPL_BIT);
 		ga->regs.rflags &= ~(X86_EFLAGS_IOPL);
 	}
 	if ((ga->regs.rflags & X86_EFLAGS_RF) == 0) {
-		printk(KERN_NOTICE
-		       "kkm_guest_kernel_start_payload: resume flag is not set rflags, enabling\n");
 		ga->regs.rflags |= X86_EFLAGS_RF;
 	}
 
@@ -329,10 +271,6 @@ void kkm_guest_kernel_start_payload(struct kkm_guest_area *ga)
 	estack_start = (uint64_t)(&ga->redzone_bottom);
 	load_sp0(estack_start);
 
-	printk(KERN_NOTICE
-	       "kkm_guest_kernel_start_payload: native sp0 %llx sp1 %llx sp2 %llx guest %llx\n",
-	       ga->native_save_tss_sp0, ga->native_save_tss_sp1, ga->native_save_tss_sp2, estack_start);
-
 	/*
 	 * interrupts are disbled at the begining of switch_kernel
 	 * set new idt
@@ -345,10 +283,6 @@ void kkm_guest_kernel_start_payload(struct kkm_guest_area *ga)
 	kkm_switch_to_gp_asm(ga);
 
 	/* NOTREACHED */
-	/* never reaches, this code is used for debugging */
-
-	printk(KERN_NOTICE
-	       "kkm_guest_kernel_start_payload: returned from guest call\n");
 }
 
 /*
@@ -368,10 +302,6 @@ void kkm_switch_to_host_kernel(void)
 	kkm_kontext = per_cpu(current_kontext, cpu);
 	ga = (struct kkm_guest_area *)kkm_kontext->guest_area;
 
-	printk(KERN_NOTICE
-	       "kkm_switch_to_host_kernel: cpu %d stack address %px ga %px\n",
-	       cpu, &cpu, ga);
-
 	/*
 	 * adjust registers from trap info
 	 */
@@ -380,26 +310,12 @@ void kkm_switch_to_host_kernel(void)
 
 	kkm_hw_debug_registers_save(ga->debug.registers);
 
-	printk(KERN_NOTICE
-	       "kkm_switch_to_host_kernel: segments ds %x es %x fs %x fsbase %llx gs %x gsbase %llx gskernbase %llx ss %x\n",
-	       kkm_kontext->native_kernel_ds, kkm_kontext->native_kernel_es,
-	       kkm_kontext->native_kernel_fs,
-	       kkm_kontext->native_kernel_fs_base,
-	       kkm_kontext->native_kernel_gs,
-	       kkm_kontext->native_kernel_gs_base,
-	       kkm_kontext->native_kernel_gs_kern_base,
-	       kkm_kontext->native_kernel_ss);
-
 	/*
 	 * restore native kernel tss sp0 (intr stack)
 	 */
 	load_sp0(ga->native_save_tss_sp0);
 	this_cpu_write(cpu_tss_rw.x86_tss.sp1, ga->native_save_tss_sp1);
 	this_cpu_write(cpu_tss_rw.x86_tss.sp2, ga->native_save_tss_sp2);
-
-	printk(KERN_NOTICE
-	       "kkm_guest_kernel_start_payload: native sp0 %llx sp1 %llx sp2 %llx\n",
-	       cea->tss.x86_tss.sp0, cea->tss.x86_tss.sp1, cea->tss.x86_tss.sp2);
 
 	/*
 	 * restore native kernel idt
@@ -481,7 +397,7 @@ int kkm_process_intr(struct kkm_kontext *kkm_kontext)
 		(struct kkm_guest_area *)kkm_kontext->guest_area;
 	struct kkm_run *kkm_run = NULL;
 
-	printk(KERN_NOTICE
+	printk(KERN_DEBUG
 	       "kkm_process_intr: trap information ga %px intr no %llx ss %llx rsp %llx rflags %llx cs %llx rip %llx error %llx cr2 %llx\n",
 	       ga, ga->kkm_intr_no, ga->trap_info.ss, ga->trap_info.rsp,
 	       ga->trap_info.rflags, ga->trap_info.ss, ga->trap_info.rip,
@@ -535,13 +451,7 @@ int kkm_process_general_protection(struct kkm_kontext *kkm_kontext,
 		goto error;
 	}
 
-	printk(KERN_NOTICE
-	       "kkm_process_general_protection: offending byte %02x\n",
-	       ga->instruction_decode[0]);
-
 	if (ga->instruction_decode[0] == KKM_OUT_OPCODE) {
-		printk(KERN_NOTICE
-		       "kkm_process_general_protection: it is out!\n");
 		kkm_run->exit_reason = KKM_EXIT_IO;
 		kkm_run->io.direction = KKM_EXIT_IO_OUT;
 		kkm_run->io.size = 4;
@@ -576,15 +486,6 @@ int kkm_process_page_fault(struct kkm_kontext *kkm_kontext,
 		ret_val = -EFAULT;
 		goto error;
 	}
-
-	printk(KERN_NOTICE
-	       "kkm_process_page_fault: fault guest va %llx monitor va %llx\n",
-	       ga->sregs.cr2, monitor_fault_address);
-
-	/*
-	 * TODO: implement a virtual address check.
-	 * allow to process faults in user range only
-	 */
 
 	if ((error_code & X86_PF_USER) == X86_PF_USER) {
 		/*
@@ -670,10 +571,6 @@ bool kkm_guest_va_to_monitor_va(struct kkm_kontext *kkm_kontext,
 		goto end;
 	}
 
-	printk(KERN_NOTICE
-	       "kkm_guest_va_to_monitor_va: fault guest va %llx is not in normal space\n",
-	       guest_va);
-
 	mem_slot = &kkm_kontext->kkm->mem_slot[KKM_KM_RSRV_VDSOSLOT];
 	if (mem_slot->used == true && guest_va >= KKM_GUEST_VVAR_VDSO_BASE_VA &&
 	    guest_va <
@@ -685,9 +582,11 @@ bool kkm_guest_va_to_monitor_va(struct kkm_kontext *kkm_kontext,
 	}
 
 end:
+	if (ret_val == false) {
 	printk(KERN_NOTICE
 	       "kkm_guest_va_to_monitor_va: faulted guest va %llx monitor va %llx ret_val %d\n",
 	       guest_va, *monitor_va, ret_val);
+	}
 
 	return ret_val;
 }

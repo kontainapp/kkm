@@ -39,21 +39,16 @@ void kkm_destroy_app(struct kkm *kkm)
 
 void kkm_reference_count_init(struct kkm *kkm)
 {
-	printk(KERN_NOTICE "kkm_reference_count_init:\n");
 	refcount_set(&kkm->reference_count, 1);
 }
 
 void kkm_reference_count_up(struct kkm *kkm)
 {
-	printk(KERN_NOTICE "kkm_reference_count_up: before %d\n",
-	       kkm->reference_count.refs.counter);
 	refcount_inc(&kkm->reference_count);
 }
 
 void kkm_reference_count_down(struct kkm *kkm)
 {
-	printk(KERN_NOTICE "kkm_reference_count_down: before %d\n",
-	       kkm->reference_count.refs.counter);
 	if (refcount_dec_and_test(&kkm->reference_count)) {
 		kkm_destroy_app(kkm);
 	}
@@ -65,8 +60,6 @@ static int kkm_execution_kontext_release(struct inode *inode_p,
 	struct kkm_kontext *kkm_kontext = file_p->private_data;
 	int i = 0;
 	struct kkm_kontext_mmap_area *kkma = NULL;
-
-	printk(KERN_NOTICE "kkm_execution_kontext_release:\n");
 
 	kkm_kontext_cleanup(kkm_kontext);
 
@@ -87,7 +80,6 @@ struct kkm *kkm = NULL;
 static long kkm_run(struct kkm_kontext *kkm_kontext)
 {
 	int ret_val = 0;
-	printk(KERN_NOTICE "kkm_run:\n");
 
 	kkm = kkm_kontext->kkm;
 
@@ -127,9 +119,6 @@ static long kkm_execution_kontext_ioctl(struct file *file_p,
 		(struct kkm_kontext *)file_p->private_data;
 	struct kkm_guest_area *ga =
 		(struct kkm_guest_area *)kkm_kontext->guest_area;
-
-	printk(KERN_NOTICE "kkm_execution_kontext_ioctl: ioctl_type(%x)\n",
-	       ioctl_type);
 
 	switch (ioctl_type) {
 	case KKM_RUN:
@@ -193,10 +182,6 @@ static vm_fault_t kkm_execution_kontext_fault(struct vm_fault *vmf)
 	struct kkm_kontext *kkm_kontext =
 		(struct kkm_kontext *)vmf->vma->vm_file->private_data;
 
-	printk(KERN_NOTICE
-	       "kkm_execution_kontext_fault: vaddr %lx offset %ld %p\n",
-	       vmf->address, vmf->pgoff, vmf->page);
-
 	if (vmf->pgoff >= KKM_CONTEXT_MAP_PAGE_COUNT) {
 		printk(KERN_NOTICE
 		       "kkm_execution_kontext_fault: out of range vaddr %lx offset %ld %p\n",
@@ -217,9 +202,6 @@ static const struct vm_operations_struct kkm_execution_kontext_vm_ops = {
 static int kkm_execution_kontext_mmap(struct file *file_p,
 				      struct vm_area_struct *vma)
 {
-	printk(KERN_NOTICE "kkm_execution_kontext_mmap: start %lx end %lx\n",
-	       vma->vm_start, vma->vm_end);
-
 	vma->vm_ops = &kkm_execution_kontext_vm_ops;
 	return 0;
 }
@@ -271,8 +253,6 @@ int kkm_add_execution_kontext(struct kkm *kkm)
 	kkm_kontext->kontext_fd =
 		anon_inode_getfd(buffer, &kkm_execution_kontext_fops,
 				 kkm_kontext, O_CLOEXEC | O_RDWR);
-	printk(KERN_NOTICE "kkm_add_execution_kontext: kontext fd %d\n",
-	       kkm_kontext->kontext_fd);
 	if (kkm_kontext->kontext_fd >= 0) {
 		ret_val = kkm_kontext->kontext_fd;
 	}
@@ -286,9 +266,6 @@ int kkm_add_execution_kontext(struct kkm *kkm)
 			goto error;
 		}
 		kkma->kvaddr = (unsigned long)page_address(kkma->page);
-		printk(KERN_NOTICE
-		       "kkm_add_execution_kontext: allocated space %d %p %lx\n",
-		       kkma->offset, kkma->page, kkma->kvaddr);
 	}
 
 	kkm_kontext_init(kkm_kontext);
@@ -313,8 +290,6 @@ int kkm_set_kontainer_memory(struct kkm *kkm, unsigned long arg)
 			   sizeof(struct kkm_memory_region))) {
 		return -EFAULT;
 	}
-	printk("kkm_set_kontainer_memory: mr slot %d flags %x gpa %llx size %llx uva %llx\n",
-			mr.slot, mr.flags, mr.guest_phys_addr, mr.memory_size, mr.userspace_addr);
 
 	if (mr.slot > KKM_MAX_MEMORY_SLOTS) {
 		return -EINVAL;
@@ -401,7 +376,6 @@ error:
 static int kkm_kontainer_release(struct inode *inode_p, struct file *file_p)
 {
 	struct kkm *kkm = file_p->private_data;
-	printk(KERN_NOTICE "kkm_kontainer_release:\n");
 
 	kkm_kontainer_cleanup(kkm);
 
@@ -418,8 +392,6 @@ static long kkm_kontainer_ioctl(struct file *file_p, unsigned int ioctl_type,
 {
 	long ret_val = 0;
 	struct kkm *kkm = file_p->private_data;
-
-	printk(KERN_NOTICE "kkm_kontainer_ioctl: ioctl_type(%x)\n", ioctl_type);
 
 	switch (ioctl_type) {
 	case KKM_ADD_EXECUTION_CONTEXT:
@@ -457,8 +429,6 @@ int kkm_create_kontainer(unsigned long arg)
 {
 	int ret_val = 0;
 	struct kkm *kkm = NULL;
-
-	printk(KERN_NOTICE "kkm_create_kontainer:\n");
 
 	// create
 	kkm = kzalloc(sizeof(struct kkm), GFP_KERNEL);
@@ -570,8 +540,6 @@ static long kkm_device_ioctl(struct file *file_p, unsigned int ioctl_type,
 			     unsigned long arg)
 {
 	long ret_val = 0;
-
-	printk(KERN_NOTICE "kkm_device_ioctl: ioctl_type(%x)\n", ioctl_type);
 
 	switch (ioctl_type) {
 	case KKM_GET_VERSION:

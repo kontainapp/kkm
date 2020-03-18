@@ -123,9 +123,6 @@ void kkm_mmu_set_entry(void *pt_va, int index, uint64_t entry)
  */
 void kkm_mmu_insert_page(void *pt_va, int index, phys_addr_t pa, uint64_t flags)
 {
-	printk(KERN_NOTICE
-	       "kkm_mmu_insert_page: pt va %px index %x pa %llx flags %llx\n",
-	       pt_va, index, pa, flags);
 	((uint64_t *)pt_va)[index] =
 		(pa & KKM_PAGE_PA_MASK) | (flags & KKM_PAGE_FLAGS_MASK);
 }
