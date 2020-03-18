@@ -13,6 +13,8 @@
 #include <linux/linkage.h>
 #include <asm/percpu.h>
 #include <asm/asm-offsets.h>
+#include <asm/segment.h>
+
 #include "kkm_offsets.h"
 
 
@@ -2347,12 +2349,12 @@ kkm_intr_entry_asm:
 	 */
 	pushq	$-1
 
-kkm_intr_entry_asm_common:
-
 	/*
 	 * change to kernel thread local storage
 	 */
 	swapgs
+
+kkm_intr_entry_asm_common:
 
 	/*
 	 * create scratch registers
@@ -2497,6 +2499,12 @@ kkm_intr_entry_general_protection:
 	clac
 	clc
 	push	$13
+
+	/*
+	 * change to kernel thread local storage
+	 */
+	swapgs
+
 	jmp	kkm_intr_entry_asm_common
 	/* NOTREACHED */
 
@@ -2508,10 +2516,68 @@ kkm_intr_entry_page_fault:
 	clac
 	clc
 	push	$14
+
+	/*
+	 * change to kernel thread local storage
+	 */
+	swapgs
+
 	jmp	kkm_intr_entry_asm_common
 	/* NOTREACHED */
 
 	.size kkm_intr_entry_page_fault, .-kkm_intr_entry_page_fault
+
+/*
+ * syscall 64 entry point
+ */
+	.global kkm_syscall_entry_asm
+kkm_syscall_entry_asm:
+
+	/*
+	 * change to kernel thread local storage
+	 */
+	swapgs
+
+	/*
+	 * save current stack
+	 * and switch stack
+	 */
+	movq	%rsp, PER_CPU_VAR(cpu_tss_rw + TSS_sp2)
+	movq	PER_CPU_VAR(cpu_tss_rw + TSS_sp0), %rsp
+
+	/*
+	 * switch to guest kernel address space
+	 * kernel and payload PML4 are allocated next to each
+	 * other(even page is kernel, odd page is guest) in physical memory.
+	 * no need to flush TLB
+	 * guest kernel address space is superset of guest payload address space
+	 */
+	movq	%cr3, %rsp
+	andq	$0xffffffffffffefff, %rsp
+	movq	%rsp, %cr3
+
+	/*
+	 * create stack
+	 * similar to trap and call common code
+	 */
+	pushq	$__USER_DS
+	pushq	PER_CPU_VAR(cpu_tss_rw + TSS_sp2)
+	pushq	%r11
+	pushq	$__USER_CS
+	pushq	%rcx
+	pushq	$-1
+
+	/*
+	 * use intr number to distinguish
+	 * this is a system call
+	 */
+	pushq	$511
+
+	jmp	kkm_intr_entry_asm_common
+
+	/* NOTREACHED */
+
+	.size kkm_syscall_entry_asm, .-kkm_syscall_entry_asm
 
 	.global kkm_intr_fill
 kkm_intr_fill:

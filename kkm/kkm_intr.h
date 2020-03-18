@@ -18,6 +18,7 @@ void kkm_intr_fill(void);
 void kkm_intr_entry_asm(void);
 void kkm_intr_entry_general_protection(void);
 void kkm_intr_entry_page_fault(void);
+void kkm_syscall_entry_asm(void);
 
 /* one for each intr */
 void kkm_intr_entry_0(void);

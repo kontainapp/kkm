@@ -237,6 +237,7 @@ void kkm_guest_kernel_start_payload(struct kkm_guest_area *ga)
 	int cpu = 0x66;
 	struct cpu_entry_area *cea = NULL;
 	uint64_t estack_start = 0;
+	uint64_t syscall_entry_addr = 0;
 
 	printk(KERN_NOTICE "kkm_guest_kernel_start_payload: ga %px\n", ga);
 	ga = kkm_mmu_get_cur_cpu_guest_va();
@@ -264,7 +265,8 @@ void kkm_guest_kernel_start_payload(struct kkm_guest_area *ga)
 	/*
 	 * set guest 64bit SYSCALL target address
 	 */
-	wrmsrl(MSR_LSTAR, (uint64_t)kkm_syscall_entry_asm);
+	syscall_entry_addr = kkm_syscall_entry_asm - kkm_intr_entry_0 + KKM_IDT_CODE_START_VA;
+	wrmsrl(MSR_LSTAR, syscall_entry_addr);
 
 	/*
 	 * dont use km provided cs and ss, they control privilege
@@ -405,7 +407,7 @@ void kkm_switch_to_host_kernel(void)
 	load_idt(&ga->native_idt_desc);
 
 	/*
-	 * save native kernel SYSCALL target address
+	 * restore native kernel SYSCALL target address
 	 */
 	wrmsrl(MSR_LSTAR, kkm_kontext->native_kernel_entry_syscall_64);
 
