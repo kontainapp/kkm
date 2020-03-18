@@ -13,6 +13,7 @@
 #include <linux/mm.h>
 #include <linux/slab.h>
 #include <asm/desc.h>
+#include <asm/traps.h>
 
 #include "kkm.h"
 #include "kkm_run.h"
@@ -142,6 +143,12 @@ int kkm_idt_descr_init(void)
 		       "kkm_idt_descr_init: idt size expecting 0xfff found %x\n",
 		       idt_entry->native_idt_desc.size);
 	}
+
+	/*
+	 * replace non standard handlers
+	 */
+	intr_function_pointers[X86_TRAP_GP] = (uint64_t)kkm_intr_entry_general_protection;
+	intr_function_pointers[X86_TRAP_PF] = (uint64_t)kkm_intr_entry_page_fault;
 
 	/*
 	 * initialize idt entries

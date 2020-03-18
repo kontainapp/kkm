@@ -2342,6 +2342,14 @@ kkm_intr_entry_asm:
 	clc
 
 	/*
+	 * dummy value on stack to make
+	 * stack look similar for all traps
+	 */
+	pushq	$-1
+
+kkm_intr_entry_asm_common:
+
+	/*
 	 * change to kernel thread local storage
 	 */
 	swapgs
@@ -2353,25 +2361,25 @@ kkm_intr_entry_asm:
 	pushq	%rsi
 	/*
 	 * trap stack looks like this now
-	 *      ----------- bottom of stack
-	 *      |   SS    |
-	 *      ----------
-	 *      |   RSP   |
-	 *      -----------
-	 *      |  RFLAGS |
-	 *      -----------
-	 *      |   CS    |
-	 *      -----------
-	 *      |   RIP   |
-	 *      -----------
-	 *      |  ERROR  |
-	 *      -----------
-	 *      | INTR NO |
-	 *      -----------
-	 *      |   RDI   |
-	 *      -----------
-	 *      |   RSI   |
-	 *      ----------- top of stack
+	 *	----------- bottom of stack
+	 *	|   SS    |
+	 *	-----------
+	 *	|   RSP   |
+	 *	-----------
+	 *	|  RFLAGS |
+	 *	-----------
+	 *	|   CS    |
+	 *	-----------
+	 *	|   RIP   |
+	 *	-----------
+	 *	|  ERROR  |
+	 *	-----------
+	 *	| INTR NO |
+	 *	-----------
+	 *	|   RDI   |
+	 *	-----------
+	 *	|   RSI   |
+	 *	----------- top of stack
 	 */
 
 	/*
@@ -2434,16 +2442,16 @@ kkm_intr_entry_asm:
 	/*
 	 * save control registers
 	 */
-	movq    %cr0, %rax
-	movq    %rax, OFF_CR0(%rdi)
-	movq    %cr2, %rax
-	movq    %rax, OFF_CR2(%rdi)
-	movq    %cr3, %rax
-	movq    %rax, OFF_CR3(%rdi)
-	movq    %cr4, %rax
-	movq    %rax, OFF_CR4(%rdi)
-	movq    %cr8, %rax
-	movq    %rax, OFF_CR8(%rdi)
+	movq	%cr0, %rax
+	movq	%rax, OFF_CR0(%rdi)
+	movq	%cr2, %rax
+	movq	%rax, OFF_CR2(%rdi)
+	movq	%cr3, %rax
+	movq	%rax, OFF_CR3(%rdi)
+	movq	%cr4, %rax
+	movq	%rax, OFF_CR4(%rdi)
+	movq	%cr8, %rax
+	movq	%rax, OFF_CR8(%rdi)
 
 	/*
 	 * save trap information from trap stack to kkm_guest_area
@@ -2483,7 +2491,29 @@ kkm_intr_entry_asm:
 
 	.size kkm_intr_entry_asm, .-kkm_intr_entry_asm
 
+	.global kkm_intr_entry_general_protection
+kkm_intr_entry_general_protection:
+
+	clac
+	clc
+	push	$13
+	jmp	kkm_intr_entry_asm_common
+	/* NOTREACHED */
+
+	.size kkm_intr_entry_general_protection, .-kkm_intr_entry_general_protection
+
+	.global kkm_intr_entry_page_fault
+kkm_intr_entry_page_fault:
+
+	clac
+	clc
+	push	$14
+	jmp	kkm_intr_entry_asm_common
+	/* NOTREACHED */
+
+	.size kkm_intr_entry_page_fault, .-kkm_intr_entry_page_fault
+
 	.global kkm_intr_fill
 kkm_intr_fill:
-	.fill  TOTAL_CODE_SIZE - kkm_intr_fill - kkm_intr_entry_0, 1, 0x90
+	.fill TOTAL_CODE_SIZE - kkm_intr_fill - kkm_intr_entry_0, 1, 0x90
 	.size kkm_intr_fill, .-kkm_intr_fill
