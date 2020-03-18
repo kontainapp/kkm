@@ -86,8 +86,8 @@ struct kkm_guest_area {
 			};
 
 			uint64_t native_save_tss_sp0;
-
-			uint8_t reserved1[16];
+			uint64_t native_save_tss_sp1;
+			uint64_t native_save_tss_sp2;
 
 			/*
 			 * km sets the following members using ioctls

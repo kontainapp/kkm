@@ -316,6 +316,8 @@ void kkm_guest_kernel_start_payload(struct kkm_guest_area *ga)
 	 * save native kernel tss sp0 (intr stack)
 	 */
 	ga->native_save_tss_sp0 = cea->tss.x86_tss.sp0;
+	ga->native_save_tss_sp1 = cea->tss.x86_tss.sp1;
+	ga->native_save_tss_sp2 = cea->tss.x86_tss.sp2;
 
 	/*
 	 * ga is pointing to kx area
@@ -326,8 +328,8 @@ void kkm_guest_kernel_start_payload(struct kkm_guest_area *ga)
 	load_sp0(estack_start);
 
 	printk(KERN_NOTICE
-	       "kkm_guest_kernel_start_payload: swap sp0 native %llx guest %llx\n",
-	       ga->native_save_tss_sp0, estack_start);
+	       "kkm_guest_kernel_start_payload: native sp0 %llx sp1 %llx sp2 %llx guest %llx\n",
+	       ga->native_save_tss_sp0, ga->native_save_tss_sp1, ga->native_save_tss_sp2, estack_start);
 
 	/*
 	 * interrupts are disbled at the begining of switch_kernel
@@ -390,6 +392,12 @@ void kkm_switch_to_host_kernel(void)
 	 * restore native kernel tss sp0 (intr stack)
 	 */
 	load_sp0(ga->native_save_tss_sp0);
+	this_cpu_write(cpu_tss_rw.x86_tss.sp1, ga->native_save_tss_sp1);
+	this_cpu_write(cpu_tss_rw.x86_tss.sp2, ga->native_save_tss_sp2);
+
+	printk(KERN_NOTICE
+	       "kkm_guest_kernel_start_payload: native sp0 %llx sp1 %llx sp2 %llx\n",
+	       cea->tss.x86_tss.sp0, cea->tss.x86_tss.sp1, cea->tss.x86_tss.sp2);
 
 	/*
 	 * restore native kernel idt
