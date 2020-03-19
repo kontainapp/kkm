@@ -414,6 +414,9 @@ int kkm_process_intr(struct kkm_kontext *kkm_kontext)
 	case X86_TRAP_PF:
 		ret_val = kkm_process_page_fault(kkm_kontext, ga, kkm_run);
 		break;
+	case KKM_INTR_SYSCALL:
+		ret_val = kkm_process_syscall(kkm_kontext, ga, kkm_run);
+		break;
 	default:
 		printk(KERN_NOTICE
 		       "kkm_process_intr: unexpected exception (%llx)\n",
@@ -515,6 +518,16 @@ error:
 	return ret_val;
 }
 
+int kkm_process_syscall(struct kkm_kontext *kkm_kontext,
+			   struct kkm_guest_area *ga, struct kkm_run *kkm_run)
+{
+	int ret_val = 0;
+
+	printk(KERN_NOTICE "kkm_process_syscall: found syscall\n");
+
+	return ret_val;
+}
+
 /*
  * folowing is copied from km_mem.h
  * need to be kept in sync with monitor
@@ -543,7 +556,7 @@ error:
 	(0x100000000000ULL) /* keep in sync with KM_USER_MEM_BASE */
 
 /*
- * VDSO handling
+ * VDSO related macros
  */
 #define KKM_KM_RSRV_VDSOSLOT (41)
 #define KKM_GUEST_VVAR_VDSO_BASE_VA (KKM_GUEST_MEM_TOP_VA + (1 * KKM_MIB))

@@ -2546,17 +2546,6 @@ kkm_syscall_entry_asm:
 	movq	PER_CPU_VAR(cpu_tss_rw + TSS_sp0), %rsp
 
 	/*
-	 * switch to guest kernel address space
-	 * kernel and payload PML4 are allocated next to each
-	 * other(even page is kernel, odd page is guest) in physical memory.
-	 * no need to flush TLB
-	 * guest kernel address space is superset of guest payload address space
-	 */
-	movq	%cr3, %rsp
-	andq	$0xffffffffffffefff, %rsp
-	movq	%rsp, %cr3
-
-	/*
 	 * create stack
 	 * similar to trap and call common code
 	 */
