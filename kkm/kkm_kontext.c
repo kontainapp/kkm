@@ -522,8 +522,23 @@ int kkm_process_syscall(struct kkm_kontext *kkm_kontext,
 			   struct kkm_guest_area *ga, struct kkm_run *kkm_run)
 {
 	int ret_val = 0;
+	uint32_t *data_address = NULL;
 
 	printk(KERN_NOTICE "kkm_process_syscall: found syscall\n");
+	printk(KERN_INFO
+	       "kkm_process_intr: trap information ga %px intr no %llx ss %llx rsp %llx rflags %llx cs %llx rip %llx error %llx cr2 %llx\n",
+	       ga, ga->kkm_intr_no, ga->trap_info.ss, ga->trap_info.rsp,
+	       ga->trap_info.rflags, ga->trap_info.ss, ga->trap_info.rip,
+	       ga->trap_info.error, ga->sregs.cr2);
+
+	kkm_run->exit_reason = KKM_EXIT_IO;
+	kkm_run->io.direction = KKM_EXIT_IO_OUT;
+	kkm_run->io.size = 4;
+	kkm_run->io.port = 0x8000 | (ga->regs.rax & 0xFFFF);
+	kkm_run->io.count = 1;
+	kkm_run->io.data_offset = PAGE_SIZE;
+	data_address = (uint32_t *)kkm_kontext->mmap_area[1].kvaddr;
+	data_address[0] = ga->regs.rsp + 48;
 
 	return ret_val;
 }
