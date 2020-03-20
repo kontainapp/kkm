@@ -550,14 +550,7 @@ int kkm_process_syscall(struct kkm_kontext *kkm_kontext,
 	uint64_t gva = 0;
 	uint64_t mva = 0;
 
-	printk(KERN_NOTICE "kkm_process_syscall: found syscall\n");
-	printk(KERN_INFO
-	       "kkm_process_intr: trap information ga %px intr no %llx ss %llx rsp %llx rflags %llx cs %llx rip %llx error %llx cr2 %llx\n",
-	       ga, ga->kkm_intr_no, ga->trap_info.ss, ga->trap_info.rsp,
-	       ga->trap_info.rflags, ga->trap_info.ss, ga->trap_info.rip,
-	       ga->trap_info.error, ga->sregs.cr2);
-
-	gva = ga->regs.rsp - 56;
+	gva = ga->regs.rsp - sizeof(struct kkm_hc_args);
 
 	kkm_run->exit_reason = KKM_EXIT_IO;
 	kkm_run->io.direction = KKM_EXIT_IO_OUT;
