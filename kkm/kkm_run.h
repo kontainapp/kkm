@@ -43,7 +43,7 @@ struct kkm_debug_exit_arch {
 	uint32_t reserved;
 	uint64_t pc;
 	uint64_t dr6;
-	uint64_t dt7;
+	uint64_t dr7;
 };
 
 struct kkm_sync_regs {

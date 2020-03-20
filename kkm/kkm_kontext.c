@@ -30,9 +30,6 @@
 
 DEFINE_PER_CPU(struct kkm_kontext *, current_kontext);
 
-void kkm_hw_debug_registers_save(uint64_t *registers);
-void kkm_hw_debug_registers_restore(uint64_t *registers);
-
 /*
  * initialize context to execute payload
  */
@@ -374,7 +371,6 @@ void kkm_switch_to_host_kernel(void)
 
 void kkm_hw_debug_registers_save(uint64_t *registers)
 {
-#if 0
 	uint64_t original_dr6 = 0;
 
 	get_debugreg(registers[0], 0);
@@ -386,29 +382,16 @@ void kkm_hw_debug_registers_save(uint64_t *registers)
 
 	original_dr6 = registers[6];
 	registers[6] &= 0x1E00F;
-
-	printk(KERN_NOTICE
-	       "kkm_hw_debug_registers_save: dr0 %llx dr1 %llx dr2 %llx dr3 %llx dr6 %llx masked_dr6 %llx dr7 %llx\n",
-	       registers[0], registers[1], registers[2], registers[3],
-	       original_dr6, registers[6], registers[7]);
-#endif
 }
 
 void kkm_hw_debug_registers_restore(uint64_t *registers)
 {
-#if 0
-	printk(KERN_NOTICE
-	       "kkm_hw_debug_registers_restore: dr0 %llx dr1 %llx dr2 %llx dr3 %llx dr6 %llx dr7 %llx\n",
-	       registers[0], registers[1], registers[2], registers[3],
-	       registers[6], registers[7]);
-
 	set_debugreg(registers[0], 0);
 	set_debugreg(registers[1], 1);
 	set_debugreg(registers[2], 2);
 	set_debugreg(registers[3], 3);
 	set_debugreg(registers[6], 6);
 	set_debugreg(registers[7], 7);
-#endif
 }
 
 int kkm_process_intr(struct kkm_kontext *kkm_kontext)
@@ -418,18 +401,28 @@ int kkm_process_intr(struct kkm_kontext *kkm_kontext)
 		(struct kkm_guest_area *)kkm_kontext->guest_area;
 	struct kkm_run *kkm_run = NULL;
 
-#if 0
+	/*
 	printk(KERN_INFO
 	       "kkm_process_intr: trap information ga %px intr no %llx ss %llx rsp %llx rflags %llx cs %llx rip %llx error %llx cr2 %llx\n",
 	       ga, ga->kkm_intr_no, ga->trap_info.ss, ga->trap_info.rsp,
 	       ga->trap_info.rflags, ga->trap_info.ss, ga->trap_info.rip,
 	       ga->trap_info.error, ga->sregs.cr2);
-#endif
+
+	printk(KERN_INFO
+	       "kkm_process_intr: trap information user ss %d cs %d kernel ss %d cs %d\n",
+	       __USER_DS, __USER_CS, __KERNEL_DS, __KERNEL_CS);
+	*/
 
 	kkm_run = (struct kkm_run *)kkm_kontext->mmap_area[0].kvaddr;
 	kkm_run->exit_reason = KKM_EXIT_UNKNOWN;
 
 	switch (ga->kkm_intr_no) {
+	case X86_TRAP_DB:
+		ret_val = kkm_process_debug(kkm_kontext, ga, kkm_run);
+		break;
+	case X86_TRAP_BP:
+		ret_val = kkm_process_breakpoint(kkm_kontext, ga, kkm_run);
+		break;
 	case X86_TRAP_GP:
 		ret_val = kkm_process_general_protection(kkm_kontext, ga,
 							 kkm_run);
@@ -449,6 +442,32 @@ int kkm_process_intr(struct kkm_kontext *kkm_kontext)
 	}
 
 	return ret_val;
+}
+
+int kkm_process_debug(struct kkm_kontext *kkm_kontext,
+		      struct kkm_guest_area *ga, struct kkm_run *kkm_run)
+{
+	printk(KERN_NOTICE "kkm_process_debug: exception (%llx)\n",
+	       ga->kkm_intr_no);
+	kkm_run->exit_reason = KKM_EXIT_DEBUG;
+	kkm_run->debug.arch.exception = X86_TRAP_DB;
+	kkm_run->debug.arch.pc = ga->trap_info.rip;
+	kkm_run->debug.arch.dr6 = ga->debug.registers[6];
+	kkm_run->debug.arch.dr7 = ga->debug.registers[7];
+
+	return 0;
+}
+
+int kkm_process_breakpoint(struct kkm_kontext *kkm_kontext,
+			   struct kkm_guest_area *ga, struct kkm_run *kkm_run)
+{
+	printk(KERN_NOTICE "kkm_process_breakpoint: exception (%llx)\n",
+	       ga->kkm_intr_no);
+	kkm_run->exit_reason = KKM_EXIT_DEBUG;
+	kkm_run->debug.arch.exception = X86_TRAP_BP;
+	kkm_run->debug.arch.pc = ga->trap_info.rip;
+
+	return 0;
 }
 
 int kkm_process_general_protection(struct kkm_kontext *kkm_kontext,

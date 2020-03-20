@@ -148,7 +148,14 @@ int kkm_kontext_switch_kernel(struct kkm_kontext *kkm_kontext);
 void kkm_guest_kernel_start_payload(struct kkm_guest_area *ga);
 void kkm_switch_to_host_kernel(void);
 
+void kkm_hw_debug_registers_save(uint64_t *registers);
+void kkm_hw_debug_registers_restore(uint64_t *registers);
+
 int kkm_process_intr(struct kkm_kontext *kkm_kontext);
+int kkm_process_debug(struct kkm_kontext *kkm_kontext,
+		      struct kkm_guest_area *ga, struct kkm_run *kkm_run);
+int kkm_process_breakpoint(struct kkm_kontext *kkm_kontext,
+			   struct kkm_guest_area *ga, struct kkm_run *kkm_run);
 int kkm_process_general_protection(struct kkm_kontext *kkm_kontext,
 				   struct kkm_guest_area *ga,
 				   struct kkm_run *kkm_run);
