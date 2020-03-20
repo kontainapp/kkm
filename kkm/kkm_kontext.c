@@ -401,6 +401,7 @@ int kkm_process_intr(struct kkm_kontext *kkm_kontext)
 		(struct kkm_guest_area *)kkm_kontext->guest_area;
 	struct kkm_run *kkm_run = NULL;
 
+	/*
 	printk(KERN_INFO
 	       "kkm_process_intr: trap information ga %px intr no %llx ss %llx rsp %llx rflags %llx cs %llx rip %llx error %llx cr2 %llx\n",
 	       ga, ga->kkm_intr_no, ga->trap_info.ss, ga->trap_info.rsp,
@@ -410,6 +411,7 @@ int kkm_process_intr(struct kkm_kontext *kkm_kontext)
 	printk(KERN_INFO
 	       "kkm_process_intr: trap information user ss %d cs %d kernel ss %d cs %d\n",
 	       __USER_DS, __USER_CS, __KERNEL_DS, __KERNEL_CS);
+	       */
 
 	kkm_run = (struct kkm_run *)kkm_kontext->mmap_area[0].kvaddr;
 	kkm_run->exit_reason = KKM_EXIT_UNKNOWN;
@@ -445,8 +447,6 @@ int kkm_process_intr(struct kkm_kontext *kkm_kontext)
 int kkm_process_debug(struct kkm_kontext *kkm_kontext,
 		      struct kkm_guest_area *ga, struct kkm_run *kkm_run)
 {
-	printk(KERN_NOTICE "kkm_process_debug: exception (%llx)\n",
-	       ga->kkm_intr_no);
 	kkm_run->exit_reason = KKM_EXIT_DEBUG;
 	kkm_run->debug.arch.exception = X86_TRAP_DB;
 	kkm_run->debug.arch.pc = ga->trap_info.rip;

@@ -2592,6 +2592,11 @@ kkm_intr_entry_255:
 	.size kkm_intr_entry_255, .-kkm_intr_entry_255
 
 
+/*
+ * common trap and intr and syscall code
+ */
+
+	.align 16
 	.global kkm_intr_entry_asm
 kkm_intr_entry_asm:
 	/*
@@ -2738,6 +2743,11 @@ kkm_intr_entry_asm_common:
 
 	.size kkm_intr_entry_asm, .-kkm_intr_entry_asm
 
+
+/*
+ * general protection fault entry point
+ */
+	.align	16
 	.global kkm_intr_entry_general_protection
 kkm_intr_entry_general_protection:
 
@@ -2755,6 +2765,10 @@ kkm_intr_entry_general_protection:
 
 	.size kkm_intr_entry_general_protection, .-kkm_intr_entry_general_protection
 
+/*
+ * page fault entry point
+ */
+	.align	16
 	.global kkm_intr_entry_page_fault
 kkm_intr_entry_page_fault:
 
@@ -2775,6 +2789,7 @@ kkm_intr_entry_page_fault:
 /*
  * syscall 64 entry point
  */
+	.align	16
 	.global kkm_syscall_entry_asm
 kkm_syscall_entry_asm:
 
@@ -2813,6 +2828,10 @@ kkm_syscall_entry_asm:
 
 	.size kkm_syscall_entry_asm, .-kkm_syscall_entry_asm
 
+/*
+ * FILL nops till 4k boundary
+ */
+	.align	16
 	.global kkm_intr_fill
 kkm_intr_fill:
 	.fill TOTAL_CODE_SIZE - kkm_intr_fill - kkm_intr_entry_0, 1, 0x90
