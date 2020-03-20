@@ -221,7 +221,8 @@ void kkm_guest_kernel_start_payload(struct kkm_guest_area *ga)
 	/*
 	 * set guest 64bit SYSCALL target address
 	 */
-	syscall_entry_addr = kkm_syscall_entry_asm - kkm_intr_entry_0 + KKM_IDT_CODE_START_VA;
+	syscall_entry_addr = kkm_syscall_entry_asm - kkm_intr_entry_0 +
+			     KKM_IDT_CODE_START_VA;
 	wrmsrl(MSR_LSTAR, syscall_entry_addr);
 
 	/*
@@ -519,10 +520,13 @@ error:
 }
 
 int kkm_process_syscall(struct kkm_kontext *kkm_kontext,
-			   struct kkm_guest_area *ga, struct kkm_run *kkm_run)
+			struct kkm_guest_area *ga, struct kkm_run *kkm_run)
 {
 	int ret_val = 0;
 	uint32_t *data_address = NULL;
+	struct kkm_hc_args args;
+	uint64_t gva = 0;
+	uint64_t mva = 0;
 
 	printk(KERN_NOTICE "kkm_process_syscall: found syscall\n");
 	printk(KERN_INFO
@@ -531,6 +535,8 @@ int kkm_process_syscall(struct kkm_kontext *kkm_kontext,
 	       ga->trap_info.rflags, ga->trap_info.ss, ga->trap_info.rip,
 	       ga->trap_info.error, ga->sregs.cr2);
 
+	gva = ga->regs.rsp - 56;
+
 	kkm_run->exit_reason = KKM_EXIT_IO;
 	kkm_run->io.direction = KKM_EXIT_IO_OUT;
 	kkm_run->io.size = 4;
@@ -538,8 +544,26 @@ int kkm_process_syscall(struct kkm_kontext *kkm_kontext,
 	kkm_run->io.count = 1;
 	kkm_run->io.data_offset = PAGE_SIZE;
 	data_address = (uint32_t *)kkm_kontext->mmap_area[1].kvaddr;
-	data_address[0] = ga->regs.rsp + 48;
+	data_address[0] = gva;
 
+	args.ret_val = 0;
+	args.argument1 = ga->regs.rdi;
+	args.argument2 = ga->regs.rsi;
+	args.argument3 = ga->regs.rdx;
+	args.argument4 = ga->regs.r10;
+	args.argument5 = ga->regs.r8;
+	args.argument6 = ga->regs.r9;
+
+	if (kkm_guest_va_to_monitor_va(kkm_kontext, gva, &mva) == false) {
+		ret_val = -EFAULT;
+		goto error;
+	}
+	if (copy_to_user((void *)mva, &args, sizeof(struct kkm_hc_args))) {
+		ret_val = -EFAULT;
+		goto error;
+	}
+
+error:
 	return ret_val;
 }
 
@@ -611,9 +635,9 @@ bool kkm_guest_va_to_monitor_va(struct kkm_kontext *kkm_kontext,
 
 end:
 	if (ret_val == false) {
-	printk(KERN_NOTICE
-	       "kkm_guest_va_to_monitor_va: faulted guest va %llx monitor va %llx ret_val %d\n",
-	       guest_va, *monitor_va, ret_val);
+		printk(KERN_NOTICE
+		       "kkm_guest_va_to_monitor_va: faulted guest va %llx monitor va %llx ret_val %d\n",
+		       guest_va, *monitor_va, ret_val);
 	}
 
 	return ret_val;

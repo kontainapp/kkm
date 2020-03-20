@@ -33,7 +33,20 @@
 
 #define KKM_KONTEXT_FAULT_PROCESS_DONE (256)
 #define KKM_OUT_OPCODE (0xEF)
-#define	KKM_INTR_SYSCALL (511)	/* system call instruction is executed */
+#define KKM_INTR_SYSCALL (511) /* system call instruction is executed */
+
+/*
+ * keep in sync with km_hcalls.h:km_hc_args
+ */
+struct kkm_hc_args {
+	uint64_t ret_val;
+	uint64_t argument1;
+	uint64_t argument2;
+	uint64_t argument3;
+	uint64_t argument4;
+	uint64_t argument5;
+	uint64_t argument6;
+};
 
 struct kkm_trap_info {
 	uint64_t ss;
@@ -142,8 +155,7 @@ int kkm_process_general_protection(struct kkm_kontext *kkm_kontext,
 int kkm_process_page_fault(struct kkm_kontext *kkm_kontext,
 			   struct kkm_guest_area *ga, struct kkm_run *kkm_run);
 int kkm_process_syscall(struct kkm_kontext *kkm_kontext,
-			   struct kkm_guest_area *ga, struct kkm_run *kkm_run);
-
+			struct kkm_guest_area *ga, struct kkm_run *kkm_run);
 
 bool kkm_guest_va_to_monitor_va(struct kkm_kontext *kkm_kontext,
 				uint64_t guest_va, uint64_t *monitor_va);
