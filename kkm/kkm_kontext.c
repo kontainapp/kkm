@@ -79,6 +79,9 @@ int kkm_kontext_init(struct kkm_kontext *kkm_kontext)
 	ga->kkm_kontext = kkm_kontext;
 	ga->guest_area_beg = (uint64_t)ga;
 
+	kkm_kontext->syscall_pending = false;
+	kkm_kontext->ret_val_mva = -1;
+
 error:
 	if (ret_val != 0) {
 		kkm_kontext_cleanup(kkm_kontext);
@@ -104,10 +107,28 @@ int kkm_kontext_switch_kernel(struct kkm_kontext *kkm_kontext)
 	int ret_val = 0;
 	struct kkm_guest_area *ga = NULL;
 	int cpu = -1;
+	uint64_t syscall_ret_value = 0;
+
+	ga = (struct kkm_guest_area *)kkm_kontext->guest_area;
+
+	if (kkm_kontext->syscall_pending == true) {
+		/*
+		 * copy system call return value from monitor
+		 */
+		if (copy_from_user(&syscall_ret_value,
+				   (void *)kkm_kontext->ret_val_mva,
+				   sizeof(uint64_t))) {
+			ret_val = -EFAULT;
+			goto error;
+		}
+		ga->regs.rax = syscall_ret_value;
+	}
+
+	kkm_kontext->syscall_pending = false;
+	kkm_kontext->ret_val_mva = -1;
 
 begin:
 	ret_val = 0;
-	ga = (struct kkm_guest_area *)kkm_kontext->guest_area;
 	cpu = -1;
 
 	/*
@@ -188,6 +209,7 @@ begin:
 		goto begin;
 	}
 
+error:
 	return ret_val;
 }
 
@@ -562,6 +584,9 @@ int kkm_process_syscall(struct kkm_kontext *kkm_kontext,
 		ret_val = -EFAULT;
 		goto error;
 	}
+
+	kkm_kontext->syscall_pending = true;
+	kkm_kontext->ret_val_mva = mva;
 
 error:
 	return ret_val;

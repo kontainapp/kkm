@@ -74,6 +74,12 @@ struct kkm_kontext {
 	struct desc_ptr native_gdt_descr; /* native gdt */
 	uint64_t native_tr; /* native task register */
 
+	/*
+	 * syscall related stuff
+	 */
+	bool syscall_pending;
+	uint64_t ret_val_mva;
+
 	uint8_t scratch_buffer[256];
 };
 
