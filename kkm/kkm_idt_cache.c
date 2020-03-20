@@ -166,6 +166,9 @@ int kkm_idt_descr_init(void)
 		gs[i].bits.zero = 0;
 		gs[i].bits.type = GATE_INTERRUPT;
 		gs[i].bits.dpl = 0;
+		if (i == X86_TRAP_BP || i == X86_TRAP_OF) {
+			gs[i].bits.dpl = 3;
+		}
 		gs[i].bits.p = 1;
 		gs[i].offset_middle = (intr_entry_addr >> 16) & 0xFFFF;
 		gs[i].offset_high = (intr_entry_addr >> 32) & 0xFFFFFFFF;
