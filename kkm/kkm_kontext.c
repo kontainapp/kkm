@@ -459,8 +459,6 @@ int kkm_process_debug(struct kkm_kontext *kkm_kontext,
 int kkm_process_breakpoint(struct kkm_kontext *kkm_kontext,
 			   struct kkm_guest_area *ga, struct kkm_run *kkm_run)
 {
-	printk(KERN_NOTICE "kkm_process_breakpoint: exception (%llx)\n",
-	       ga->kkm_intr_no);
 	kkm_run->exit_reason = KKM_EXIT_DEBUG;
 	kkm_run->debug.arch.exception = X86_TRAP_BP;
 	kkm_run->debug.arch.pc = ga->trap_info.rip;
