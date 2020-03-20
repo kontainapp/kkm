@@ -552,6 +552,11 @@ int kkm_process_page_fault(struct kkm_kontext *kkm_kontext,
 		}
 
 		ret_val = KKM_KONTEXT_FAULT_PROCESS_DONE;
+		/*
+		 * page fault is completely resolved
+		 * clear fault address
+		 */
+		ga->sregs.cr2 = 0;
 	}
 
 error:
