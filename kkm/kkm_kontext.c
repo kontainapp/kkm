@@ -409,10 +409,10 @@ void kkm_hw_debug_registers_restore(uint64_t *registers)
  * keep in sync with km
  */
 
-#define	KKM_HYPERCALL_IO_PORT_BASE (0x8000)
-#define	KKM_HYPERCALL_IO_SIZE	(4)
-#define	KKM_HYPERCALL_IO_COUNT	(1)
-#define	KKM_EXCEPTION_IO_PORT	(0x81FD)
+#define KKM_HYPERCALL_IO_PORT_BASE (0x8000)
+#define KKM_HYPERCALL_IO_SIZE (4)
+#define KKM_HYPERCALL_IO_COUNT (1)
+#define KKM_EXCEPTION_IO_PORT (0x81FD)
 
 int kkm_process_intr(struct kkm_kontext *kkm_kontext)
 {
@@ -467,19 +467,28 @@ int kkm_process_intr(struct kkm_kontext *kkm_kontext)
 	return ret_val;
 }
 
-int kkm_process_divide_by_zero(struct kkm_kontext *kkm_kontext,
-		      struct kkm_guest_area *ga, struct kkm_run *kkm_run)
+void kkm_setup_hypercall(struct kkm_kontext *kkm_kontext,
+			 struct kkm_guest_area *ga, struct kkm_run *kkm_run,
+			 uint16_t port, uint32_t addr)
 {
 	uint32_t *data_address = NULL;
 
 	kkm_run->exit_reason = KKM_EXIT_IO;
 	kkm_run->io.direction = KKM_EXIT_IO_OUT;
 	kkm_run->io.size = KKM_HYPERCALL_IO_SIZE;
-	kkm_run->io.port = KKM_EXCEPTION_IO_PORT;
+	kkm_run->io.port = port | KKM_HYPERCALL_IO_PORT_BASE;
 	kkm_run->io.count = KKM_HYPERCALL_IO_COUNT;
 	kkm_run->io.data_offset = PAGE_SIZE;
 	data_address = (uint32_t *)kkm_kontext->mmap_area[1].kvaddr;
-	data_address[0] = ga->regs.rax;
+	data_address[0] = addr;
+}
+
+int kkm_process_divide_by_zero(struct kkm_kontext *kkm_kontext,
+			       struct kkm_guest_area *ga,
+			       struct kkm_run *kkm_run)
+{
+	kkm_setup_hypercall(kkm_kontext, ga, kkm_run, KKM_EXCEPTION_IO_PORT,
+			    ga->regs.rax);
 
 	kkm_kontext->exception_posted = true;
 	kkm_kontext->exception_saved_rbx = ga->regs.rbx;
@@ -516,7 +525,6 @@ int kkm_process_general_protection(struct kkm_kontext *kkm_kontext,
 {
 	int ret_val = 0;
 	uint64_t monitor_fault_address = 0;
-	uint32_t *data_address = NULL;
 
 	/*
 	 * convert guest address to monitor address
@@ -537,17 +545,10 @@ int kkm_process_general_protection(struct kkm_kontext *kkm_kontext,
 	}
 
 	if (ga->instruction_decode[0] == KKM_OUT_OPCODE) {
-		kkm_run->exit_reason = KKM_EXIT_IO;
-		kkm_run->io.direction = KKM_EXIT_IO_OUT;
-		kkm_run->io.size = KKM_HYPERCALL_IO_SIZE;
-		kkm_run->io.port = ga->regs.rdx & 0xFFFF;
-		kkm_run->io.count = KKM_HYPERCALL_IO_COUNT;
-		kkm_run->io.data_offset = PAGE_SIZE;
-		data_address = (uint32_t *)kkm_kontext->mmap_area[1].kvaddr;
-		data_address[0] = ga->regs.rax;
-
+		kkm_setup_hypercall(kkm_kontext, ga, kkm_run, ga->regs.rdx,
+				    ga->regs.rax);
 		/*
-		 * adjust ip by 1 byte
+		 * adjust ip by 1 byte, skip out
 		 */
 		ga->regs.rip += 1;
 	}
@@ -609,21 +610,13 @@ int kkm_process_syscall(struct kkm_kontext *kkm_kontext,
 			struct kkm_guest_area *ga, struct kkm_run *kkm_run)
 {
 	int ret_val = 0;
-	uint32_t *data_address = NULL;
 	struct kkm_hc_args args;
 	uint64_t gva = 0;
 	uint64_t mva = 0;
 
 	gva = ga->regs.rsp - sizeof(struct kkm_hc_args);
 
-	kkm_run->exit_reason = KKM_EXIT_IO;
-	kkm_run->io.direction = KKM_EXIT_IO_OUT;
-	kkm_run->io.size = KKM_HYPERCALL_IO_SIZE;
-	kkm_run->io.port = KKM_HYPERCALL_IO_PORT_BASE | (ga->regs.rax & 0xFFFF);
-	kkm_run->io.count = KKM_HYPERCALL_IO_COUNT;
-	kkm_run->io.data_offset = PAGE_SIZE;
-	data_address = (uint32_t *)kkm_kontext->mmap_area[1].kvaddr;
-	data_address[0] = gva;
+	kkm_setup_hypercall(kkm_kontext, ga, kkm_run, ga->regs.rax, gva);
 
 	args.ret_val = 0;
 	args.argument1 = ga->regs.rdi;
