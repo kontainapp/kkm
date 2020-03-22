@@ -79,6 +79,9 @@ int kkm_kontext_init(struct kkm_kontext *kkm_kontext)
 	kkm_kontext->syscall_pending = false;
 	kkm_kontext->ret_val_mva = -1;
 
+	kkm_kontext->exception_posted = false;
+	kkm_kontext->exception_saved_rbx = -1;
+
 error:
 	if (ret_val != 0) {
 		kkm_kontext_cleanup(kkm_kontext);
@@ -123,6 +126,13 @@ int kkm_kontext_switch_kernel(struct kkm_kontext *kkm_kontext)
 
 	kkm_kontext->syscall_pending = false;
 	kkm_kontext->ret_val_mva = -1;
+
+	if (kkm_kontext->exception_posted == true) {
+		ga->regs.rbx = kkm_kontext->exception_saved_rbx;
+	}
+
+	kkm_kontext->exception_posted = false;
+	kkm_kontext->exception_saved_rbx = -1;
 
 begin:
 	ret_val = 0;
@@ -394,6 +404,16 @@ void kkm_hw_debug_registers_restore(uint64_t *registers)
 	set_debugreg(registers[7], 7);
 }
 
+/*
+ * trap/intr specific monitor constants
+ * keep in sync with km
+ */
+
+#define	KKM_HYPERCALL_IO_PORT_BASE (0x8000)
+#define	KKM_HYPERCALL_IO_SIZE	(4)
+#define	KKM_HYPERCALL_IO_COUNT	(1)
+#define	KKM_EXCEPTION_IO_PORT	(0x81FD)
+
 int kkm_process_intr(struct kkm_kontext *kkm_kontext)
 {
 	int ret_val = 0;
@@ -417,6 +437,9 @@ int kkm_process_intr(struct kkm_kontext *kkm_kontext)
 	kkm_run->exit_reason = KKM_EXIT_UNKNOWN;
 
 	switch (ga->kkm_intr_no) {
+	case X86_TRAP_DE:
+		ret_val = kkm_process_divide_by_zero(kkm_kontext, ga, kkm_run);
+		break;
 	case X86_TRAP_DB:
 		ret_val = kkm_process_debug(kkm_kontext, ga, kkm_run);
 		break;
@@ -442,6 +465,27 @@ int kkm_process_intr(struct kkm_kontext *kkm_kontext)
 	}
 
 	return ret_val;
+}
+
+int kkm_process_divide_by_zero(struct kkm_kontext *kkm_kontext,
+		      struct kkm_guest_area *ga, struct kkm_run *kkm_run)
+{
+	uint32_t *data_address = NULL;
+
+	kkm_run->exit_reason = KKM_EXIT_IO;
+	kkm_run->io.direction = KKM_EXIT_IO_OUT;
+	kkm_run->io.size = KKM_HYPERCALL_IO_SIZE;
+	kkm_run->io.port = KKM_EXCEPTION_IO_PORT;
+	kkm_run->io.count = KKM_HYPERCALL_IO_COUNT;
+	kkm_run->io.data_offset = PAGE_SIZE;
+	data_address = (uint32_t *)kkm_kontext->mmap_area[1].kvaddr;
+	data_address[0] = ga->regs.rax;
+
+	kkm_kontext->exception_posted = true;
+	kkm_kontext->exception_saved_rbx = ga->regs.rbx;
+	ga->regs.rbx = X86_TRAP_DE;
+
+	return 0;
 }
 
 int kkm_process_debug(struct kkm_kontext *kkm_kontext,
@@ -495,9 +539,9 @@ int kkm_process_general_protection(struct kkm_kontext *kkm_kontext,
 	if (ga->instruction_decode[0] == KKM_OUT_OPCODE) {
 		kkm_run->exit_reason = KKM_EXIT_IO;
 		kkm_run->io.direction = KKM_EXIT_IO_OUT;
-		kkm_run->io.size = 4;
+		kkm_run->io.size = KKM_HYPERCALL_IO_SIZE;
 		kkm_run->io.port = ga->regs.rdx & 0xFFFF;
-		kkm_run->io.count = 1;
+		kkm_run->io.count = KKM_HYPERCALL_IO_COUNT;
 		kkm_run->io.data_offset = PAGE_SIZE;
 		data_address = (uint32_t *)kkm_kontext->mmap_area[1].kvaddr;
 		data_address[0] = ga->regs.rax;
@@ -574,9 +618,9 @@ int kkm_process_syscall(struct kkm_kontext *kkm_kontext,
 
 	kkm_run->exit_reason = KKM_EXIT_IO;
 	kkm_run->io.direction = KKM_EXIT_IO_OUT;
-	kkm_run->io.size = 4;
-	kkm_run->io.port = 0x8000 | (ga->regs.rax & 0xFFFF);
-	kkm_run->io.count = 1;
+	kkm_run->io.size = KKM_HYPERCALL_IO_SIZE;
+	kkm_run->io.port = KKM_HYPERCALL_IO_PORT_BASE | (ga->regs.rax & 0xFFFF);
+	kkm_run->io.count = KKM_HYPERCALL_IO_COUNT;
 	kkm_run->io.data_offset = PAGE_SIZE;
 	data_address = (uint32_t *)kkm_kontext->mmap_area[1].kvaddr;
 	data_address[0] = gva;

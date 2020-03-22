@@ -152,6 +152,8 @@ void kkm_hw_debug_registers_save(uint64_t *registers);
 void kkm_hw_debug_registers_restore(uint64_t *registers);
 
 int kkm_process_intr(struct kkm_kontext *kkm_kontext);
+int kkm_process_divide_by_zero(struct kkm_kontext *kkm_kontext,
+		      struct kkm_guest_area *ga, struct kkm_run *kkm_run);
 int kkm_process_debug(struct kkm_kontext *kkm_kontext,
 		      struct kkm_guest_area *ga, struct kkm_run *kkm_run);
 int kkm_process_breakpoint(struct kkm_kontext *kkm_kontext,

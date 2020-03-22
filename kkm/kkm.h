@@ -80,6 +80,13 @@ struct kkm_kontext {
 	bool syscall_pending;
 	uint64_t ret_val_mva;
 
+	/*
+	 * need to save and restore rbx
+	 * to accomodate km
+	 */
+	bool exception_posted;
+	uint64_t exception_saved_rbx;
+
 	uint8_t scratch_buffer[256];
 };
 
