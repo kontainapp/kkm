@@ -516,7 +516,7 @@ int kkm_process_common_to_km(struct kkm_kontext *kkm_kontext,
 			       struct kkm_run *kkm_run)
 {
 	kkm_setup_hypercall(kkm_kontext, ga, kkm_run, KKM_EXCEPTION_IO_PORT,
-			    ga->regs.rax);
+			    ga->regs.rsp);
 
 	kkm_kontext->exception_posted = true;
 	kkm_kontext->exception_saved_rbx = ga->regs.rbx;
