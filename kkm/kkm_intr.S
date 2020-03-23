@@ -2743,174 +2743,35 @@ kkm_intr_entry_asm_common:
 
 	.size kkm_intr_entry_asm, .-kkm_intr_entry_asm
 
+
 /*
- * double fault entry point
+ * macro for faults with error code already pushed on stack
  */
+
+.macro fault_with_error_code name, num
 	.align 16
-	.global kkm_intr_entry_double_fault
-kkm_intr_entry_double_fault:
-
+	.global kkm_intr_entry_\name
+kkm_intr_entry_\name:
 	clac
 	clc
-	push	$8
+	push $\num
 
-	/*
-	 * change to kernel thread local storage
-	 */
-	swapgs
-
-	jmp	kkm_intr_entry_asm_common
+	jmp	kkm_intr_entry_asm
 	/* NOTREACHED */
 
-	.size kkm_intr_entry_double_fault, .-kkm_intr_entry_double_fault
+	.size kkm_intr_entry_\name, .-kkm_intr_entry_\name
 
-/*
- * invalid TSS fault entry point
- */
-	.align 16
-	.global kkm_intr_entry_invalid_TSS
-kkm_intr_entry_invalid_TSS:
+.endm
 
-	clac
-	clc
-	push	$10
+	fault_with_error_code double_fault 8	/* double fault */
+	fault_with_error_code invalid_TSS 10	/* invalid TSS */
+	fault_with_error_code segment_np 11	/* segment not present */
+	fault_with_error_code ss_fault 12	/* stack segment fault */
+	fault_with_error_code general_protection 13	/* general protection */
+	fault_with_error_code page_fault 14	/* page fault */
+	fault_with_error_code alignment_check 17	/* alignment check */
+	fault_with_error_code security_exception 30	/* security exception */
 
-	/*
-	 * change to kernel thread local storage
-	 */
-	swapgs
-
-	jmp	kkm_intr_entry_asm_common
-	/* NOTREACHED */
-
-	.size kkm_intr_entry_invalid_TSS, .-kkm_intr_entry_invalid_TSS
-
-/*
- * segment not present fault entry point
- */
-	.align 16
-	.global kkm_intr_entry_segment_np
-kkm_intr_entry_segment_np:
-
-	clac
-	clc
-	push	$11
-
-	/*
-	 * change to kernel thread local storage
-	 */
-	swapgs
-
-	jmp	kkm_intr_entry_asm_common
-	/* NOTREACHED */
-
-	.size kkm_intr_entry_segment_np, .-kkm_intr_entry_segment_np
-
-/*
- * stack segment fault fault entry point
- */
-	.align 16
-	.global kkm_intr_entry_ss_fault
-kkm_intr_entry_ss_fault:
-
-	clac
-	clc
-	push	$12
-
-	/*
-	 * change to kernel thread local storage
-	 */
-	swapgs
-
-	jmp	kkm_intr_entry_asm_common
-	/* NOTREACHED */
-
-	.size kkm_intr_entry_ss_fault, .-kkm_intr_entry_ss_fault
-
-
-/*
- * general protection fault entry point
- */
-	.align	16
-	.global kkm_intr_entry_general_protection
-kkm_intr_entry_general_protection:
-
-	clac
-	clc
-	push	$13
-
-	/*
-	 * change to kernel thread local storage
-	 */
-	swapgs
-
-	jmp	kkm_intr_entry_asm_common
-	/* NOTREACHED */
-
-	.size kkm_intr_entry_general_protection, .-kkm_intr_entry_general_protection
-
-/*
- * page fault entry point
- */
-	.align	16
-	.global kkm_intr_entry_page_fault
-kkm_intr_entry_page_fault:
-
-	clac
-	clc
-	push	$14
-
-	/*
-	 * change to kernel thread local storage
-	 */
-	swapgs
-
-	jmp	kkm_intr_entry_asm_common
-	/* NOTREACHED */
-
-	.size kkm_intr_entry_page_fault, .-kkm_intr_entry_page_fault
-
-/*
- * alignment check entry point
- */
-	.align	16
-	.global kkm_intr_entry_alignment_check
-kkm_intr_entry_alignment_check:
-
-	clac
-	clc
-	push	$17
-
-	/*
-	 * change to kernel thread local storage
-	 */
-	swapgs
-
-	jmp	kkm_intr_entry_asm_common
-	/* NOTREACHED */
-
-	.size kkm_intr_entry_alignment_check, .-kkm_intr_entry_alignment_check
-
-/*
- * security exception entry point
- */
-	.align	16
-	.global kkm_intr_entry_security_exception
-kkm_intr_entry_security_exception:
-
-	clac
-	clc
-	push	$30
-
-	/*
-	 * change to kernel thread local storage
-	 */
-	swapgs
-
-	jmp	kkm_intr_entry_asm_common
-	/* NOTREACHED */
-
-	.size kkm_intr_entry_security_exception, .-kkm_intr_entry_security_exception
 
 /*
  * syscall 64 entry point

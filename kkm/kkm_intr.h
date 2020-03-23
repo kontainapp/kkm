@@ -13,11 +13,25 @@
 #ifndef __KKM_INTR_H__
 #define __KKM_INTR_H__
 
+/*
+ * not defined by linux kernel
+ */
+#define X86_TRAP_VC     (29)	/* VMM communication exception */
+#define X86_TRAP_SE     (30)	/* security exception */
+
 void kkm_intr_start(void);
 void kkm_intr_fill(void);
 void kkm_intr_entry_asm(void);
+
+void kkm_intr_entry_double_fault(void);
+void kkm_intr_entry_invalid_TSS(void);
+void kkm_intr_entry_segment_np(void);
+void kkm_intr_entry_ss_fault(void);
 void kkm_intr_entry_general_protection(void);
 void kkm_intr_entry_page_fault(void);
+void kkm_intr_entry_alignment_check(void);
+void kkm_intr_entry_security_exception(void);
+
 void kkm_syscall_entry_asm(void);
 
 /* one for each intr */

@@ -414,9 +414,6 @@ void kkm_hw_debug_registers_restore(uint64_t *registers)
 #define KKM_HYPERCALL_IO_COUNT (1)
 #define KKM_EXCEPTION_IO_PORT (0x81FD)
 
-#define X86_TRAP_VE	(29)
-#define X86_TRAP_CP	(30)
-
 int kkm_process_intr(struct kkm_kontext *kkm_kontext)
 {
 	int ret_val = 0;
@@ -479,8 +476,8 @@ int kkm_process_intr(struct kkm_kontext *kkm_kontext)
 	case KKM_INTR_SYSCALL:
 		ret_val = kkm_process_syscall(kkm_kontext, ga, kkm_run);
 		break;
-	case X86_TRAP_VE:
-	case X86_TRAP_CP:
+	case X86_TRAP_VC:
+	case X86_TRAP_SE:
 		ret_val = kkm_process_common_to_km(kkm_kontext, ga, kkm_run);
 		break;
 	default:
