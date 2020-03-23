@@ -59,12 +59,6 @@ int kkm_kontext_init(struct kkm_kontext *kkm_kontext)
 	kkm_kontext->guest_area_page1_pa =
 		virt_to_phys(kkm_kontext->guest_area + PAGE_SIZE);
 
-	printk(KERN_NOTICE
-	       "kkm_kontext_init: stack0 page %px va %px pa0 %llx pa1 %llx\n",
-	       kkm_kontext->guest_area_page, kkm_kontext->guest_area,
-	       kkm_kontext->guest_area_page0_pa,
-	       kkm_kontext->guest_area_page1_pa);
-
 	kkm_init_guest_area_redzone(
 		(struct kkm_guest_area *)kkm_kontext->guest_area);
 

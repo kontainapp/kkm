@@ -46,11 +46,6 @@ int kkm_kontainer_init(struct kkm *kkm)
 		goto error;
 	}
 
-	printk(KERN_NOTICE
-	       "kkm_kontainer_init: guest kernel page %px va %llx pa %llx\n",
-	       kkm->guest_kernel_page, kkm->guest_kernel_va,
-	       kkm->guest_kernel_pa);
-
 	if ((kkm->guest_kernel_va & KKM_USER_PGTABLE_MASK) ==
 	    KKM_USER_PGTABLE_MASK) {
 		printk(KERN_ERR
@@ -67,11 +62,6 @@ int kkm_kontainer_init(struct kkm *kkm)
 	 */
 	kkm->guest_payload_va = kkm->guest_kernel_va + PAGE_SIZE;
 	kkm->guest_payload_pa += kkm->guest_kernel_pa + PAGE_SIZE;
-
-	printk(KERN_NOTICE
-	       "kkm_kontainer_init: guest payload page %px va %llx pa %llx\n",
-	       kkm->guest_payload_page, kkm->guest_payload_va,
-	       kkm->guest_payload_pa);
 
 error:
 	if (ret_val != 0) {
