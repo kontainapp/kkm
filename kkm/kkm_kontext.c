@@ -464,13 +464,22 @@ int kkm_process_intr(struct kkm_kontext *kkm_kontext)
 	case X86_TRAP_BR:
 	case X86_TRAP_UD:
 	case X86_TRAP_NM:
+		ret_val = kkm_process_common_without_error(kkm_kontext, ga,
+							   kkm_run);
+		break;
 	case X86_TRAP_DF:
+		ret_val =
+			kkm_process_common_with_error(kkm_kontext, ga, kkm_run);
+		break;
 	case X86_TRAP_OLD_MF:
+		ret_val = kkm_process_common_without_error(kkm_kontext, ga,
+							   kkm_run);
+		break;
 	case X86_TRAP_TS:
 	case X86_TRAP_NP:
 	case X86_TRAP_SS:
-		ret_val = kkm_process_common_without_error(kkm_kontext, ga,
-							   kkm_run);
+		ret_val =
+			kkm_process_common_with_error(kkm_kontext, ga, kkm_run);
 		break;
 	case X86_TRAP_GP:
 		ret_val = kkm_process_general_protection(kkm_kontext, ga,
@@ -481,7 +490,13 @@ int kkm_process_intr(struct kkm_kontext *kkm_kontext)
 		break;
 	case X86_TRAP_SPURIOUS:
 	case X86_TRAP_MF:
+		ret_val = kkm_process_common_without_error(kkm_kontext, ga,
+							   kkm_run);
+		break;
 	case X86_TRAP_AC:
+		ret_val =
+			kkm_process_common_with_error(kkm_kontext, ga, kkm_run);
+		break;
 	case X86_TRAP_MC:
 	case X86_TRAP_XF:
 		ret_val = kkm_process_common_without_error(kkm_kontext, ga,
@@ -491,9 +506,12 @@ int kkm_process_intr(struct kkm_kontext *kkm_kontext)
 		ret_val = kkm_process_syscall(kkm_kontext, ga, kkm_run);
 		break;
 	case X86_TRAP_VC:
-	case X86_TRAP_SE:
 		ret_val = kkm_process_common_without_error(kkm_kontext, ga,
 							   kkm_run);
+		break;
+	case X86_TRAP_SE:
+		ret_val =
+			kkm_process_common_with_error(kkm_kontext, ga, kkm_run);
 		break;
 	default:
 		printk(KERN_NOTICE
