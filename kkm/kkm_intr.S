@@ -2743,6 +2743,90 @@ kkm_intr_entry_asm_common:
 
 	.size kkm_intr_entry_asm, .-kkm_intr_entry_asm
 
+/*
+ * double fault entry point
+ */
+	.align 16
+	.global kkm_intr_entry_double_fault
+kkm_intr_entry_double_fault:
+
+	clac
+	clc
+	push	$8
+
+	/*
+	 * change to kernel thread local storage
+	 */
+	swapgs
+
+	jmp	kkm_intr_entry_asm_common
+	/* NOTREACHED */
+
+	.size kkm_intr_entry_double_fault, .-kkm_intr_entry_double_fault
+
+/*
+ * invalid TSS fault entry point
+ */
+	.align 16
+	.global kkm_intr_entry_invalid_TSS
+kkm_intr_entry_invalid_TSS:
+
+	clac
+	clc
+	push	$10
+
+	/*
+	 * change to kernel thread local storage
+	 */
+	swapgs
+
+	jmp	kkm_intr_entry_asm_common
+	/* NOTREACHED */
+
+	.size kkm_intr_entry_invalid_TSS, .-kkm_intr_entry_invalid_TSS
+
+/*
+ * segment not present fault entry point
+ */
+	.align 16
+	.global kkm_intr_entry_segment_np
+kkm_intr_entry_segment_np:
+
+	clac
+	clc
+	push	$11
+
+	/*
+	 * change to kernel thread local storage
+	 */
+	swapgs
+
+	jmp	kkm_intr_entry_asm_common
+	/* NOTREACHED */
+
+	.size kkm_intr_entry_segment_np, .-kkm_intr_entry_segment_np
+
+/*
+ * stack segment fault fault entry point
+ */
+	.align 16
+	.global kkm_intr_entry_ss_fault
+kkm_intr_entry_ss_fault:
+
+	clac
+	clc
+	push	$12
+
+	/*
+	 * change to kernel thread local storage
+	 */
+	swapgs
+
+	jmp	kkm_intr_entry_asm_common
+	/* NOTREACHED */
+
+	.size kkm_intr_entry_ss_fault, .-kkm_intr_entry_ss_fault
+
 
 /*
  * general protection fault entry point
@@ -2785,6 +2869,48 @@ kkm_intr_entry_page_fault:
 	/* NOTREACHED */
 
 	.size kkm_intr_entry_page_fault, .-kkm_intr_entry_page_fault
+
+/*
+ * alignment check entry point
+ */
+	.align	16
+	.global kkm_intr_entry_alignment_check
+kkm_intr_entry_alignment_check:
+
+	clac
+	clc
+	push	$17
+
+	/*
+	 * change to kernel thread local storage
+	 */
+	swapgs
+
+	jmp	kkm_intr_entry_asm_common
+	/* NOTREACHED */
+
+	.size kkm_intr_entry_alignment_check, .-kkm_intr_entry_alignment_check
+
+/*
+ * security exception entry point
+ */
+	.align	16
+	.global kkm_intr_entry_security_exception
+kkm_intr_entry_security_exception:
+
+	clac
+	clc
+	push	$30
+
+	/*
+	 * change to kernel thread local storage
+	 */
+	swapgs
+
+	jmp	kkm_intr_entry_asm_common
+	/* NOTREACHED */
+
+	.size kkm_intr_entry_security_exception, .-kkm_intr_entry_security_exception
 
 /*
  * syscall 64 entry point

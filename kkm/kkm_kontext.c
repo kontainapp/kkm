@@ -414,6 +414,9 @@ void kkm_hw_debug_registers_restore(uint64_t *registers)
 #define KKM_HYPERCALL_IO_COUNT (1)
 #define KKM_EXCEPTION_IO_PORT (0x81FD)
 
+#define X86_TRAP_VE	(29)
+#define X86_TRAP_CP	(30)
+
 int kkm_process_intr(struct kkm_kontext *kkm_kontext)
 {
 	int ret_val = 0;
@@ -438,13 +441,26 @@ int kkm_process_intr(struct kkm_kontext *kkm_kontext)
 
 	switch (ga->kkm_intr_no) {
 	case X86_TRAP_DE:
-		ret_val = kkm_process_divide_by_zero(kkm_kontext, ga, kkm_run);
+		ret_val = kkm_process_common_to_km(kkm_kontext, ga, kkm_run);
 		break;
 	case X86_TRAP_DB:
 		ret_val = kkm_process_debug(kkm_kontext, ga, kkm_run);
 		break;
+	case X86_TRAP_NMI:
+		break;
 	case X86_TRAP_BP:
 		ret_val = kkm_process_breakpoint(kkm_kontext, ga, kkm_run);
+		break;
+	case X86_TRAP_OF:
+	case X86_TRAP_BR:
+	case X86_TRAP_UD:
+	case X86_TRAP_NM:
+	case X86_TRAP_DF:
+	case X86_TRAP_OLD_MF:
+	case X86_TRAP_TS:
+	case X86_TRAP_NP:
+	case X86_TRAP_SS:
+		ret_val = kkm_process_common_to_km(kkm_kontext, ga, kkm_run);
 		break;
 	case X86_TRAP_GP:
 		ret_val = kkm_process_general_protection(kkm_kontext, ga,
@@ -453,8 +469,19 @@ int kkm_process_intr(struct kkm_kontext *kkm_kontext)
 	case X86_TRAP_PF:
 		ret_val = kkm_process_page_fault(kkm_kontext, ga, kkm_run);
 		break;
+	case X86_TRAP_SPURIOUS:
+	case X86_TRAP_MF:
+	case X86_TRAP_AC:
+	case X86_TRAP_MC:
+	case X86_TRAP_XF:
+		ret_val = kkm_process_common_to_km(kkm_kontext, ga, kkm_run);
+		break;
 	case KKM_INTR_SYSCALL:
 		ret_val = kkm_process_syscall(kkm_kontext, ga, kkm_run);
+		break;
+	case X86_TRAP_VE:
+	case X86_TRAP_CP:
+		ret_val = kkm_process_common_to_km(kkm_kontext, ga, kkm_run);
 		break;
 	default:
 		printk(KERN_NOTICE
@@ -483,7 +510,11 @@ void kkm_setup_hypercall(struct kkm_kontext *kkm_kontext,
 	data_address[0] = addr;
 }
 
-int kkm_process_divide_by_zero(struct kkm_kontext *kkm_kontext,
+/*
+ * processing differed to monitor
+ * record exception and return to monitor
+ */
+int kkm_process_common_to_km(struct kkm_kontext *kkm_kontext,
 			       struct kkm_guest_area *ga,
 			       struct kkm_run *kkm_run)
 {
@@ -492,7 +523,7 @@ int kkm_process_divide_by_zero(struct kkm_kontext *kkm_kontext,
 
 	kkm_kontext->exception_posted = true;
 	kkm_kontext->exception_saved_rbx = ga->regs.rbx;
-	ga->regs.rbx = X86_TRAP_DE;
+	ga->regs.rbx = ga->kkm_intr_no;
 
 	return 0;
 }
