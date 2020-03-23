@@ -38,6 +38,20 @@
 /*
  * keep in sync with km_hcalls.h:km_hc_args
  */
+struct kkm_intr_stack_no_error_code {
+	uint64_t rax;
+	uint64_t rbx;
+	uint64_t rdx;
+	uint64_t rip;
+	uint64_t cs;
+	uint64_t rflags;
+	uint64_t rsp;
+	uint64_t ss;
+};
+
+/*
+ * keep in sync with km_hcalls.h:km_hc_args
+ */
 struct kkm_hc_args {
 	uint64_t ret_val;
 	uint64_t argument1;

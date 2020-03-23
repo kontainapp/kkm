@@ -526,6 +526,32 @@ int kkm_process_common_to_km(struct kkm_kontext *kkm_kontext,
 			       struct kkm_guest_area *ga,
 			       struct kkm_run *kkm_run)
 {
+	int ret_val = 0;
+	struct kkm_intr_stack_no_error_code args;
+	uint64_t gva = 0;
+	uint64_t mva = 0;
+
+	args.rax = ga->regs.rax;
+	args.rbx = ga->regs.rbx;
+	args.rdx = ga->regs.rdx;
+	args.rip = ga->trap_info.rip;
+	args.cs = ga->trap_info.cs;
+	args.rflags = ga->trap_info.rflags;
+	args.rsp = ga->trap_info.rsp;
+	args.ss = ga->trap_info.ss;
+
+	ga->regs.rsp -= sizeof(struct kkm_intr_stack_no_error_code);
+	gva = ga->regs.rsp;
+
+	if (kkm_guest_va_to_monitor_va(kkm_kontext, gva, &mva) == false) {
+		ret_val = -EFAULT;
+		goto error;
+	}
+	if (copy_to_user((void *)mva, &args, sizeof(struct kkm_hc_args))) {
+		ret_val = -EFAULT;
+		goto error;
+	}
+
 	kkm_setup_hypercall(kkm_kontext, ga, kkm_run, KKM_EXCEPTION_IO_PORT,
 			    ga->regs.rsp);
 
@@ -533,7 +559,8 @@ int kkm_process_common_to_km(struct kkm_kontext *kkm_kontext,
 	kkm_kontext->exception_saved_rbx = ga->regs.rbx;
 	ga->regs.rbx = ga->kkm_intr_no;
 
-	return 0;
+error:
+	return ret_val;
 }
 
 int kkm_process_debug(struct kkm_kontext *kkm_kontext,
