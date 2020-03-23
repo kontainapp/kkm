@@ -449,7 +449,8 @@ int kkm_process_intr(struct kkm_kontext *kkm_kontext)
 
 	switch (ga->kkm_intr_no) {
 	case X86_TRAP_DE:
-		ret_val = kkm_process_common_to_km(kkm_kontext, ga, kkm_run);
+		ret_val = kkm_process_common_without_error(kkm_kontext, ga,
+							   kkm_run);
 		break;
 	case X86_TRAP_DB:
 		ret_val = kkm_process_debug(kkm_kontext, ga, kkm_run);
@@ -468,7 +469,8 @@ int kkm_process_intr(struct kkm_kontext *kkm_kontext)
 	case X86_TRAP_TS:
 	case X86_TRAP_NP:
 	case X86_TRAP_SS:
-		ret_val = kkm_process_common_to_km(kkm_kontext, ga, kkm_run);
+		ret_val = kkm_process_common_without_error(kkm_kontext, ga,
+							   kkm_run);
 		break;
 	case X86_TRAP_GP:
 		ret_val = kkm_process_general_protection(kkm_kontext, ga,
@@ -482,14 +484,16 @@ int kkm_process_intr(struct kkm_kontext *kkm_kontext)
 	case X86_TRAP_AC:
 	case X86_TRAP_MC:
 	case X86_TRAP_XF:
-		ret_val = kkm_process_common_to_km(kkm_kontext, ga, kkm_run);
+		ret_val = kkm_process_common_without_error(kkm_kontext, ga,
+							   kkm_run);
 		break;
 	case KKM_INTR_SYSCALL:
 		ret_val = kkm_process_syscall(kkm_kontext, ga, kkm_run);
 		break;
 	case X86_TRAP_VC:
 	case X86_TRAP_SE:
-		ret_val = kkm_process_common_to_km(kkm_kontext, ga, kkm_run);
+		ret_val = kkm_process_common_without_error(kkm_kontext, ga,
+							   kkm_run);
 		break;
 	default:
 		printk(KERN_NOTICE
@@ -522,9 +526,9 @@ void kkm_setup_hypercall(struct kkm_kontext *kkm_kontext,
  * processing differed to monitor
  * record exception and return to monitor
  */
-int kkm_process_common_to_km(struct kkm_kontext *kkm_kontext,
-			       struct kkm_guest_area *ga,
-			       struct kkm_run *kkm_run)
+int kkm_process_common_without_error(struct kkm_kontext *kkm_kontext,
+				     struct kkm_guest_area *ga,
+				     struct kkm_run *kkm_run)
 {
 	int ret_val = 0;
 	struct kkm_intr_stack_no_error_code args;
@@ -547,7 +551,56 @@ int kkm_process_common_to_km(struct kkm_kontext *kkm_kontext,
 		ret_val = -EFAULT;
 		goto error;
 	}
-	if (copy_to_user((void *)mva, &args, sizeof(struct kkm_hc_args))) {
+	if (copy_to_user((void *)mva, &args,
+			 sizeof(struct kkm_intr_stack_no_error_code))) {
+		ret_val = -EFAULT;
+		goto error;
+	}
+
+	kkm_setup_hypercall(kkm_kontext, ga, kkm_run, KKM_EXCEPTION_IO_PORT,
+			    ga->regs.rsp);
+
+	kkm_kontext->exception_posted = true;
+	kkm_kontext->exception_saved_rbx = ga->regs.rbx;
+	ga->regs.rbx = ga->kkm_intr_no;
+
+error:
+	return ret_val;
+}
+
+/*
+ * processing differed to monitor
+ * record exception and return to monitor
+ */
+int kkm_process_common_with_error(struct kkm_kontext *kkm_kontext,
+				  struct kkm_guest_area *ga,
+				  struct kkm_run *kkm_run)
+{
+	int ret_val = 0;
+	struct kkm_intr_stack_with_error_code args;
+	uint64_t gva = 0;
+	uint64_t mva = 0;
+
+	args.rax = ga->regs.rax;
+	args.rbx = ga->regs.rbx;
+	args.rdx = ga->regs.rdx;
+	args.error = ga->trap_info.error;
+	args.rip = ga->trap_info.rip;
+	args.cs = ga->trap_info.cs;
+	args.rflags = ga->trap_info.rflags;
+	args.rsp = ga->trap_info.rsp;
+	args.ss = ga->trap_info.ss;
+
+	ga->regs.rsp -= sizeof(struct kkm_intr_stack_with_error_code);
+
+	gva = ga->regs.rsp;
+
+	if (kkm_guest_va_to_monitor_va(kkm_kontext, gva, &mva) == false) {
+		ret_val = -EFAULT;
+		goto error;
+	}
+	if (copy_to_user((void *)mva, &args,
+			 sizeof(struct kkm_intr_stack_with_error_code))) {
 		ret_val = -EFAULT;
 		goto error;
 	}
