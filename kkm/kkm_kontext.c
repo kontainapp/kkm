@@ -139,6 +139,9 @@ int kkm_kontext_switch_kernel(struct kkm_kontext *kkm_kontext)
 	kkm_kontext->exception_posted = false;
 	kkm_kontext->exception_saved_rbx = -1;
 
+	kkm_kontext->prev_trap_no = -1;
+	kkm_kontext->prev_trap_addr = -1;
+
 begin:
 	ret_val = 0;
 	cpu = -1;
@@ -218,6 +221,14 @@ begin:
 
 	ret_val = kkm_process_intr(kkm_kontext);
 	if (ret_val == KKM_KONTEXT_FAULT_PROCESS_DONE) {
+		if (ga->kkm_intr_no == X86_TRAP_PF &&
+		    kkm_kontext->prev_trap_no == X86_TRAP_PF &&
+		    kkm_kontext->prev_trap_addr == kkm_kontext->trap_addr) {
+			printk(KERN_NOTICE "repeated page fault at the same address %llx\n", kkm_kontext->trap_addr);
+			goto error;
+		}
+		kkm_kontext->prev_trap_no = ga->kkm_intr_no;
+		kkm_kontext->prev_trap_addr = kkm_kontext->trap_addr;
 		goto begin;
 	}
 
@@ -723,6 +734,9 @@ int kkm_process_page_fault(struct kkm_kontext *kkm_kontext,
 		}
 
 		ret_val = KKM_KONTEXT_FAULT_PROCESS_DONE;
+
+		kkm_kontext->trap_addr = ga->sregs.cr2;
+
 		/*
 		 * page fault is completely resolved
 		 * clear fault address
