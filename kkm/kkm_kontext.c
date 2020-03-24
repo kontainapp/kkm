@@ -104,6 +104,7 @@ int kkm_kontext_switch_kernel(struct kkm_kontext *kkm_kontext)
 	struct kkm_guest_area *ga = NULL;
 	int cpu = -1;
 	uint64_t syscall_ret_value = 0;
+	struct kkm_run *kkm_run = NULL;
 
 	ga = (struct kkm_guest_area *)kkm_kontext->guest_area;
 
@@ -113,8 +114,15 @@ int kkm_kontext_switch_kernel(struct kkm_kontext *kkm_kontext)
 		 */
 		ga->regs.rip += 1;
 	}
-
 	kkm_kontext->general_protection_pending = false;
+
+	if (kkm_run->immediate_exit == 1) {
+		kkm_run = (struct kkm_run *)kkm_kontext->mmap_area[0].kvaddr;
+		printk(KERN_NOTICE
+		       "kkm_kontext_switch_kernel: immediate exit set %d\n",
+		       kkm_run->immediate_exit);
+		goto error;
+	}
 
 	if (kkm_kontext->syscall_pending == true) {
 		/*
@@ -224,7 +232,9 @@ begin:
 		if (ga->kkm_intr_no == X86_TRAP_PF &&
 		    kkm_kontext->prev_trap_no == X86_TRAP_PF &&
 		    kkm_kontext->prev_trap_addr == kkm_kontext->trap_addr) {
-			printk(KERN_NOTICE "repeated page fault at the same address %llx\n", kkm_kontext->trap_addr);
+			printk(KERN_NOTICE
+			       "repeated page fault at the same address %llx\n",
+			       kkm_kontext->trap_addr);
 			goto error;
 		}
 		kkm_kontext->prev_trap_no = ga->kkm_intr_no;
