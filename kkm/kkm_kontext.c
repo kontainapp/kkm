@@ -116,8 +116,8 @@ int kkm_kontext_switch_kernel(struct kkm_kontext *kkm_kontext)
 	}
 	kkm_kontext->general_protection_pending = false;
 
+	kkm_run = (struct kkm_run *)kkm_kontext->mmap_area[0].kvaddr;
 	if (kkm_run->immediate_exit == 1) {
-		kkm_run = (struct kkm_run *)kkm_kontext->mmap_area[0].kvaddr;
 		printk(KERN_NOTICE
 		       "kkm_kontext_switch_kernel: immediate exit set %d\n",
 		       kkm_run->immediate_exit);
