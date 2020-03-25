@@ -160,7 +160,17 @@ struct kkm_sregs {
 
 // KKM_GET_FPU & KKM_SET_FPU
 struct kkm_fpu {
-	uint64_t reserved;
+	uint8_t fpr[8][16];
+	uint16_t fcs;
+	uint16_t fsw;
+	uint8_t frwx;
+	uint8_t pad1;
+	uint16_t last_opcode;
+	uint64_t last_ip;
+	uint64_t last_dp;
+	uint8_t xmm[16][16];
+	uint32_t mxcsr;
+	uint32_t pad2;
 };
 
 // KKM_SET_DEBUG

@@ -96,8 +96,6 @@ struct kkm_kontext {
 	uint64_t trap_addr;
 	uint64_t prev_trap_no;
 	uint64_t prev_trap_addr;
-
-	uint8_t scratch_buffer[256];
 };
 
 struct kkm_mem_slot {

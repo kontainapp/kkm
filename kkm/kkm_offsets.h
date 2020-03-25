@@ -59,14 +59,14 @@
 #define OFF_CR4 ((REG_BASE_OFF) + 8 * 49) /* sregs.cr4 */
 #define OFF_CR8 ((REG_BASE_OFF) + 8 * 50) /* sregs.cr8 */
 
-#define OFF_TI_SS ((REG_BASE_OFF) + 8 * 67) /* trap_info.ss */
-#define OFF_TI_RSP ((REG_BASE_OFF) + 8 * 68) /* trap_info.rsp */
-#define OFF_TI_RFLAGS ((REG_BASE_OFF) + 8 * 69) /* trap_info.rflags */
-#define OFF_TI_CS ((REG_BASE_OFF) + 8 * 70) /* trap_info.cs */
-#define OFF_TI_RIP ((REG_BASE_OFF) + 8 * 71) /* trap_info.rip */
-#define OFF_TI_ERROR ((REG_BASE_OFF) + 8 * 72) /* trap_info.error */
+#define OFF_TI_ERROR ((REG_BASE_OFF) + 8 * 118) /* trap_info.error */
+#define OFF_TI_RIP ((REG_BASE_OFF) + 8 * 119) /* trap_info.rip */
+#define OFF_TI_CS ((REG_BASE_OFF) + 8 * 120) /* trap_info.cs */
+#define OFF_TI_RFLAGS ((REG_BASE_OFF) + 8 * 121) /* trap_info.rflags */
+#define OFF_TI_RSP ((REG_BASE_OFF) + 8 * 122) /* trap_info.rsp */
+#define OFF_TI_SS ((REG_BASE_OFF) + 8 * 123) /* trap_info.ss */
 
-#define OFF_TI_INTR_NO ((REG_BASE_OFF) + 8 * 73) /* kkm_intr_no */
+#define OFF_TI_INTR_NO ((REG_BASE_OFF) + 8 * 124) /* kkm_intr_no */
 
 #define OFF_PAY_ENT_STK (4096) /* payload_entry_stack bottom */
 #define OFF_GUEST_STK (7936) /* guest kernel stack bottom */

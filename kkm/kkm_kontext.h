@@ -77,13 +77,17 @@ struct kkm_hc_args {
 	uint64_t argument6;
 };
 
+/*
+ * trap info. HW pushes the following information on stack
+ * before calling intr entry point
+ */
 struct kkm_trap_info {
-	uint64_t ss;
-	uint64_t rsp;
-	uint64_t rflags;
-	uint64_t cs;
-	uint64_t rip;
-	uint64_t error;
+	uint64_t error; /* optional error code */
+	uint64_t rip; /* instruction pointer */
+	uint64_t cs; /* code segment */
+	uint64_t rflags; /* eflags register */
+	uint64_t rsp; /* stack pointer */
+	uint64_t ss; /* stack segment */
 };
 
 /*
@@ -145,7 +149,11 @@ struct kkm_guest_area {
 
 			uint64_t kkm_intr_no;
 
-			uint8_t reserved[2224];
+			/*
+			 * this padding makes sure
+			 * the entry stack is aligned correctly
+			 */
+			uint8_t reserved[2328];
 
 			/*
 			 * copy buffer
@@ -154,12 +162,9 @@ struct kkm_guest_area {
 			uint8_t instruction_decode[KKM_GUEST_COPY_BUFFER];
 
 			/*
-			 * keep these two entries at the end
 			 * first page of guest area(0xE00 - 0x1000)
 			 * payload_entry_stack is used in kkm_entry.S
 			 */
-			struct entry_stack
-				native_entry_stack; /* native kernel iretq stack save area */
 			struct entry_stack
 				payload_entry_stack; /* stack used for switching to payload */
 		};

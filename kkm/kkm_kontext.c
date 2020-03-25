@@ -713,6 +713,8 @@ int kkm_process_page_fault(struct kkm_kontext *kkm_kontext,
 	uint64_t error_code = ga->trap_info.error;
 	uint64_t monitor_fault_address = 0;
 
+	kkm_kontext->trap_addr = ga->sregs.cr2;
+
 	/*
 	 * convert guest address to monitor address
 	 */
@@ -745,8 +747,6 @@ int kkm_process_page_fault(struct kkm_kontext *kkm_kontext,
 
 		ret_val = KKM_KONTEXT_FAULT_PROCESS_DONE;
 
-		kkm_kontext->trap_addr = ga->sregs.cr2;
-
 		/*
 		 * page fault is completely resolved
 		 * clear fault address
@@ -755,6 +755,11 @@ int kkm_process_page_fault(struct kkm_kontext *kkm_kontext,
 	}
 
 error:
+
+	if (ret_val && ret_val != KKM_KONTEXT_FAULT_PROCESS_DONE) {
+		printk(KERN_NOTICE "kkm_process_page_fault: ret_val %d %llx\n",
+		       ret_val, kkm_kontext->trap_addr);
+	}
 	return ret_val;
 }
 

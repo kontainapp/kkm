@@ -112,14 +112,6 @@ int kkm_idt_descr_init(void)
 	idt_entry->kx_global_va = idt_entry->idt_text_va + KKM_IDT_CODE_SIZE;
 	idt_entry->kx_global_pa = virt_to_phys(idt_entry->kx_global_va);
 
-	printk(KERN_NOTICE
-	       "kkm_idt_descr_init: idt page %px va %px pa %llx "
-	       "intr entry va %px pa0 %llx pa1 %llx kx global va %px pa %llx\n",
-	       idt_entry->idt_page, idt_entry->idt_va, idt_entry->idt_pa,
-	       idt_entry->idt_text_va, idt_entry->idt_text_page0_pa,
-	       idt_entry->idt_text_page1_pa, idt_entry->kx_global_va,
-	       idt_entry->kx_global_pa);
-
 	/*
 	 * insert idt page, idt text and kx global in kx area
 	 * idt in kx area is readonly
@@ -134,10 +126,6 @@ int kkm_idt_descr_init(void)
 	 */
 	store_idt(&idt_entry->native_idt_desc);
 
-	printk(KERN_NOTICE
-	       "kkm_idt_descr_init: native kernel idt size %x base address %lx\n",
-	       idt_entry->native_idt_desc.size,
-	       idt_entry->native_idt_desc.address);
 	if (idt_entry->native_idt_desc.size != (PAGE_SIZE - 1)) {
 		printk(KERN_NOTICE
 		       "kkm_idt_descr_init: idt size expecting 0xfff found %x\n",
@@ -187,11 +175,6 @@ int kkm_idt_descr_init(void)
 	 */
 	idt_entry->guest_idt_desc.address = (unsigned long)kkm_mmu_get_idt_va();
 
-	printk(KERN_NOTICE
-	       "kkm_idt_descr_init: guest kernel idt size %x base address %lx\n",
-	       idt_entry->guest_idt_desc.size,
-	       idt_entry->guest_idt_desc.address);
-
 	/*
 	 * copy interrupt entry code to kx area
 	 */
@@ -207,8 +190,6 @@ int kkm_idt_descr_init(void)
 	 */
 	*(uint64_t *)idt_entry->kx_global_va =
 		(uint64_t)kkm_switch_to_host_kernel;
-
-	// replace needed idt entries
 
 error:
 	return ret_val;
