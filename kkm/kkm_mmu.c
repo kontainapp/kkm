@@ -214,7 +214,9 @@ static void kkm_mmu_copy_range(uint64_t src_base, uint64_t src_offset,
  */
 int kkm_mmu_copy_kernel_pgd(struct kkm *kkm)
 {
-	/* when running in kernel mode we are expected to have kernel pgd */
+	/*
+	 * when running in kernel mode we are expected to have kernel pgd
+	 */
 	uint64_t current_pgd_base = (uint64_t)kkm->mm->pgd;
 
 	if (current_pgd_base == 0) {
@@ -227,7 +229,9 @@ int kkm_mmu_copy_kernel_pgd(struct kkm *kkm)
 			   kkm->guest_kernel_va, KKM_PGD_KERNEL_OFFSET,
 			   KKM_PGD_KERNEL_SIZE);
 
-	/* set private area in kernel pml4 area */
+	/*
+	 * set private area in kernel pml4 area
+	 */
 	kkm_mmu_set_entry((void *)kkm->guest_kernel_va, KKM_PGD_INDEX,
 			  kkm_mmu.pgd_entry);
 
@@ -276,7 +280,9 @@ int kkm_mmu_sync(struct kkm *kkm)
 			   KKM_PGD_GUEST_PAYLOAD_OFFSET_0,
 			   KKM_PGD_PAYLOAD_SIZE);
 
-	/* entry 255 for stack + mmap */
+	/*
+	 * entry 255 for stack + mmap
+	 */
 	kkm_mmu_copy_range(current_pgd_base, KKM_PGD_MONITOR_PAYLOAD_OFFSET,
 			   kkm->guest_kernel_va,
 			   KKM_PGD_GUEST_PAYLOAD_OFFSET_255,
@@ -286,10 +292,21 @@ int kkm_mmu_sync(struct kkm *kkm)
 			   KKM_PGD_GUEST_PAYLOAD_OFFSET_255,
 			   KKM_PGD_PAYLOAD_SIZE);
 
-	/* change pml4 entry 0 to allow execution */
+	/*
+	 * change pml4 entry 0 to allow execution
+	 */
 	pgd_pointer = (uint64_t *)kkm->guest_payload_va;
 	if (pgd_pointer[0] & _PAGE_NX) {
 		pgd_pointer[0] &= ~_PAGE_NX;
+	}
+
+	/*
+	 * change pml4 entry 255 to allow execution
+	 * .so objects are mapped in this area
+	 */
+	pgd_pointer = (uint64_t *)kkm->guest_payload_va;
+	if (pgd_pointer[255] & _PAGE_NX) {
+		pgd_pointer[255] &= ~_PAGE_NX;
 	}
 
 	/*
