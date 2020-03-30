@@ -12,7 +12,7 @@
 
 #include <linux/mm.h>
 #include <asm/irq_vectors.h>
-#include "kkm_intr.h"
+#include "kkm_guest_exit.h"
 
 uint64_t intr_function_pointers[NR_VECTORS] = {
 	(uint64_t)kkm_intr_entry_0,   (uint64_t)kkm_intr_entry_1,

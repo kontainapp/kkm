@@ -20,8 +20,8 @@
 #include "kkm_mm.h"
 #include "kkm_mmu.h"
 #include "kkm_kontext.h"
-#include "kkm_entry.h"
-#include "kkm_intr.h"
+#include "kkm_guest_entry.h"
+#include "kkm_guest_exit.h"
 
 extern uint64_t intr_function_pointers[NR_VECTORS];
 /*

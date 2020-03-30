@@ -20,7 +20,7 @@
 #include "kkm_kontext.h"
 #include "kkm_kontainer.h"
 #include "kkm_mm.h"
-#include "kkm_entry.h"
+#include "kkm_guest_entry.h"
 
 /*
  * PTI_USER_PGTABLE_MASK not visible to modules

@@ -163,7 +163,7 @@ struct kkm_guest_area {
 
 			/*
 			 * first page of guest area(0xE00 - 0x1000)
-			 * payload_entry_stack is used in kkm_entry.S
+			 * payload_entry_stack is used in kkm_guest_entry.S
 			 */
 			struct entry_stack
 				payload_entry_stack; /* stack used for switching to payload */
