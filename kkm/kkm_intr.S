@@ -2644,12 +2644,21 @@ kkm_intr_entry_asm_common:
 	 * switch to guest kernel address space
 	 * kernel and payload PML4 are allocated next to each
 	 * other(even page is kernel, odd page is guest) in physical memory.
-	 * no need to flush TLB
-	 * guest kernel address space is superset of guest payload address space
 	 */
 	movq	%cr3, %rdi
 	andq	$0xffffffffffffefff, %rdi
 	movq	%rdi, %cr3
+
+	/*
+	 * invlidate TLB
+	 * toggle CR4_PGE bit and then restore
+	 */
+	movq	%cr4, %rdi
+	pushq	%rdi
+	xorq	$0x80, %rdi
+	movq	%rdi, %cr4
+	popq	%rdi
+	movq	%rdi, %cr4
 
 	/*
 	 * %rsp is currently in guest area

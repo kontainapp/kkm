@@ -291,9 +291,9 @@ void kkm_guest_kernel_start_payload(struct kkm_guest_area *ga)
 	 * make sure interrupts are enabled, iopl is 0 and resume flag is set
 	 */
 	if ((ga->regs.rflags & X86_EFLAGS_IF) == 0) {
-		// keep interrupts disabled till trap handlers are completely working
-		// ga->regs.rflags |= X86_EFLAGS_IF;
+		ga->regs.rflags |= X86_EFLAGS_IF;
 	}
+	// keep interrupts disabled till trap handlers are completely working
 	// TODO: delete this
 	ga->regs.rflags &= ~(X86_EFLAGS_IF);
 	if ((ga->regs.rflags & X86_EFLAGS_IOPL) != 0) {
