@@ -118,9 +118,6 @@ int kkm_kontext_switch_kernel(struct kkm_kontext *kkm_kontext)
 
 	kkm_run = (struct kkm_run *)kkm_kontext->mmap_area[0].kvaddr;
 	if (kkm_run->immediate_exit == 1) {
-		printk(KERN_NOTICE
-		       "kkm_kontext_switch_kernel: immediate exit set %d\n",
-		       kkm_run->immediate_exit);
 		goto error;
 	}
 
@@ -758,8 +755,8 @@ int kkm_process_page_fault(struct kkm_kontext *kkm_kontext,
 error:
 
 	if (ret_val && ret_val != KKM_KONTEXT_FAULT_PROCESS_DONE) {
-		printk(KERN_NOTICE "kkm_process_page_fault: ret_val %d %llx\n",
-		       ret_val, kkm_kontext->trap_addr);
+		printk(KERN_NOTICE "kkm_process_page_fault: thread %d ret_val %d %llx\n",
+		       kkm_kontext->kontext_fd, ret_val, kkm_kontext->trap_addr);
 	}
 	return ret_val;
 }

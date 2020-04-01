@@ -134,6 +134,9 @@ static long kkm_execution_kontext_ioctl(struct file *file_p,
 		/* set guest state */
 		ret_val = kkm_from_user(&ga->regs, (void *)arg,
 					sizeof(struct kkm_regs));
+		if (kkm_kontext->general_protection_pending == true) {
+			kkm_kontext->general_protection_pending = false;
+		}
 		break;
 	case KKM_GET_SREGS:
 		/* get guest system registers and segment registers */
@@ -310,8 +313,7 @@ int kkm_set_kontainer_memory(struct kkm *kkm, unsigned long arg)
 		goto error;
 	}
 	if (mr.memory_size == 0) {
-		memset(&kkm->mem_slot[mr.slot], 0,
-			sizeof(struct kkm_mem_slot));
+		memset(&kkm->mem_slot[mr.slot], 0, sizeof(struct kkm_mem_slot));
 		kkm->mem_slot_count--;
 	} else {
 		// fail if there are overlaps
@@ -352,7 +354,9 @@ int kkm_set_kontainer_memory(struct kkm *kkm, unsigned long arg)
 error:
 	mutex_unlock(&kkm->mem_lock);
 	if (ret_val != 0) {
-		printk(KERN_NOTICE "kkm_set_kontainer_memory: ret_val %d slot %d\n", ret_val, mr.slot);
+		printk(KERN_NOTICE
+		       "kkm_set_kontainer_memory: ret_val %d slot %d\n",
+		       ret_val, mr.slot);
 	}
 	return ret_val;
 }
@@ -482,7 +486,7 @@ error:
  */
 static int kkm_get_native_cpuid(unsigned long arg)
 {
-	static uint32_t cpuid_functions[] = { 0x0,	0x80000001,
+	static uint32_t cpuid_functions[] = { 0x0,	  0x80000001,
 					      0x80000002, 0x80000003,
 					      0x80000004, 0x80000008 };
 	struct kkm_cpuid kcpuid;
