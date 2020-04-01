@@ -114,3 +114,11 @@ bool kkm_verify_bytes(uint8_t *data, uint32_t count, uint8_t value)
 	}
 	return ret_val;
 }
+
+void kkm_show_trap_info(uint64_t cr2, struct kkm_trap_info *info)
+{
+	printk(KERN_NOTICE
+	       "kkm_show_trap_info: cr2 %llx error %llx rip %llx cs %llx rflags %llx rsp %llx ss %llx\n",
+	       cr2, info->error, info->rip, info->cs, info->rflags, info->rsp,
+	       info->ss);
+}
