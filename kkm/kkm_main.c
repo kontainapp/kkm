@@ -75,13 +75,13 @@ static int kkm_execution_kontext_release(struct inode *inode_p,
 	return 0;
 }
 
-struct kkm *kkm = NULL;
+struct kkm *kkm_global = NULL;
 
 static long kkm_run(struct kkm_kontext *kkm_kontext)
 {
 	int ret_val = 0;
 
-	kkm = kkm_kontext->kkm;
+	kkm_global = kkm_kontext->kkm;
 
 	ret_val = kkm_kontext_switch_kernel(kkm_kontext);
 
