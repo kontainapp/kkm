@@ -75,12 +75,6 @@ struct kkm_kontext {
 	uint64_t native_tr; /* native task register */
 
 	/*
-	 * gp with out instruction.
-	 * adjust rip on next call
-	 */
-	bool general_protection_pending;
-
-	/*
 	 * syscall related stuff
 	 */
 	bool syscall_pending;

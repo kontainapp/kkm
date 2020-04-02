@@ -134,9 +134,6 @@ static long kkm_execution_kontext_ioctl(struct file *file_p,
 		/* set guest state */
 		ret_val = kkm_from_user(&ga->regs, (void *)arg,
 					sizeof(struct kkm_regs));
-		if (kkm_kontext->general_protection_pending == true) {
-			kkm_kontext->general_protection_pending = false;
-		}
 		break;
 	case KKM_GET_SREGS:
 		/* get guest system registers and segment registers */

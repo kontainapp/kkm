@@ -70,8 +70,6 @@ int kkm_kontext_init(struct kkm_kontext *kkm_kontext)
 	ga->kkm_kontext = kkm_kontext;
 	ga->guest_area_beg = (uint64_t)ga;
 
-	kkm_kontext->general_protection_pending = false;
-
 	kkm_kontext->syscall_pending = false;
 	kkm_kontext->ret_val_mva = -1;
 
@@ -107,14 +105,6 @@ int kkm_kontext_switch_kernel(struct kkm_kontext *kkm_kontext)
 	struct kkm_run *kkm_run = NULL;
 
 	ga = (struct kkm_guest_area *)kkm_kontext->guest_area;
-
-	if (kkm_kontext->general_protection_pending == true) {
-		/*
-		 * adjust ip by 1 byte, skip out instruction
-		 */
-		ga->regs.rip += 1;
-	}
-	kkm_kontext->general_protection_pending = false;
 
 	kkm_run = (struct kkm_run *)kkm_kontext->mmap_area[0].kvaddr;
 	if (kkm_run->immediate_exit == 1) {
@@ -697,7 +687,7 @@ int kkm_process_general_protection(struct kkm_kontext *kkm_kontext,
 	if (ga->instruction_decode[0] == KKM_OUT_OPCODE) {
 		kkm_setup_hypercall(kkm_kontext, ga, kkm_run, ga->regs.rdx,
 				    ga->regs.rax);
-		kkm_kontext->general_protection_pending = true;
+		ga->regs.rip += 1;
 	}
 
 error:

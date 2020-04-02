@@ -128,7 +128,7 @@ int kkm_idt_descr_init(void)
 
 	if (idt_entry->native_idt_desc.size != (PAGE_SIZE - 1)) {
 		printk(KERN_NOTICE
-		       "kkm_idt_descr_init: idt size expecting 0xfff found %x\n",
+		       "kkm_idt_descr_init: idt size expecting 0xfff found 0x%x\n",
 		       idt_entry->native_idt_desc.size);
 	}
 
