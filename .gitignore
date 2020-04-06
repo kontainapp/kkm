@@ -1,0 +1,11 @@
+kkm/*.o
+kkm/*.cmd
+kkm/Module.symvers
+kkm/built-in.a
+kkm/kkm.dis
+kkm/kkm.ko
+kkm/kkm.mod
+kkm/kkm.mod.c
+kkm/kkm.s.dis
+kkm/modules.order
+test_kkm/test_kkm
