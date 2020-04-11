@@ -115,11 +115,11 @@ bool kkm_verify_bytes(uint8_t *data, uint32_t count, uint8_t value)
 	return ret_val;
 }
 
-void kkm_show_trap_info(int kontext_id, uint64_t cr2,
-			struct kkm_trap_info *info)
+void kkm_show_trap_info(struct kkm_guest_area *ga)
 {
 	printk(KERN_NOTICE
-	       "kkm_show_trap_info: thread %d cr2 %llx error %llx rip %llx cs %llx rflags %llx rsp %llx ss %llx\n",
-	       kontext_id, cr2, info->error, info->rip, info->cs, info->rflags,
-	       info->rsp, info->ss);
+	       "kkm_show_trap_info: thread %d ga %px cr2 %llx intr_no %llx error %llx rip %llx cs %llx rflags %llx rsp %llx ss %llx\n",
+	       ga->kkm_kontext->kontext_fd, ga, ga->sregs.cr2, ga->kkm_intr_no,
+	       ga->trap_info.error, ga->trap_info.rip, ga->trap_info.cs,
+	       ga->trap_info.rflags, ga->trap_info.rsp, ga->trap_info.ss);
 }

@@ -20,7 +20,6 @@ void kkm_change_address_space(phys_addr_t pgd_pa);
 void kkm_init_guest_area_redzone(struct kkm_guest_area *ga);
 void kkm_verify_guest_area_redzone(struct kkm_guest_area *ga);
 bool kkm_verify_bytes(uint8_t *data, uint32_t count, uint8_t value);
-void kkm_show_trap_info(int kontxt_id, uint64_t cr2,
-			struct kkm_trap_info *info);
+void kkm_show_trap_info(struct kkm_guest_area *ga);
 
 #endif /* __KKM_MISC_H__ */

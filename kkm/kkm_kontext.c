@@ -17,6 +17,7 @@
 #include <asm/cpu_entry_area.h>
 #include <asm/traps.h>
 
+#include "kkm_externs.h"
 #include "kkm.h"
 #include "kkm_run.h"
 #include "kkm_kontext.h"
@@ -434,18 +435,6 @@ int kkm_process_intr(struct kkm_kontext *kkm_kontext)
 		(struct kkm_guest_area *)kkm_kontext->guest_area;
 	struct kkm_run *kkm_run = NULL;
 
-	/*
-	printk(KERN_INFO
-	       "kkm_process_intr: trap information ga %px intr no %llx ss %llx rsp %llx rflags %llx cs %llx rip %llx error %llx cr2 %llx\n",
-	       ga, ga->kkm_intr_no, ga->trap_info.ss, ga->trap_info.rsp,
-	       ga->trap_info.rflags, ga->trap_info.ss, ga->trap_info.rip,
-	       ga->trap_info.error, ga->sregs.cr2);
-
-	printk(KERN_INFO
-	       "kkm_process_intr: trap information user ss %d cs %d kernel ss %d cs %d\n",
-	       __USER_DS, __USER_CS, __KERNEL_DS, __KERNEL_CS);
-	       */
-
 	kkm_run = (struct kkm_run *)kkm_kontext->mmap_area[0].kvaddr;
 	kkm_run->exit_reason = KKM_EXIT_UNKNOWN;
 
@@ -745,8 +734,10 @@ int kkm_process_page_fault(struct kkm_kontext *kkm_kontext,
 error:
 
 	if (ret_val && ret_val != KKM_KONTEXT_FAULT_PROCESS_DONE) {
-		printk(KERN_NOTICE "kkm_process_page_fault: thread %d ret_val %d %llx\n",
-		       kkm_kontext->kontext_fd, ret_val, kkm_kontext->trap_addr);
+		printk(KERN_NOTICE
+		       "kkm_process_page_fault: thread %d ret_val %d %llx\n",
+		       kkm_kontext->kontext_fd, ret_val,
+		       kkm_kontext->trap_addr);
 	}
 	return ret_val;
 }
@@ -817,7 +808,6 @@ error:
 /*
  * VDSO related macros
  */
-#define KKM_KM_RSRV_VDSOSLOT (41)
 #define KKM_GUEST_VVAR_VDSO_BASE_VA (KKM_GUEST_MEM_TOP_VA + (1 * KKM_MIB))
 
 bool kkm_guest_va_to_monitor_va(struct kkm_kontext *kkm_kontext,
