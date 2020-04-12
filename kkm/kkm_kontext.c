@@ -776,30 +776,6 @@ error:
 	return ret_val;
 }
 
-/*
- * bottom portion of guest address space
- */
-#define KKM_GUEST_MEM_START_VA (2 * KKM_MIB)
-#define KKM_GUEST_MAX_PHYS_MEM (512 * KKM_GIB)
-
-/*
- * top portion of guest address space
- */
-#define KKM_GUEST_MEM_TOP_VA (128 * KKM_TIB - 2 * KKM_MIB)
-#define KKM_GUEST_VA_OFFSET                                                    \
-	(KKM_GUEST_MEM_TOP_VA - (KKM_GUEST_MAX_PHYS_MEM - 2 * KKM_MIB))
-
-/*
- * monitor mapping area for guest physical memory
- */
-#define KKM_KM_USER_MEM_BASE                                                   \
-	(0x100000000000ULL) /* keep in sync with KM_USER_MEM_BASE */
-
-/*
- * VDSO related macros
- */
-#define KKM_GUEST_VVAR_VDSO_BASE_VA (KKM_GUEST_MEM_TOP_VA + (1 * KKM_MIB))
-
 bool kkm_guest_va_to_monitor_va(struct kkm_kontext *kkm_kontext,
 				uint64_t guest_va, uint64_t *monitor_va)
 {
