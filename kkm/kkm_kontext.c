@@ -809,6 +809,16 @@ bool kkm_guest_va_to_monitor_va(struct kkm_kontext *kkm_kontext,
 		goto end;
 	}
 
+	mem_slot = &kkm_kontext->kkm->mem_slot[KKM_KM_RSRV_KMGUESTMEM_SLOT];
+	if (mem_slot->used == true && guest_va >= KKM_GUEST_KMGUESTMEM_BASE_VA &&
+	    guest_va <
+		    (KKM_GUEST_KMGUESTMEM_BASE_VA + mem_slot->mr.memory_size)) {
+		*monitor_va = guest_va - KKM_GUEST_KMGUESTMEM_BASE_VA +
+			      mem_slot->mr.userspace_addr;
+		ret_val = true;
+		goto end;
+	}
+
 end:
 	if (ret_val == false) {
 		printk(KERN_NOTICE
