@@ -24,34 +24,48 @@ struct kkm_mmu kkm_mmu;
  */
 int kkm_mmu_init(void)
 {
-	int ret_val = 0;
+	return kkm_create_p4ml(&kkm_mmu, KKM_PRIVATE_START_VA);
+}
 
-	memset(&kkm_mmu, 0, sizeof(struct kkm_mmu));
+void kkm_mmu_cleanup(void)
+{
+	kkm_cleanup_p4ml(&kkm_mmu);
+}
+
+/*
+ * allocate pages and initialize page table hierrarchy
+ */
+int kkm_create_p4ml(struct kkm_mmu *kmu, uint64_t address)
+{
+	int ret_val = 0;
+	int pud_idx;
+	int pmd_idx;
+
+	memset(kmu, 0, sizeof(struct kkm_mmu));
 
 	/* alocate page for pud */
-	ret_val = kkm_mm_allocate_page(&kkm_mmu.pud.page, &kkm_mmu.pud.va,
-				       &kkm_mmu.pud.pa);
+	ret_val = kkm_mm_allocate_page(&kmu->pud.page, &kmu->pud.va,
+				       &kmu->pud.pa);
 	if (ret_val != 0) {
 		printk(KERN_NOTICE
-		       "kkm_mmu_init: failed to allocate pud page error(%d)\n",
+		       "kkm_create_p4ml: failed to allocate pud page error(%d)\n",
 		       ret_val);
 		goto error;
 	}
 	/* alocate page for pmd */
-	ret_val = kkm_mm_allocate_page(&kkm_mmu.pmd.page, &kkm_mmu.pmd.va,
-				       &kkm_mmu.pmd.pa);
+	ret_val = kkm_mm_allocate_page(&kmu->pmd.page, &kmu->pmd.va,
+				       &kmu->pmd.pa);
 	if (ret_val != 0) {
 		printk(KERN_NOTICE
-		       "kkm_mmu_init: failed to allocate pmd page error(%d)\n",
+		       "kkm_create_p4ml: failed to allocate pmd page error(%d)\n",
 		       ret_val);
 		goto error;
 	}
 	/* alocate page for pt */
-	ret_val = kkm_mm_allocate_page(&kkm_mmu.pt.page, &kkm_mmu.pt.va,
-				       &kkm_mmu.pt.pa);
+	ret_val = kkm_mm_allocate_page(&kmu->pt.page, &kmu->pt.va, &kmu->pt.pa);
 	if (ret_val != 0) {
 		printk(KERN_NOTICE
-		       "kkm_mmu_init: failed to allocate pt page error(%d)\n",
+		       "kkm_create_p4ml: failed to allocate pt page error(%d)\n",
 		       ret_val);
 		goto error;
 	}
@@ -59,15 +73,17 @@ int kkm_mmu_init(void)
 	/* pages are allocated and zeroed, __GFP_ZERO flag is used to allocate page */
 
 	/* createp pgd entry */
-	kkm_mmu.pgd_entry = (kkm_mmu.pud.pa & KKM_PAGE_PA_MASK) | _PAGE_USER |
-			    _PAGE_RW | _PAGE_PRESENT;
+	kmu->pgd_entry = (kmu->pud.pa & KKM_PAGE_PA_MASK) | _PAGE_USER |
+			 _PAGE_RW | _PAGE_PRESENT;
 
 	/* initialize first entry in pud */
-	kkm_mmu_insert_page(kkm_mmu.pud.va, 0, kkm_mmu.pmd.pa,
+	pud_idx = pud_index(address);
+	kkm_mmu_insert_page(kmu->pud.va, pud_idx, kmu->pmd.pa,
 			    _PAGE_USER | _PAGE_RW | _PAGE_PRESENT);
 
 	/* initialize first entry in pmd */
-	kkm_mmu_insert_page(kkm_mmu.pmd.va, 0, kkm_mmu.pt.pa,
+	pmd_idx = pmd_index(address);
+	kkm_mmu_insert_page(kmu->pmd.va, pmd_idx, kmu->pt.pa,
 			    _PAGE_USER | _PAGE_RW | _PAGE_PRESENT);
 
 error:
@@ -77,16 +93,16 @@ error:
 	return ret_val;
 }
 
-void kkm_mmu_cleanup(void)
+void kkm_cleanup_p4ml(struct kkm_mmu *kmu)
 {
-	if (kkm_mmu.pud.page != NULL) {
-		free_page((unsigned long long)kkm_mmu.pud.va);
+	if (kmu->pud.page != NULL) {
+		free_page((unsigned long long)kmu->pud.va);
 	}
-	if (kkm_mmu.pmd.page != NULL) {
-		free_page((unsigned long long)kkm_mmu.pmd.va);
+	if (kmu->pmd.page != NULL) {
+		free_page((unsigned long long)kmu->pmd.va);
 	}
-	if (kkm_mmu.pt.page != NULL) {
-		free_page((unsigned long long)kkm_mmu.pt.va);
+	if (kmu->pt.page != NULL) {
+		free_page((unsigned long long)kmu->pt.va);
 	}
 }
 

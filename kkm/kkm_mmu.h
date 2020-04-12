@@ -152,6 +152,8 @@ struct kkm_mmu {
 
 int kkm_mmu_init(void);
 void kkm_mmu_cleanup(void);
+int kkm_create_p4ml(struct kkm_mmu *kmu, uint64_t address);
+void kkm_cleanup_p4ml(struct kkm_mmu *kmu);
 
 uint64_t kkm_mmu_get_pgd_entry(void);
 int kkm_mmu_get_per_cpu_start_index(void);
