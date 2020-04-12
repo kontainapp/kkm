@@ -27,7 +27,6 @@
 #include "kkm_kontainer.h"
 #include "kkm_kontext.h"
 #include "kkm_mm.h"
-#include "kkm_mmu.h"
 #include "kkm_idt_cache.h"
 
 uint32_t kkm_version = 12;
@@ -347,7 +346,8 @@ int kkm_set_kontainer_memory(struct kkm *kkm, unsigned long arg)
 		kkm->mem_slot_count++;
 	}
 
-	kkm_mmu_sync(kkm);
+	kkm_mmu_sync((uint64_t)kkm->mm->pgd, kkm->guest_kernel_va,
+		     kkm->guest_payload_va);
 error:
 	mutex_unlock(&kkm->mem_lock);
 	if (ret_val != 0) {
@@ -460,7 +460,9 @@ int kkm_create_kontainer(unsigned long arg)
 	/*
 	 * setup pml4 for guest kernel and guest payload
 	 */
-	ret_val = kkm_mmu_copy_kernel_pgd(kkm);
+	ret_val = kkm_mmu_copy_kernel_pgd((uint64_t)kkm->mm->pgd,
+					  kkm->guest_kernel_va,
+					  kkm->guest_payload_va);
 	if (ret_val != 0) {
 		printk(KERN_NOTICE
 		       "kkm_create_kontainer: Copy kernel pgd entry failed error(%d)\n",

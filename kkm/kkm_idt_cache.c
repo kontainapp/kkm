@@ -18,7 +18,6 @@
 #include "kkm.h"
 #include "kkm_run.h"
 #include "kkm_mm.h"
-#include "kkm_mmu.h"
 #include "kkm_kontext.h"
 #include "kkm_guest_entry.h"
 #include "kkm_guest_exit.h"
@@ -135,14 +134,21 @@ int kkm_idt_descr_init(void)
 	/*
 	 * replace non standard handlers
 	 */
-	intr_function_pointers[X86_TRAP_DF] = (uint64_t)kkm_intr_entry_double_fault;
-	intr_function_pointers[X86_TRAP_TS] = (uint64_t)kkm_intr_entry_invalid_TSS;
-	intr_function_pointers[X86_TRAP_NP] = (uint64_t)kkm_intr_entry_segment_np;
+	intr_function_pointers[X86_TRAP_DF] =
+		(uint64_t)kkm_intr_entry_double_fault;
+	intr_function_pointers[X86_TRAP_TS] =
+		(uint64_t)kkm_intr_entry_invalid_TSS;
+	intr_function_pointers[X86_TRAP_NP] =
+		(uint64_t)kkm_intr_entry_segment_np;
 	intr_function_pointers[X86_TRAP_SS] = (uint64_t)kkm_intr_entry_ss_fault;
-	intr_function_pointers[X86_TRAP_GP] = (uint64_t)kkm_intr_entry_general_protection;
-	intr_function_pointers[X86_TRAP_PF] = (uint64_t)kkm_intr_entry_page_fault;
-	intr_function_pointers[X86_TRAP_AC] = (uint64_t)kkm_intr_entry_alignment_check;
-	intr_function_pointers[X86_TRAP_SE] = (uint64_t)kkm_intr_entry_security_exception;
+	intr_function_pointers[X86_TRAP_GP] =
+		(uint64_t)kkm_intr_entry_general_protection;
+	intr_function_pointers[X86_TRAP_PF] =
+		(uint64_t)kkm_intr_entry_page_fault;
+	intr_function_pointers[X86_TRAP_AC] =
+		(uint64_t)kkm_intr_entry_alignment_check;
+	intr_function_pointers[X86_TRAP_SE] =
+		(uint64_t)kkm_intr_entry_security_exception;
 
 	/*
 	 * initialize idt entries

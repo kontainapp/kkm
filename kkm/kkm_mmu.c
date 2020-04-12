@@ -15,7 +15,6 @@
 
 #include "kkm.h"
 #include "kkm_mm.h"
-#include "kkm_mmu.h"
 
 struct kkm_mmu kkm_mmu;
 
@@ -228,13 +227,9 @@ static void kkm_mmu_copy_range(uint64_t src_base, uint64_t src_offset,
  *     guest kernel
  *     guest payload
  */
-int kkm_mmu_copy_kernel_pgd(struct kkm *kkm)
+int kkm_mmu_copy_kernel_pgd(uint64_t current_pgd_base, uint64_t guest_kernel_va,
+			    uint64_t guest_payload_va)
 {
-	/*
-	 * when running in kernel mode we are expected to have kernel pgd
-	 */
-	uint64_t current_pgd_base = (uint64_t)kkm->mm->pgd;
-
 	if (current_pgd_base == 0) {
 		printk(KERN_NOTICE
 		       "kkm_mmu_copy_kernel_pgd: PGD base is zero\n");
@@ -242,13 +237,13 @@ int kkm_mmu_copy_kernel_pgd(struct kkm *kkm)
 	}
 
 	kkm_mmu_copy_range(current_pgd_base, KKM_PGD_KERNEL_OFFSET,
-			   kkm->guest_kernel_va, KKM_PGD_KERNEL_OFFSET,
+			   guest_kernel_va, KKM_PGD_KERNEL_OFFSET,
 			   KKM_PGD_KERNEL_SIZE);
 
 	/*
 	 * set private area in kernel pml4 area
 	 */
-	kkm_mmu_set_entry((void *)kkm->guest_kernel_va, KKM_PGD_INDEX,
+	kkm_mmu_set_entry((void *)guest_kernel_va, KKM_PGD_INDEX,
 			  kkm_mmu.pgd_entry);
 
 	/*
@@ -263,11 +258,11 @@ int kkm_mmu_copy_kernel_pgd(struct kkm *kkm)
 	 * current_pgd_base += PAGE_SIZE;
 	 */
 	kkm_mmu_copy_range(current_pgd_base, KKM_PGD_KERNEL_OFFSET,
-			   kkm->guest_payload_va, KKM_PGD_KERNEL_OFFSET,
+			   guest_payload_va, KKM_PGD_KERNEL_OFFSET,
 			   KKM_PGD_KERNEL_SIZE);
 
 	/* set private area in guest pml4 */
-	kkm_mmu_set_entry((void *)kkm->guest_payload_va, KKM_PGD_INDEX,
+	kkm_mmu_set_entry((void *)guest_payload_va, KKM_PGD_INDEX,
 			  kkm_mmu.pgd_entry);
 
 	return 0;
@@ -279,9 +274,9 @@ int kkm_mmu_copy_kernel_pgd(struct kkm *kkm)
  * copy the above pml4 entry to point to 0TB in guest payload for text
  * copy the above pml4 entry to point to 128TB in guest payload for stack and mmap
  */
-int kkm_mmu_sync(struct kkm *kkm)
+int kkm_mmu_sync(uint64_t current_pgd_base, uint64_t guest_kernel_va,
+		 uint64_t guest_payload_va)
 {
-	uint64_t current_pgd_base = (uint64_t)kkm->mm->pgd;
 	uint64_t *pgd_pointer = NULL;
 
 	/*
@@ -289,29 +284,26 @@ int kkm_mmu_sync(struct kkm *kkm)
 	 * entry 0 for code + data
 	 */
 	kkm_mmu_copy_range(current_pgd_base, KKM_PGD_MONITOR_PAYLOAD_OFFSET,
-			   kkm->guest_kernel_va, KKM_PGD_GUEST_PAYLOAD_OFFSET_0,
+			   guest_kernel_va, KKM_PGD_GUEST_PAYLOAD_OFFSET_0,
 			   KKM_PGD_PAYLOAD_SIZE);
 	kkm_mmu_copy_range(current_pgd_base, KKM_PGD_MONITOR_PAYLOAD_OFFSET,
-			   kkm->guest_payload_va,
-			   KKM_PGD_GUEST_PAYLOAD_OFFSET_0,
+			   guest_payload_va, KKM_PGD_GUEST_PAYLOAD_OFFSET_0,
 			   KKM_PGD_PAYLOAD_SIZE);
 
 	/*
 	 * entry 255 for stack + mmap
 	 */
 	kkm_mmu_copy_range(current_pgd_base, KKM_PGD_MONITOR_PAYLOAD_OFFSET,
-			   kkm->guest_kernel_va,
-			   KKM_PGD_GUEST_PAYLOAD_OFFSET_255,
+			   guest_kernel_va, KKM_PGD_GUEST_PAYLOAD_OFFSET_255,
 			   KKM_PGD_PAYLOAD_SIZE);
 	kkm_mmu_copy_range(current_pgd_base, KKM_PGD_MONITOR_PAYLOAD_OFFSET,
-			   kkm->guest_payload_va,
-			   KKM_PGD_GUEST_PAYLOAD_OFFSET_255,
+			   guest_payload_va, KKM_PGD_GUEST_PAYLOAD_OFFSET_255,
 			   KKM_PGD_PAYLOAD_SIZE);
 
 	/*
 	 * change pml4 entry 0 to allow execution
 	 */
-	pgd_pointer = (uint64_t *)kkm->guest_payload_va;
+	pgd_pointer = (uint64_t *)guest_payload_va;
 	if (pgd_pointer[0] & _PAGE_NX) {
 		pgd_pointer[0] &= ~_PAGE_NX;
 	}
@@ -320,7 +312,7 @@ int kkm_mmu_sync(struct kkm *kkm)
 	 * change pml4 entry 255 to allow execution
 	 * .so objects are mapped in this area
 	 */
-	pgd_pointer = (uint64_t *)kkm->guest_payload_va;
+	pgd_pointer = (uint64_t *)guest_payload_va;
 	if (pgd_pointer[255] & _PAGE_NX) {
 		pgd_pointer[255] &= ~_PAGE_NX;
 	}

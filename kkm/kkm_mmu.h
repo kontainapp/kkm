@@ -168,7 +168,9 @@ void *kkm_mmu_get_idt_va(void);
 void kkm_mmu_set_idt_text(phys_addr_t text_page0_pa, phys_addr_t text_page1_pa);
 void kkm_mmu_set_kx_global(phys_addr_t kx_global_pa);
 
-int kkm_mmu_copy_kernel_pgd(struct kkm *kkm);
-int kkm_mmu_sync(struct kkm *kkm);
+int kkm_mmu_copy_kernel_pgd(uint64_t current_pgd_base, uint64_t guest_kernel_va,
+			    uint64_t guest_payload_va);
+int kkm_mmu_sync(uint64_t current_pgd_base, uint64_t guest_kernel_va,
+		 uint64_t guest_payload_va);
 
 #endif /* __KKM_MMU_H__ */

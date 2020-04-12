@@ -22,7 +22,6 @@
 #include "kkm_run.h"
 #include "kkm_kontext.h"
 #include "kkm_mm.h"
-#include "kkm_mmu.h"
 #include "kkm_misc.h"
 #include "kkm_guest_entry.h"
 #include "kkm_guest_exit.h"

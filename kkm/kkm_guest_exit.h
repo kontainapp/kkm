@@ -16,8 +16,8 @@
 /*
  * not defined by linux kernel
  */
-#define X86_TRAP_VC     (29)	/* VMM communication exception */
-#define X86_TRAP_SE     (30)	/* security exception */
+#define X86_TRAP_VC (29) /* VMM communication exception */
+#define X86_TRAP_SE (30) /* security exception */
 
 void kkm_intr_start(void);
 void kkm_intr_fill(void);

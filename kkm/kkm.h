@@ -14,6 +14,7 @@
 #define __KKM_H__
 
 #include "kkm_ioctl.h"
+#include "kkm_mmu.h"
 
 #define KKM_CONTEXT_MAP_PAGE_COUNT (3)
 #define KKM_CONTEXT_MAP_SIZE (KKM_CONTEXT_MAP_PAGE_COUNT * 4096)
@@ -137,6 +138,12 @@ struct kkm {
 	struct page *guest_payload_page;
 	uint64_t guest_payload_va;
 	phys_addr_t guest_payload_pa;
+
+	/*
+	 * guest private area page table hierarchy
+	 * vdso, vvar and monitor -> guest code
+	 */
+	struct kkm_mmu kkm_guest;
 };
 
 #endif /* __KKM_H__ */
