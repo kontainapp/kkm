@@ -275,7 +275,7 @@ int kkm_mmu_copy_kernel_pgd(uint64_t current_pgd_base, uint64_t guest_kernel_va,
  * copy the above pml4 entry to point to 128TB in guest payload for stack and mmap
  */
 int kkm_mmu_sync(uint64_t current_pgd_base, uint64_t guest_kernel_va,
-		 uint64_t guest_payload_va)
+		 uint64_t guest_payload_va, struct kkm_mmu *guest)
 {
 	uint64_t *pgd_pointer = NULL;
 
@@ -289,6 +289,12 @@ int kkm_mmu_sync(uint64_t current_pgd_base, uint64_t guest_kernel_va,
 	kkm_mmu_copy_range(current_pgd_base, KKM_PGD_MONITOR_PAYLOAD_OFFSET,
 			   guest_payload_va, KKM_PGD_GUEST_PAYLOAD_OFFSET_0,
 			   KKM_PGD_PAYLOAD_SIZE);
+
+	/*
+	 * set entry 1 for guest va(vdso, vvar + code copied from km to payload)
+	 */
+	((uint64_t *)guest_kernel_va)[1] = guest->pgd_entry;
+	((uint64_t *)guest_payload_va)[1] = guest->pgd_entry;
 
 	/*
 	 * entry 255 for stack + mmap

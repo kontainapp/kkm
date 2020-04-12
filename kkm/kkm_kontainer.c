@@ -63,6 +63,14 @@ int kkm_kontainer_init(struct kkm *kkm)
 	kkm->guest_payload_va = kkm->guest_kernel_va + PAGE_SIZE;
 	kkm->guest_payload_pa += kkm->guest_kernel_pa + PAGE_SIZE;
 
+	ret_val = kkm_create_p4ml(&kkm->kkm_guest_pml4e, KKM_KM_GUEST_PRIVATE_MEM_START_VA);
+	if (ret_val != 0) {
+		printk(KERN_NOTICE
+		       "kkm_create_kontainer: guest areCopy kernel pgd entry failed error(%d)\n",
+		       ret_val);
+		goto error;
+	}
+
 error:
 	if (ret_val != 0) {
 		kkm_kontainer_cleanup(kkm);
@@ -75,6 +83,7 @@ error:
  */
 void kkm_kontainer_cleanup(struct kkm *kkm)
 {
+	kkm_cleanup_p4ml(&kkm->kkm_guest_pml4e);
 	if (kkm->guest_kernel_page != NULL) {
 		free_page(kkm->guest_kernel_va);
 		kkm->guest_kernel_page = NULL;

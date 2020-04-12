@@ -13,6 +13,7 @@
 #ifndef __KKM_H__
 #define __KKM_H__
 
+#include "kkm_externs.h"
 #include "kkm_ioctl.h"
 #include "kkm_mmu.h"
 
@@ -143,7 +144,7 @@ struct kkm {
 	 * guest private area page table hierarchy
 	 * vdso, vvar and monitor -> guest code
 	 */
-	struct kkm_mmu kkm_guest;
+	struct kkm_mmu kkm_guest_pml4e;
 };
 
 #endif /* __KKM_H__ */

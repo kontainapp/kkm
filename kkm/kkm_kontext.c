@@ -17,7 +17,6 @@
 #include <asm/cpu_entry_area.h>
 #include <asm/traps.h>
 
-#include "kkm_externs.h"
 #include "kkm.h"
 #include "kkm_run.h"
 #include "kkm_kontext.h"
@@ -776,14 +775,6 @@ int kkm_process_syscall(struct kkm_kontext *kkm_kontext,
 error:
 	return ret_val;
 }
-
-/*
- * folowing is copied from km_mem.h
- * need to be kept in sync with monitor
- */
-#define KKM_MIB (0x100000ULL)
-#define KKM_GIB (0x40000000ULL)
-#define KKM_TIB (0x10000000000ULL)
 
 /*
  * bottom portion of guest address space

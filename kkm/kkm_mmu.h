@@ -171,6 +171,6 @@ void kkm_mmu_set_kx_global(phys_addr_t kx_global_pa);
 int kkm_mmu_copy_kernel_pgd(uint64_t current_pgd_base, uint64_t guest_kernel_va,
 			    uint64_t guest_payload_va);
 int kkm_mmu_sync(uint64_t current_pgd_base, uint64_t guest_kernel_va,
-		 uint64_t guest_payload_va);
+		 uint64_t guest_payload_va, struct kkm_mmu *guest);
 
 #endif /* __KKM_MMU_H__ */

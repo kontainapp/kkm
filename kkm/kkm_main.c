@@ -347,7 +347,7 @@ int kkm_set_kontainer_memory(struct kkm *kkm, unsigned long arg)
 	}
 
 	kkm_mmu_sync((uint64_t)kkm->mm->pgd, kkm->guest_kernel_va,
-		     kkm->guest_payload_va);
+		     kkm->guest_payload_va, &kkm->kkm_guest_pml4e);
 error:
 	mutex_unlock(&kkm->mem_lock);
 	if (ret_val != 0) {
