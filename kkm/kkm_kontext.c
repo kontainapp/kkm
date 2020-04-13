@@ -554,7 +554,7 @@ int kkm_process_common_without_error(struct kkm_kontext *kkm_kontext,
 	ga->regs.rsp -= sizeof(struct kkm_intr_stack_no_error_code);
 	gva = ga->regs.rsp;
 
-	if (kkm_guest_va_to_monitor_va(kkm_kontext, gva, &mva) == false) {
+	if (kkm_guest_va_to_monitor_va(kkm_kontext, gva, &mva, NULL) == false) {
 		ret_val = -EFAULT;
 		goto error;
 	}
@@ -602,7 +602,7 @@ int kkm_process_common_with_error(struct kkm_kontext *kkm_kontext,
 
 	gva = ga->regs.rsp;
 
-	if (kkm_guest_va_to_monitor_va(kkm_kontext, gva, &mva) == false) {
+	if (kkm_guest_va_to_monitor_va(kkm_kontext, gva, &mva, NULL) == false) {
 		ret_val = -EFAULT;
 		goto error;
 	}
@@ -657,7 +657,7 @@ int kkm_process_general_protection(struct kkm_kontext *kkm_kontext,
 	 * convert guest address to monitor address
 	 */
 	if (kkm_guest_va_to_monitor_va(kkm_kontext, ga->trap_info.rip,
-				       &monitor_fault_address) == false) {
+				       &monitor_fault_address, NULL) == false) {
 		ret_val = -EFAULT;
 		goto error;
 	}
@@ -687,6 +687,8 @@ int kkm_process_page_fault(struct kkm_kontext *kkm_kontext,
 	int ret_val = 0;
 	uint64_t error_code = ga->trap_info.error;
 	uint64_t monitor_fault_address = 0;
+	bool priv_area = false;
+	struct kkm *kkm = kkm_kontext->kkm;
 
 	kkm_kontext->trap_addr = ga->sregs.cr2;
 
@@ -694,7 +696,8 @@ int kkm_process_page_fault(struct kkm_kontext *kkm_kontext,
 	 * convert guest address to monitor address
 	 */
 	if (kkm_guest_va_to_monitor_va(kkm_kontext, ga->sregs.cr2,
-				       &monitor_fault_address) == false) {
+				       &monitor_fault_address,
+				       &priv_area) == false) {
 		ret_val = -EFAULT;
 		goto error;
 	}
@@ -727,6 +730,16 @@ int kkm_process_page_fault(struct kkm_kontext *kkm_kontext,
 		 * clear fault address
 		 */
 		ga->sregs.cr2 = 0;
+
+		/*
+		 * this fault is non linear map area
+		 * we need to update page tables correctly
+		 */
+		if (priv_area == true) {
+			kkm_kontext_mmu_update_priv_area(monitor_fault_address,
+							 (uint64_t)kkm->mm->pgd,
+							 &kkm->kkm_guest_pml4e);
+		}
 	}
 
 error:
@@ -760,7 +773,7 @@ int kkm_process_syscall(struct kkm_kontext *kkm_kontext,
 	args.argument5 = ga->regs.r8;
 	args.argument6 = ga->regs.r9;
 
-	if (kkm_guest_va_to_monitor_va(kkm_kontext, gva, &mva) == false) {
+	if (kkm_guest_va_to_monitor_va(kkm_kontext, gva, &mva, NULL) == false) {
 		ret_val = -EFAULT;
 		goto error;
 	}
@@ -777,13 +790,20 @@ error:
 }
 
 bool kkm_guest_va_to_monitor_va(struct kkm_kontext *kkm_kontext,
-				uint64_t guest_va, uint64_t *monitor_va)
+				uint64_t guest_va, uint64_t *monitor_va,
+				bool *priv_area)
 {
 	struct kkm_mem_slot *mem_slot = NULL;
 	bool ret_val = false;
 
 	*monitor_va = 0;
+	if (priv_area != NULL) {
+		*priv_area = false;
+	}
 
+	/*
+	 * bottom va text
+	 */
 	if (guest_va >= KKM_GUEST_MEM_START_VA &&
 	    guest_va < KKM_GUEST_MAX_PHYS_MEM) {
 		*monitor_va = KKM_KM_USER_MEM_BASE + guest_va;
@@ -791,6 +811,9 @@ bool kkm_guest_va_to_monitor_va(struct kkm_kontext *kkm_kontext,
 		goto end;
 	}
 
+	/*
+	 * top va stacks + mmap
+	 */
 	if (guest_va >= KKM_GUEST_VA_OFFSET &&
 	    guest_va < KKM_GUEST_MEM_TOP_VA) {
 		*monitor_va =
@@ -799,22 +822,35 @@ bool kkm_guest_va_to_monitor_va(struct kkm_kontext *kkm_kontext,
 		goto end;
 	}
 
+	/*
+	 * vdso + vvar
+	 */
 	mem_slot = &kkm_kontext->kkm->mem_slot[KKM_KM_RSRV_VDSOSLOT];
 	if (mem_slot->used == true && guest_va >= KKM_GUEST_VVAR_VDSO_BASE_VA &&
 	    guest_va <
 		    (KKM_GUEST_VVAR_VDSO_BASE_VA + mem_slot->mr.memory_size)) {
 		*monitor_va = guest_va - KKM_GUEST_VVAR_VDSO_BASE_VA +
 			      mem_slot->mr.userspace_addr;
+		if (priv_area != NULL) {
+			*priv_area = true;
+		}
 		ret_val = true;
 		goto end;
 	}
 
+	/*
+	 * guest mem
+	 */
 	mem_slot = &kkm_kontext->kkm->mem_slot[KKM_KM_RSRV_KMGUESTMEM_SLOT];
-	if (mem_slot->used == true && guest_va >= KKM_GUEST_KMGUESTMEM_BASE_VA &&
+	if (mem_slot->used == true &&
+	    guest_va >= KKM_GUEST_KMGUESTMEM_BASE_VA &&
 	    guest_va <
 		    (KKM_GUEST_KMGUESTMEM_BASE_VA + mem_slot->mr.memory_size)) {
 		*monitor_va = guest_va - KKM_GUEST_KMGUESTMEM_BASE_VA +
 			      mem_slot->mr.userspace_addr;
+		if (priv_area != NULL) {
+			*priv_area = true;
+		}
 		ret_val = true;
 		goto end;
 	}
@@ -822,7 +858,7 @@ bool kkm_guest_va_to_monitor_va(struct kkm_kontext *kkm_kontext,
 end:
 	if (ret_val == false) {
 		printk(KERN_NOTICE
-		       "kkm_guest_va_to_monitor_va: faulted guest va %llx monitor va %llx ret_val %d\n",
+		       "kkm_guest_va_to_monitor_va: failed translation faulted guest va %llx monitor va %llx ret_val %d\n",
 		       guest_va, *monitor_va, ret_val);
 	}
 

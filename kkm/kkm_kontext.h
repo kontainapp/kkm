@@ -208,6 +208,7 @@ int kkm_process_syscall(struct kkm_kontext *kkm_kontext,
 			struct kkm_guest_area *ga, struct kkm_run *kkm_run);
 
 bool kkm_guest_va_to_monitor_va(struct kkm_kontext *kkm_kontext,
-				uint64_t guest_va, uint64_t *monitor_va);
+				uint64_t guest_va, uint64_t *monitor_va,
+				bool *priv_area);
 
 #endif /* KKM_KONTEXT_H__ */

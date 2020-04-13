@@ -172,5 +172,8 @@ int kkm_mmu_copy_kernel_pgd(uint64_t current_pgd_base, uint64_t guest_kernel_va,
 			    uint64_t guest_payload_va);
 int kkm_mmu_sync(uint64_t current_pgd_base, uint64_t guest_kernel_va,
 		 uint64_t guest_payload_va, struct kkm_mmu *guest);
+int kkm_kontext_mmu_update_priv_area(uint64_t monitor_fault_address,
+				     uint64_t current_pgd_base,
+				     struct kkm_mmu *guest);
 
 #endif /* __KKM_MMU_H__ */

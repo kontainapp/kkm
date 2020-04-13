@@ -329,3 +329,13 @@ int kkm_mmu_sync(uint64_t current_pgd_base, uint64_t guest_kernel_va,
 	 */
 	return 0;
 }
+
+int kkm_kontext_mmu_update_priv_area(uint64_t monitor_fault_address,
+				     uint64_t current_pgd_base,
+				     struct kkm_mmu *guest)
+{
+	printk(KERN_NOTICE
+	       "kkm_kontext_mmu_update_priv_area: monitor fault address %llx kernel pgd %llx guest %px\n",
+	       monitor_fault_address, current_pgd_base, guest);
+	return true;
+}
