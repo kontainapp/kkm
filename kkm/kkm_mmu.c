@@ -330,12 +330,85 @@ int kkm_mmu_sync(uint64_t current_pgd_base, uint64_t guest_kernel_va,
 	return 0;
 }
 
-int kkm_kontext_mmu_update_priv_area(uint64_t monitor_fault_address,
-				     uint64_t current_pgd_base,
-				     struct kkm_mmu *guest)
+/*
+ * walk through kernel page table to identify physical address of faulted address
+ * add to to guest kernel and payload page tables
+ */
+bool kkm_kontext_mmu_update_priv_area(uint64_t guest_fault_address,
+				      uint64_t monitor_fault_address,
+				      uint64_t current_pgd_base,
+				      struct kkm_mmu *guest)
 {
-	printk(KERN_NOTICE
-	       "kkm_kontext_mmu_update_priv_area: monitor fault address %llx kernel pgd %llx guest %px\n",
-	       monitor_fault_address, current_pgd_base, guest);
-	return true;
+	bool ret_val = true;
+	uint64_t pgd_idx = pgd_index(monitor_fault_address);
+	uint64_t pud_idx = pud_index(monitor_fault_address);
+	uint64_t pmd_idx = pmd_index(monitor_fault_address);
+	uint64_t pte_idx = pte_index(monitor_fault_address);
+	uint64_t table_va = current_pgd_base;
+	uint64_t gva_pte_idx = pte_index(guest_fault_address);
+
+	/* 4th level */
+	if (kkm_kontext_mmu_get_table_va(&table_va, pgd_idx) != true) {
+		printk(KERN_NOTICE
+		       "kkm_kontext_mmu_update_priv_area: pgd failed\n");
+		ret_val = false;
+		goto end;
+	}
+
+	/* 3rd level */
+	if (kkm_kontext_mmu_get_table_va(&table_va, pud_idx) != true) {
+		printk(KERN_NOTICE
+		       "kkm_kontext_mmu_update_priv_area: pud failed\n");
+		ret_val = false;
+		goto end;
+	}
+
+	/* 2nd level */
+	if (kkm_kontext_mmu_get_table_va(&table_va, pmd_idx) != true) {
+		printk(KERN_NOTICE
+		       "kkm_kontext_mmu_update_priv_area: pmd failed\n");
+		ret_val = false;
+		goto end;
+	}
+
+	/* final paga talbe */
+	((uint64_t *)guest->pt.va)[gva_pte_idx] =
+		((uint64_t *)table_va)[pte_idx];
+
+end:
+	if (ret_val == false) {
+		printk(KERN_NOTICE
+		       "kkm_kontext_mmu_update_priv_area: page walk failed kernel table va %llx guest address %llx pgd %llx pud %llx pmd %llx pte %llx\n",
+		       table_va, monitor_fault_address, pgd_idx, pud_idx,
+		       pmd_idx, pte_idx);
+	}
+	return ret_val;
+}
+
+bool kkm_kontext_mmu_get_table_va(uint64_t *table_va, int index)
+{
+	uint64_t entry;
+	uint64_t entry_pa;
+	uint64_t next_table_va;
+
+	/*
+	 * fetch entry from page table
+	 */
+	entry = ((uint64_t *)(*table_va))[index];
+
+	/*
+	 * get physical address of page from entry
+	 */
+	entry_pa = entry & PTE_PFN_MASK;
+
+	/*
+	 * convert physical address of page to kernel virtual address
+	 */
+	next_table_va = (uint64_t)phys_to_virt(entry_pa);
+
+	if (entry & _PAGE_PRESENT) {
+		*table_va = next_table_va;
+		return true;
+	}
+	return false;
 }

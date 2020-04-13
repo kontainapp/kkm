@@ -723,6 +723,17 @@ int kkm_process_page_fault(struct kkm_kontext *kkm_kontext,
 			}
 		}
 
+		/*
+		 * this fault is non linear map area
+		 * we need to update page tables correctly
+		 */
+		if (priv_area == true) {
+			kkm_kontext_mmu_update_priv_area(ga->sregs.cr2,
+							 monitor_fault_address,
+							 (uint64_t)kkm->mm->pgd,
+							 &kkm->kkm_guest_pml4e);
+		}
+
 		ret_val = KKM_KONTEXT_FAULT_PROCESS_DONE;
 
 		/*
@@ -731,15 +742,6 @@ int kkm_process_page_fault(struct kkm_kontext *kkm_kontext,
 		 */
 		ga->sregs.cr2 = 0;
 
-		/*
-		 * this fault is non linear map area
-		 * we need to update page tables correctly
-		 */
-		if (priv_area == true) {
-			kkm_kontext_mmu_update_priv_area(monitor_fault_address,
-							 (uint64_t)kkm->mm->pgd,
-							 &kkm->kkm_guest_pml4e);
-		}
 	}
 
 error:
