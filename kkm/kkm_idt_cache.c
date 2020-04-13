@@ -14,6 +14,7 @@
 #include <linux/slab.h>
 #include <asm/desc.h>
 #include <asm/traps.h>
+#include <asm/io.h>
 
 #include "kkm.h"
 #include "kkm_run.h"

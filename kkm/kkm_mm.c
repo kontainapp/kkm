@@ -12,6 +12,7 @@
 
 #include <linux/mm.h>
 #include <linux/log2.h>
+#include <asm/io.h>
 
 #include "kkm.h"
 #include "kkm_mm.h"

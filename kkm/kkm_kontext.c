@@ -16,6 +16,7 @@
 #include <asm/debugreg.h>
 #include <asm/cpu_entry_area.h>
 #include <asm/traps.h>
+#include <asm/io.h>
 
 #include "kkm.h"
 #include "kkm_run.h"

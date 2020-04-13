@@ -507,7 +507,7 @@ static int kkm_get_native_cpuid(unsigned long arg)
 
 	ec_entries_size =
 		sizeof(struct kkm_ec_entry) * KKM_CONTEXT_INFO_ENTRY_COUNT;
-	ec = vzalloc(ec_entries_size);
+	ec = kzalloc(ec_entries_size, GFP_KERNEL);
 	if (ec == NULL) {
 		ret_val = -ENOMEM;
 		goto error;
@@ -530,7 +530,7 @@ static int kkm_get_native_cpuid(unsigned long arg)
 		ret_val = -EFAULT;
 	}
 
-	vfree(ec);
+	kfree(ec);
 
 error:
 	return ret_val;
