@@ -27,6 +27,8 @@
 #include "kkm_guest_exit.h"
 #include "kkm_idt_cache.h"
 #include "kkm_offsets.h"
+#include "kkm_intr.h"
+#include "kkm_intr_table.h"
 
 DEFINE_PER_CPU(struct kkm_kontext *, current_kontext);
 
@@ -507,6 +509,7 @@ int kkm_process_intr(struct kkm_kontext *kkm_kontext)
 		printk(KERN_NOTICE
 		       "kkm_process_intr: unexpected exception (%llx)\n",
 		       ga->kkm_intr_no);
+		kkm_forward_intr(intr_forward_pointers[ga->kkm_intr_no]);
 		ret_val = -EOPNOTSUPP;
 		break;
 	}

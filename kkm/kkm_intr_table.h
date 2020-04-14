@@ -10,11 +10,10 @@
  * permission of Kontain Inc.
  */
 
-#ifndef __KKM_IDT_CACHE_H__
-#define __KKM_IDT_CACHE_H__
+#ifndef __KKM_INTR_TABLE_H__
+#define __KKM_INTR_TABLE_H__
 
-int kkm_idt_cache_init(void);
-void kkm_idt_cache_cleanup(void);
-int kkm_idt_get_desc(struct desc_ptr *native_desc, struct desc_ptr *guest_desc);
+extern uint64_t intr_function_pointers[NR_VECTORS];
+extern uint64_t intr_forward_pointers[NR_VECTORS];
 
-#endif /* __KKM_IDT_CACHE_H__ */
+#endif /* __KKM_INTR_TABLE_H__ */

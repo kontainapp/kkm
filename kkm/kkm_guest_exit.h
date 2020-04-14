@@ -10,8 +10,8 @@
  * permission of Kontain Inc.
  */
 
-#ifndef __KKM_INTR_H__
-#define __KKM_INTR_H__
+#ifndef __KKM_GUEST_EXIT_H__
+#define __KKM_GUEST_EXIT_H__
 
 /*
  * not defined by linux kernel
@@ -292,4 +292,4 @@ void kkm_intr_entry_253(void);
 void kkm_intr_entry_254(void);
 void kkm_intr_entry_255(void);
 
-#endif /* __KKM_INTR_H__ */
+#endif /* __KKM_GUEST_EXIT_H__ */

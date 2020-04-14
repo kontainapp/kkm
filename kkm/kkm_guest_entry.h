@@ -10,11 +10,11 @@
  * permission of Kontain Inc.
  */
 
-#ifndef __KKM_ENTRY_H__
-#define __KKM_ENTRY_H__
+#ifndef __KKM_GUEST_ENTRY_H__
+#define __KKM_GUEST_ENTRY_H__
 
 void kkm_switch_to_gk_asm(struct kkm_guest_area *ga, uint64_t stack);
 void kkm_switch_to_hk_asm(uint64_t nativer_kernel_cr3, uint64_t stack);
 void kkm_switch_to_gp_asm(struct kkm_guest_area *ga);
 
-#endif /* __KKM_ENTRY_H__ */
+#endif /* __KKM_GUEST_ENTRY_H__ */
