@@ -282,9 +282,6 @@ void kkm_guest_kernel_start_payload(struct kkm_guest_area *ga)
 	if ((ga->regs.rflags & X86_EFLAGS_IF) == 0) {
 		ga->regs.rflags |= X86_EFLAGS_IF;
 	}
-	// keep interrupts disabled till trap handlers are completely working
-	// TODO: delete this
-	ga->regs.rflags &= ~(X86_EFLAGS_IF);
 	if ((ga->regs.rflags & X86_EFLAGS_IOPL) != 0) {
 		ga->regs.rflags &= ~(X86_EFLAGS_IOPL);
 	}
@@ -506,11 +503,8 @@ int kkm_process_intr(struct kkm_kontext *kkm_kontext)
 			kkm_process_common_with_error(kkm_kontext, ga, kkm_run);
 		break;
 	default:
-		printk(KERN_NOTICE
-		       "kkm_process_intr: unexpected exception (%llx)\n",
-		       ga->kkm_intr_no);
 		kkm_forward_intr(intr_forward_pointers[ga->kkm_intr_no]);
-		ret_val = -EOPNOTSUPP;
+		ret_val = KKM_KONTEXT_FAULT_PROCESS_DONE;
 		break;
 	}
 

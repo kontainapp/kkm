@@ -36,8 +36,11 @@ kkm_forward_intr:
 	/*
 	 * equivalent of indirect call
 	 */
+	pushq	$kkm_forward_intr_ret
 	pushq	%rdi
 	retq
+
+kkm_forward_intr_ret:
 
 	popq	%r15
 	popq	%r14
