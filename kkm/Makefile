@@ -8,14 +8,17 @@
 #  information is strictly prohibited without the express written permission of
 #  Kontain Inc.
 
-KDIR ?= /lib/modules/`uname -r`/build
+TOP := $(shell git rev-parse --show-toplevel)
+CURRENT_DIR := ${TOP}/kkm
+KERNEL_VERSION := $(shell uname -r)
+KDIR ?= /lib/modules/${KERNEL_VERSION}/build
 
 default:
-	$(MAKE) -C $(KDIR) M=$(PWD)
+	$(MAKE) -C $(KDIR) M=$(CURRENT_DIR)
 	objdump -d kkm.ko > kkm.dis
 	objdump -S kkm.ko > kkm.s.dis
 
 clean:
-	$(MAKE) -C $(KDIR) M=$(PWD) clean
+	$(MAKE) -C $(KDIR) M=$(CURRENT_DIR) clean
 	rm -f kkm.dis
 	rm -f kkm.s.dis
