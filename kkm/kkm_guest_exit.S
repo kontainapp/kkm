@@ -34,7 +34,7 @@
 	.align 16
 	.global kkm_intr_entry_0
 kkm_intr_entry_0:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$0
@@ -44,7 +44,7 @@ kkm_intr_entry_0:
 	.align 16
 	.global kkm_intr_entry_1
 kkm_intr_entry_1:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$1
@@ -54,7 +54,7 @@ kkm_intr_entry_1:
 	.align 16
 	.global kkm_intr_entry_2
 kkm_intr_entry_2:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$2
@@ -64,7 +64,7 @@ kkm_intr_entry_2:
 	.align 16
 	.global kkm_intr_entry_3
 kkm_intr_entry_3:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$3
@@ -74,7 +74,7 @@ kkm_intr_entry_3:
 	.align 16
 	.global kkm_intr_entry_4
 kkm_intr_entry_4:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$4
@@ -84,7 +84,7 @@ kkm_intr_entry_4:
 	.align 16
 	.global kkm_intr_entry_5
 kkm_intr_entry_5:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$5
@@ -94,7 +94,7 @@ kkm_intr_entry_5:
 	.align 16
 	.global kkm_intr_entry_6
 kkm_intr_entry_6:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$6
@@ -104,7 +104,7 @@ kkm_intr_entry_6:
 	.align 16
 	.global kkm_intr_entry_7
 kkm_intr_entry_7:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$7
@@ -114,7 +114,7 @@ kkm_intr_entry_7:
 	.align 16
 	.global kkm_intr_entry_8
 kkm_intr_entry_8:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$8
@@ -124,7 +124,7 @@ kkm_intr_entry_8:
 	.align 16
 	.global kkm_intr_entry_9
 kkm_intr_entry_9:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$9
@@ -134,7 +134,7 @@ kkm_intr_entry_9:
 	.align 16
 	.global kkm_intr_entry_10
 kkm_intr_entry_10:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$10
@@ -144,7 +144,7 @@ kkm_intr_entry_10:
 	.align 16
 	.global kkm_intr_entry_11
 kkm_intr_entry_11:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$11
@@ -154,7 +154,7 @@ kkm_intr_entry_11:
 	.align 16
 	.global kkm_intr_entry_12
 kkm_intr_entry_12:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$12
@@ -164,7 +164,7 @@ kkm_intr_entry_12:
 	.align 16
 	.global kkm_intr_entry_13
 kkm_intr_entry_13:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$13
@@ -174,7 +174,7 @@ kkm_intr_entry_13:
 	.align 16
 	.global kkm_intr_entry_14
 kkm_intr_entry_14:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$14
@@ -184,7 +184,7 @@ kkm_intr_entry_14:
 	.align 16
 	.global kkm_intr_entry_15
 kkm_intr_entry_15:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$15
@@ -194,7 +194,7 @@ kkm_intr_entry_15:
 	.align 16
 	.global kkm_intr_entry_16
 kkm_intr_entry_16:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$16
@@ -204,7 +204,7 @@ kkm_intr_entry_16:
 	.align 16
 	.global kkm_intr_entry_17
 kkm_intr_entry_17:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$17
@@ -214,7 +214,7 @@ kkm_intr_entry_17:
 	.align 16
 	.global kkm_intr_entry_18
 kkm_intr_entry_18:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$18
@@ -224,7 +224,7 @@ kkm_intr_entry_18:
 	.align 16
 	.global kkm_intr_entry_19
 kkm_intr_entry_19:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$19
@@ -234,7 +234,7 @@ kkm_intr_entry_19:
 	.align 16
 	.global kkm_intr_entry_20
 kkm_intr_entry_20:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$20
@@ -244,7 +244,7 @@ kkm_intr_entry_20:
 	.align 16
 	.global kkm_intr_entry_21
 kkm_intr_entry_21:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$21
@@ -254,7 +254,7 @@ kkm_intr_entry_21:
 	.align 16
 	.global kkm_intr_entry_22
 kkm_intr_entry_22:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$22
@@ -264,7 +264,7 @@ kkm_intr_entry_22:
 	.align 16
 	.global kkm_intr_entry_23
 kkm_intr_entry_23:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$23
@@ -274,7 +274,7 @@ kkm_intr_entry_23:
 	.align 16
 	.global kkm_intr_entry_24
 kkm_intr_entry_24:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$24
@@ -284,7 +284,7 @@ kkm_intr_entry_24:
 	.align 16
 	.global kkm_intr_entry_25
 kkm_intr_entry_25:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$25
@@ -294,7 +294,7 @@ kkm_intr_entry_25:
 	.align 16
 	.global kkm_intr_entry_26
 kkm_intr_entry_26:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$26
@@ -304,7 +304,7 @@ kkm_intr_entry_26:
 	.align 16
 	.global kkm_intr_entry_27
 kkm_intr_entry_27:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$27
@@ -314,7 +314,7 @@ kkm_intr_entry_27:
 	.align 16
 	.global kkm_intr_entry_28
 kkm_intr_entry_28:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$28
@@ -324,7 +324,7 @@ kkm_intr_entry_28:
 	.align 16
 	.global kkm_intr_entry_29
 kkm_intr_entry_29:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$29
@@ -334,7 +334,7 @@ kkm_intr_entry_29:
 	.align 16
 	.global kkm_intr_entry_30
 kkm_intr_entry_30:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$30
@@ -344,7 +344,7 @@ kkm_intr_entry_30:
 	.align 16
 	.global kkm_intr_entry_31
 kkm_intr_entry_31:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$31
@@ -354,7 +354,7 @@ kkm_intr_entry_31:
 	.align 16
 	.global kkm_intr_entry_32
 kkm_intr_entry_32:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$32
@@ -364,7 +364,7 @@ kkm_intr_entry_32:
 	.align 16
 	.global kkm_intr_entry_33
 kkm_intr_entry_33:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$33
@@ -374,7 +374,7 @@ kkm_intr_entry_33:
 	.align 16
 	.global kkm_intr_entry_34
 kkm_intr_entry_34:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$34
@@ -384,7 +384,7 @@ kkm_intr_entry_34:
 	.align 16
 	.global kkm_intr_entry_35
 kkm_intr_entry_35:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$35
@@ -394,7 +394,7 @@ kkm_intr_entry_35:
 	.align 16
 	.global kkm_intr_entry_36
 kkm_intr_entry_36:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$36
@@ -404,7 +404,7 @@ kkm_intr_entry_36:
 	.align 16
 	.global kkm_intr_entry_37
 kkm_intr_entry_37:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$37
@@ -414,7 +414,7 @@ kkm_intr_entry_37:
 	.align 16
 	.global kkm_intr_entry_38
 kkm_intr_entry_38:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$38
@@ -424,7 +424,7 @@ kkm_intr_entry_38:
 	.align 16
 	.global kkm_intr_entry_39
 kkm_intr_entry_39:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$39
@@ -434,7 +434,7 @@ kkm_intr_entry_39:
 	.align 16
 	.global kkm_intr_entry_40
 kkm_intr_entry_40:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$40
@@ -444,7 +444,7 @@ kkm_intr_entry_40:
 	.align 16
 	.global kkm_intr_entry_41
 kkm_intr_entry_41:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$41
@@ -454,7 +454,7 @@ kkm_intr_entry_41:
 	.align 16
 	.global kkm_intr_entry_42
 kkm_intr_entry_42:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$42
@@ -464,7 +464,7 @@ kkm_intr_entry_42:
 	.align 16
 	.global kkm_intr_entry_43
 kkm_intr_entry_43:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$43
@@ -474,7 +474,7 @@ kkm_intr_entry_43:
 	.align 16
 	.global kkm_intr_entry_44
 kkm_intr_entry_44:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$44
@@ -484,7 +484,7 @@ kkm_intr_entry_44:
 	.align 16
 	.global kkm_intr_entry_45
 kkm_intr_entry_45:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$45
@@ -494,7 +494,7 @@ kkm_intr_entry_45:
 	.align 16
 	.global kkm_intr_entry_46
 kkm_intr_entry_46:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$46
@@ -504,7 +504,7 @@ kkm_intr_entry_46:
 	.align 16
 	.global kkm_intr_entry_47
 kkm_intr_entry_47:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$47
@@ -514,7 +514,7 @@ kkm_intr_entry_47:
 	.align 16
 	.global kkm_intr_entry_48
 kkm_intr_entry_48:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$48
@@ -524,7 +524,7 @@ kkm_intr_entry_48:
 	.align 16
 	.global kkm_intr_entry_49
 kkm_intr_entry_49:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$49
@@ -534,7 +534,7 @@ kkm_intr_entry_49:
 	.align 16
 	.global kkm_intr_entry_50
 kkm_intr_entry_50:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$50
@@ -544,7 +544,7 @@ kkm_intr_entry_50:
 	.align 16
 	.global kkm_intr_entry_51
 kkm_intr_entry_51:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$51
@@ -554,7 +554,7 @@ kkm_intr_entry_51:
 	.align 16
 	.global kkm_intr_entry_52
 kkm_intr_entry_52:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$52
@@ -564,7 +564,7 @@ kkm_intr_entry_52:
 	.align 16
 	.global kkm_intr_entry_53
 kkm_intr_entry_53:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$53
@@ -574,7 +574,7 @@ kkm_intr_entry_53:
 	.align 16
 	.global kkm_intr_entry_54
 kkm_intr_entry_54:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$54
@@ -584,7 +584,7 @@ kkm_intr_entry_54:
 	.align 16
 	.global kkm_intr_entry_55
 kkm_intr_entry_55:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$55
@@ -594,7 +594,7 @@ kkm_intr_entry_55:
 	.align 16
 	.global kkm_intr_entry_56
 kkm_intr_entry_56:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$56
@@ -604,7 +604,7 @@ kkm_intr_entry_56:
 	.align 16
 	.global kkm_intr_entry_57
 kkm_intr_entry_57:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$57
@@ -614,7 +614,7 @@ kkm_intr_entry_57:
 	.align 16
 	.global kkm_intr_entry_58
 kkm_intr_entry_58:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$58
@@ -624,7 +624,7 @@ kkm_intr_entry_58:
 	.align 16
 	.global kkm_intr_entry_59
 kkm_intr_entry_59:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$59
@@ -634,7 +634,7 @@ kkm_intr_entry_59:
 	.align 16
 	.global kkm_intr_entry_60
 kkm_intr_entry_60:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$60
@@ -644,7 +644,7 @@ kkm_intr_entry_60:
 	.align 16
 	.global kkm_intr_entry_61
 kkm_intr_entry_61:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$61
@@ -654,7 +654,7 @@ kkm_intr_entry_61:
 	.align 16
 	.global kkm_intr_entry_62
 kkm_intr_entry_62:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$62
@@ -664,7 +664,7 @@ kkm_intr_entry_62:
 	.align 16
 	.global kkm_intr_entry_63
 kkm_intr_entry_63:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$63
@@ -674,7 +674,7 @@ kkm_intr_entry_63:
 	.align 16
 	.global kkm_intr_entry_64
 kkm_intr_entry_64:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$64
@@ -684,7 +684,7 @@ kkm_intr_entry_64:
 	.align 16
 	.global kkm_intr_entry_65
 kkm_intr_entry_65:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$65
@@ -694,7 +694,7 @@ kkm_intr_entry_65:
 	.align 16
 	.global kkm_intr_entry_66
 kkm_intr_entry_66:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$66
@@ -704,7 +704,7 @@ kkm_intr_entry_66:
 	.align 16
 	.global kkm_intr_entry_67
 kkm_intr_entry_67:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$67
@@ -714,7 +714,7 @@ kkm_intr_entry_67:
 	.align 16
 	.global kkm_intr_entry_68
 kkm_intr_entry_68:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$68
@@ -724,7 +724,7 @@ kkm_intr_entry_68:
 	.align 16
 	.global kkm_intr_entry_69
 kkm_intr_entry_69:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$69
@@ -734,7 +734,7 @@ kkm_intr_entry_69:
 	.align 16
 	.global kkm_intr_entry_70
 kkm_intr_entry_70:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$70
@@ -744,7 +744,7 @@ kkm_intr_entry_70:
 	.align 16
 	.global kkm_intr_entry_71
 kkm_intr_entry_71:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$71
@@ -754,7 +754,7 @@ kkm_intr_entry_71:
 	.align 16
 	.global kkm_intr_entry_72
 kkm_intr_entry_72:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$72
@@ -764,7 +764,7 @@ kkm_intr_entry_72:
 	.align 16
 	.global kkm_intr_entry_73
 kkm_intr_entry_73:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$73
@@ -774,7 +774,7 @@ kkm_intr_entry_73:
 	.align 16
 	.global kkm_intr_entry_74
 kkm_intr_entry_74:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$74
@@ -784,7 +784,7 @@ kkm_intr_entry_74:
 	.align 16
 	.global kkm_intr_entry_75
 kkm_intr_entry_75:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$75
@@ -794,7 +794,7 @@ kkm_intr_entry_75:
 	.align 16
 	.global kkm_intr_entry_76
 kkm_intr_entry_76:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$76
@@ -804,7 +804,7 @@ kkm_intr_entry_76:
 	.align 16
 	.global kkm_intr_entry_77
 kkm_intr_entry_77:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$77
@@ -814,7 +814,7 @@ kkm_intr_entry_77:
 	.align 16
 	.global kkm_intr_entry_78
 kkm_intr_entry_78:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$78
@@ -824,7 +824,7 @@ kkm_intr_entry_78:
 	.align 16
 	.global kkm_intr_entry_79
 kkm_intr_entry_79:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$79
@@ -834,7 +834,7 @@ kkm_intr_entry_79:
 	.align 16
 	.global kkm_intr_entry_80
 kkm_intr_entry_80:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$80
@@ -844,7 +844,7 @@ kkm_intr_entry_80:
 	.align 16
 	.global kkm_intr_entry_81
 kkm_intr_entry_81:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$81
@@ -854,7 +854,7 @@ kkm_intr_entry_81:
 	.align 16
 	.global kkm_intr_entry_82
 kkm_intr_entry_82:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$82
@@ -864,7 +864,7 @@ kkm_intr_entry_82:
 	.align 16
 	.global kkm_intr_entry_83
 kkm_intr_entry_83:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$83
@@ -874,7 +874,7 @@ kkm_intr_entry_83:
 	.align 16
 	.global kkm_intr_entry_84
 kkm_intr_entry_84:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$84
@@ -884,7 +884,7 @@ kkm_intr_entry_84:
 	.align 16
 	.global kkm_intr_entry_85
 kkm_intr_entry_85:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$85
@@ -894,7 +894,7 @@ kkm_intr_entry_85:
 	.align 16
 	.global kkm_intr_entry_86
 kkm_intr_entry_86:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$86
@@ -904,7 +904,7 @@ kkm_intr_entry_86:
 	.align 16
 	.global kkm_intr_entry_87
 kkm_intr_entry_87:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$87
@@ -914,7 +914,7 @@ kkm_intr_entry_87:
 	.align 16
 	.global kkm_intr_entry_88
 kkm_intr_entry_88:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$88
@@ -924,7 +924,7 @@ kkm_intr_entry_88:
 	.align 16
 	.global kkm_intr_entry_89
 kkm_intr_entry_89:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$89
@@ -934,7 +934,7 @@ kkm_intr_entry_89:
 	.align 16
 	.global kkm_intr_entry_90
 kkm_intr_entry_90:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$90
@@ -944,7 +944,7 @@ kkm_intr_entry_90:
 	.align 16
 	.global kkm_intr_entry_91
 kkm_intr_entry_91:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$91
@@ -954,7 +954,7 @@ kkm_intr_entry_91:
 	.align 16
 	.global kkm_intr_entry_92
 kkm_intr_entry_92:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$92
@@ -964,7 +964,7 @@ kkm_intr_entry_92:
 	.align 16
 	.global kkm_intr_entry_93
 kkm_intr_entry_93:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$93
@@ -974,7 +974,7 @@ kkm_intr_entry_93:
 	.align 16
 	.global kkm_intr_entry_94
 kkm_intr_entry_94:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$94
@@ -984,7 +984,7 @@ kkm_intr_entry_94:
 	.align 16
 	.global kkm_intr_entry_95
 kkm_intr_entry_95:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$95
@@ -994,7 +994,7 @@ kkm_intr_entry_95:
 	.align 16
 	.global kkm_intr_entry_96
 kkm_intr_entry_96:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$96
@@ -1004,7 +1004,7 @@ kkm_intr_entry_96:
 	.align 16
 	.global kkm_intr_entry_97
 kkm_intr_entry_97:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$97
@@ -1014,7 +1014,7 @@ kkm_intr_entry_97:
 	.align 16
 	.global kkm_intr_entry_98
 kkm_intr_entry_98:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$98
@@ -1024,7 +1024,7 @@ kkm_intr_entry_98:
 	.align 16
 	.global kkm_intr_entry_99
 kkm_intr_entry_99:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$99
@@ -1034,7 +1034,7 @@ kkm_intr_entry_99:
 	.align 16
 	.global kkm_intr_entry_100
 kkm_intr_entry_100:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$100
@@ -1044,7 +1044,7 @@ kkm_intr_entry_100:
 	.align 16
 	.global kkm_intr_entry_101
 kkm_intr_entry_101:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$101
@@ -1054,7 +1054,7 @@ kkm_intr_entry_101:
 	.align 16
 	.global kkm_intr_entry_102
 kkm_intr_entry_102:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$102
@@ -1064,7 +1064,7 @@ kkm_intr_entry_102:
 	.align 16
 	.global kkm_intr_entry_103
 kkm_intr_entry_103:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$103
@@ -1074,7 +1074,7 @@ kkm_intr_entry_103:
 	.align 16
 	.global kkm_intr_entry_104
 kkm_intr_entry_104:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$104
@@ -1084,7 +1084,7 @@ kkm_intr_entry_104:
 	.align 16
 	.global kkm_intr_entry_105
 kkm_intr_entry_105:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$105
@@ -1094,7 +1094,7 @@ kkm_intr_entry_105:
 	.align 16
 	.global kkm_intr_entry_106
 kkm_intr_entry_106:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$106
@@ -1104,7 +1104,7 @@ kkm_intr_entry_106:
 	.align 16
 	.global kkm_intr_entry_107
 kkm_intr_entry_107:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$107
@@ -1114,7 +1114,7 @@ kkm_intr_entry_107:
 	.align 16
 	.global kkm_intr_entry_108
 kkm_intr_entry_108:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$108
@@ -1124,7 +1124,7 @@ kkm_intr_entry_108:
 	.align 16
 	.global kkm_intr_entry_109
 kkm_intr_entry_109:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$109
@@ -1134,7 +1134,7 @@ kkm_intr_entry_109:
 	.align 16
 	.global kkm_intr_entry_110
 kkm_intr_entry_110:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$110
@@ -1144,7 +1144,7 @@ kkm_intr_entry_110:
 	.align 16
 	.global kkm_intr_entry_111
 kkm_intr_entry_111:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$111
@@ -1154,7 +1154,7 @@ kkm_intr_entry_111:
 	.align 16
 	.global kkm_intr_entry_112
 kkm_intr_entry_112:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$112
@@ -1164,7 +1164,7 @@ kkm_intr_entry_112:
 	.align 16
 	.global kkm_intr_entry_113
 kkm_intr_entry_113:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$113
@@ -1174,7 +1174,7 @@ kkm_intr_entry_113:
 	.align 16
 	.global kkm_intr_entry_114
 kkm_intr_entry_114:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$114
@@ -1184,7 +1184,7 @@ kkm_intr_entry_114:
 	.align 16
 	.global kkm_intr_entry_115
 kkm_intr_entry_115:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$115
@@ -1194,7 +1194,7 @@ kkm_intr_entry_115:
 	.align 16
 	.global kkm_intr_entry_116
 kkm_intr_entry_116:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$116
@@ -1204,7 +1204,7 @@ kkm_intr_entry_116:
 	.align 16
 	.global kkm_intr_entry_117
 kkm_intr_entry_117:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$117
@@ -1214,7 +1214,7 @@ kkm_intr_entry_117:
 	.align 16
 	.global kkm_intr_entry_118
 kkm_intr_entry_118:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$118
@@ -1224,7 +1224,7 @@ kkm_intr_entry_118:
 	.align 16
 	.global kkm_intr_entry_119
 kkm_intr_entry_119:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$119
@@ -1234,7 +1234,7 @@ kkm_intr_entry_119:
 	.align 16
 	.global kkm_intr_entry_120
 kkm_intr_entry_120:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$120
@@ -1244,7 +1244,7 @@ kkm_intr_entry_120:
 	.align 16
 	.global kkm_intr_entry_121
 kkm_intr_entry_121:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$121
@@ -1254,7 +1254,7 @@ kkm_intr_entry_121:
 	.align 16
 	.global kkm_intr_entry_122
 kkm_intr_entry_122:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$122
@@ -1264,7 +1264,7 @@ kkm_intr_entry_122:
 	.align 16
 	.global kkm_intr_entry_123
 kkm_intr_entry_123:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$123
@@ -1274,7 +1274,7 @@ kkm_intr_entry_123:
 	.align 16
 	.global kkm_intr_entry_124
 kkm_intr_entry_124:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$124
@@ -1284,7 +1284,7 @@ kkm_intr_entry_124:
 	.align 16
 	.global kkm_intr_entry_125
 kkm_intr_entry_125:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$125
@@ -1294,7 +1294,7 @@ kkm_intr_entry_125:
 	.align 16
 	.global kkm_intr_entry_126
 kkm_intr_entry_126:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$126
@@ -1304,7 +1304,7 @@ kkm_intr_entry_126:
 	.align 16
 	.global kkm_intr_entry_127
 kkm_intr_entry_127:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$127
@@ -1314,7 +1314,7 @@ kkm_intr_entry_127:
 	.align 16
 	.global kkm_intr_entry_128
 kkm_intr_entry_128:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$128
@@ -1324,7 +1324,7 @@ kkm_intr_entry_128:
 	.align 16
 	.global kkm_intr_entry_129
 kkm_intr_entry_129:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$129
@@ -1334,7 +1334,7 @@ kkm_intr_entry_129:
 	.align 16
 	.global kkm_intr_entry_130
 kkm_intr_entry_130:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$130
@@ -1344,7 +1344,7 @@ kkm_intr_entry_130:
 	.align 16
 	.global kkm_intr_entry_131
 kkm_intr_entry_131:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$131
@@ -1354,7 +1354,7 @@ kkm_intr_entry_131:
 	.align 16
 	.global kkm_intr_entry_132
 kkm_intr_entry_132:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$132
@@ -1364,7 +1364,7 @@ kkm_intr_entry_132:
 	.align 16
 	.global kkm_intr_entry_133
 kkm_intr_entry_133:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$133
@@ -1374,7 +1374,7 @@ kkm_intr_entry_133:
 	.align 16
 	.global kkm_intr_entry_134
 kkm_intr_entry_134:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$134
@@ -1384,7 +1384,7 @@ kkm_intr_entry_134:
 	.align 16
 	.global kkm_intr_entry_135
 kkm_intr_entry_135:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$135
@@ -1394,7 +1394,7 @@ kkm_intr_entry_135:
 	.align 16
 	.global kkm_intr_entry_136
 kkm_intr_entry_136:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$136
@@ -1404,7 +1404,7 @@ kkm_intr_entry_136:
 	.align 16
 	.global kkm_intr_entry_137
 kkm_intr_entry_137:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$137
@@ -1414,7 +1414,7 @@ kkm_intr_entry_137:
 	.align 16
 	.global kkm_intr_entry_138
 kkm_intr_entry_138:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$138
@@ -1424,7 +1424,7 @@ kkm_intr_entry_138:
 	.align 16
 	.global kkm_intr_entry_139
 kkm_intr_entry_139:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$139
@@ -1434,7 +1434,7 @@ kkm_intr_entry_139:
 	.align 16
 	.global kkm_intr_entry_140
 kkm_intr_entry_140:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$140
@@ -1444,7 +1444,7 @@ kkm_intr_entry_140:
 	.align 16
 	.global kkm_intr_entry_141
 kkm_intr_entry_141:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$141
@@ -1454,7 +1454,7 @@ kkm_intr_entry_141:
 	.align 16
 	.global kkm_intr_entry_142
 kkm_intr_entry_142:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$142
@@ -1464,7 +1464,7 @@ kkm_intr_entry_142:
 	.align 16
 	.global kkm_intr_entry_143
 kkm_intr_entry_143:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$143
@@ -1474,7 +1474,7 @@ kkm_intr_entry_143:
 	.align 16
 	.global kkm_intr_entry_144
 kkm_intr_entry_144:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$144
@@ -1484,7 +1484,7 @@ kkm_intr_entry_144:
 	.align 16
 	.global kkm_intr_entry_145
 kkm_intr_entry_145:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$145
@@ -1494,7 +1494,7 @@ kkm_intr_entry_145:
 	.align 16
 	.global kkm_intr_entry_146
 kkm_intr_entry_146:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$146
@@ -1504,7 +1504,7 @@ kkm_intr_entry_146:
 	.align 16
 	.global kkm_intr_entry_147
 kkm_intr_entry_147:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$147
@@ -1514,7 +1514,7 @@ kkm_intr_entry_147:
 	.align 16
 	.global kkm_intr_entry_148
 kkm_intr_entry_148:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$148
@@ -1524,7 +1524,7 @@ kkm_intr_entry_148:
 	.align 16
 	.global kkm_intr_entry_149
 kkm_intr_entry_149:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$149
@@ -1534,7 +1534,7 @@ kkm_intr_entry_149:
 	.align 16
 	.global kkm_intr_entry_150
 kkm_intr_entry_150:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$150
@@ -1544,7 +1544,7 @@ kkm_intr_entry_150:
 	.align 16
 	.global kkm_intr_entry_151
 kkm_intr_entry_151:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$151
@@ -1554,7 +1554,7 @@ kkm_intr_entry_151:
 	.align 16
 	.global kkm_intr_entry_152
 kkm_intr_entry_152:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$152
@@ -1564,7 +1564,7 @@ kkm_intr_entry_152:
 	.align 16
 	.global kkm_intr_entry_153
 kkm_intr_entry_153:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$153
@@ -1574,7 +1574,7 @@ kkm_intr_entry_153:
 	.align 16
 	.global kkm_intr_entry_154
 kkm_intr_entry_154:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$154
@@ -1584,7 +1584,7 @@ kkm_intr_entry_154:
 	.align 16
 	.global kkm_intr_entry_155
 kkm_intr_entry_155:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$155
@@ -1594,7 +1594,7 @@ kkm_intr_entry_155:
 	.align 16
 	.global kkm_intr_entry_156
 kkm_intr_entry_156:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$156
@@ -1604,7 +1604,7 @@ kkm_intr_entry_156:
 	.align 16
 	.global kkm_intr_entry_157
 kkm_intr_entry_157:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$157
@@ -1614,7 +1614,7 @@ kkm_intr_entry_157:
 	.align 16
 	.global kkm_intr_entry_158
 kkm_intr_entry_158:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$158
@@ -1624,7 +1624,7 @@ kkm_intr_entry_158:
 	.align 16
 	.global kkm_intr_entry_159
 kkm_intr_entry_159:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$159
@@ -1634,7 +1634,7 @@ kkm_intr_entry_159:
 	.align 16
 	.global kkm_intr_entry_160
 kkm_intr_entry_160:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$160
@@ -1644,7 +1644,7 @@ kkm_intr_entry_160:
 	.align 16
 	.global kkm_intr_entry_161
 kkm_intr_entry_161:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$161
@@ -1654,7 +1654,7 @@ kkm_intr_entry_161:
 	.align 16
 	.global kkm_intr_entry_162
 kkm_intr_entry_162:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$162
@@ -1664,7 +1664,7 @@ kkm_intr_entry_162:
 	.align 16
 	.global kkm_intr_entry_163
 kkm_intr_entry_163:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$163
@@ -1674,7 +1674,7 @@ kkm_intr_entry_163:
 	.align 16
 	.global kkm_intr_entry_164
 kkm_intr_entry_164:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$164
@@ -1684,7 +1684,7 @@ kkm_intr_entry_164:
 	.align 16
 	.global kkm_intr_entry_165
 kkm_intr_entry_165:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$165
@@ -1694,7 +1694,7 @@ kkm_intr_entry_165:
 	.align 16
 	.global kkm_intr_entry_166
 kkm_intr_entry_166:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$166
@@ -1704,7 +1704,7 @@ kkm_intr_entry_166:
 	.align 16
 	.global kkm_intr_entry_167
 kkm_intr_entry_167:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$167
@@ -1714,7 +1714,7 @@ kkm_intr_entry_167:
 	.align 16
 	.global kkm_intr_entry_168
 kkm_intr_entry_168:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$168
@@ -1724,7 +1724,7 @@ kkm_intr_entry_168:
 	.align 16
 	.global kkm_intr_entry_169
 kkm_intr_entry_169:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$169
@@ -1734,7 +1734,7 @@ kkm_intr_entry_169:
 	.align 16
 	.global kkm_intr_entry_170
 kkm_intr_entry_170:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$170
@@ -1744,7 +1744,7 @@ kkm_intr_entry_170:
 	.align 16
 	.global kkm_intr_entry_171
 kkm_intr_entry_171:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$171
@@ -1754,7 +1754,7 @@ kkm_intr_entry_171:
 	.align 16
 	.global kkm_intr_entry_172
 kkm_intr_entry_172:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$172
@@ -1764,7 +1764,7 @@ kkm_intr_entry_172:
 	.align 16
 	.global kkm_intr_entry_173
 kkm_intr_entry_173:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$173
@@ -1774,7 +1774,7 @@ kkm_intr_entry_173:
 	.align 16
 	.global kkm_intr_entry_174
 kkm_intr_entry_174:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$174
@@ -1784,7 +1784,7 @@ kkm_intr_entry_174:
 	.align 16
 	.global kkm_intr_entry_175
 kkm_intr_entry_175:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$175
@@ -1794,7 +1794,7 @@ kkm_intr_entry_175:
 	.align 16
 	.global kkm_intr_entry_176
 kkm_intr_entry_176:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$176
@@ -1804,7 +1804,7 @@ kkm_intr_entry_176:
 	.align 16
 	.global kkm_intr_entry_177
 kkm_intr_entry_177:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$177
@@ -1814,7 +1814,7 @@ kkm_intr_entry_177:
 	.align 16
 	.global kkm_intr_entry_178
 kkm_intr_entry_178:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$178
@@ -1824,7 +1824,7 @@ kkm_intr_entry_178:
 	.align 16
 	.global kkm_intr_entry_179
 kkm_intr_entry_179:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$179
@@ -1834,7 +1834,7 @@ kkm_intr_entry_179:
 	.align 16
 	.global kkm_intr_entry_180
 kkm_intr_entry_180:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$180
@@ -1844,7 +1844,7 @@ kkm_intr_entry_180:
 	.align 16
 	.global kkm_intr_entry_181
 kkm_intr_entry_181:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$181
@@ -1854,7 +1854,7 @@ kkm_intr_entry_181:
 	.align 16
 	.global kkm_intr_entry_182
 kkm_intr_entry_182:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$182
@@ -1864,7 +1864,7 @@ kkm_intr_entry_182:
 	.align 16
 	.global kkm_intr_entry_183
 kkm_intr_entry_183:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$183
@@ -1874,7 +1874,7 @@ kkm_intr_entry_183:
 	.align 16
 	.global kkm_intr_entry_184
 kkm_intr_entry_184:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$184
@@ -1884,7 +1884,7 @@ kkm_intr_entry_184:
 	.align 16
 	.global kkm_intr_entry_185
 kkm_intr_entry_185:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$185
@@ -1894,7 +1894,7 @@ kkm_intr_entry_185:
 	.align 16
 	.global kkm_intr_entry_186
 kkm_intr_entry_186:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$186
@@ -1904,7 +1904,7 @@ kkm_intr_entry_186:
 	.align 16
 	.global kkm_intr_entry_187
 kkm_intr_entry_187:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$187
@@ -1914,7 +1914,7 @@ kkm_intr_entry_187:
 	.align 16
 	.global kkm_intr_entry_188
 kkm_intr_entry_188:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$188
@@ -1924,7 +1924,7 @@ kkm_intr_entry_188:
 	.align 16
 	.global kkm_intr_entry_189
 kkm_intr_entry_189:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$189
@@ -1934,7 +1934,7 @@ kkm_intr_entry_189:
 	.align 16
 	.global kkm_intr_entry_190
 kkm_intr_entry_190:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$190
@@ -1944,7 +1944,7 @@ kkm_intr_entry_190:
 	.align 16
 	.global kkm_intr_entry_191
 kkm_intr_entry_191:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$191
@@ -1954,7 +1954,7 @@ kkm_intr_entry_191:
 	.align 16
 	.global kkm_intr_entry_192
 kkm_intr_entry_192:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$192
@@ -1964,7 +1964,7 @@ kkm_intr_entry_192:
 	.align 16
 	.global kkm_intr_entry_193
 kkm_intr_entry_193:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$193
@@ -1974,7 +1974,7 @@ kkm_intr_entry_193:
 	.align 16
 	.global kkm_intr_entry_194
 kkm_intr_entry_194:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$194
@@ -1984,7 +1984,7 @@ kkm_intr_entry_194:
 	.align 16
 	.global kkm_intr_entry_195
 kkm_intr_entry_195:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$195
@@ -1994,7 +1994,7 @@ kkm_intr_entry_195:
 	.align 16
 	.global kkm_intr_entry_196
 kkm_intr_entry_196:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$196
@@ -2004,7 +2004,7 @@ kkm_intr_entry_196:
 	.align 16
 	.global kkm_intr_entry_197
 kkm_intr_entry_197:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$197
@@ -2014,7 +2014,7 @@ kkm_intr_entry_197:
 	.align 16
 	.global kkm_intr_entry_198
 kkm_intr_entry_198:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$198
@@ -2024,7 +2024,7 @@ kkm_intr_entry_198:
 	.align 16
 	.global kkm_intr_entry_199
 kkm_intr_entry_199:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$199
@@ -2034,7 +2034,7 @@ kkm_intr_entry_199:
 	.align 16
 	.global kkm_intr_entry_200
 kkm_intr_entry_200:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$200
@@ -2044,7 +2044,7 @@ kkm_intr_entry_200:
 	.align 16
 	.global kkm_intr_entry_201
 kkm_intr_entry_201:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$201
@@ -2054,7 +2054,7 @@ kkm_intr_entry_201:
 	.align 16
 	.global kkm_intr_entry_202
 kkm_intr_entry_202:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$202
@@ -2064,7 +2064,7 @@ kkm_intr_entry_202:
 	.align 16
 	.global kkm_intr_entry_203
 kkm_intr_entry_203:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$203
@@ -2074,7 +2074,7 @@ kkm_intr_entry_203:
 	.align 16
 	.global kkm_intr_entry_204
 kkm_intr_entry_204:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$204
@@ -2084,7 +2084,7 @@ kkm_intr_entry_204:
 	.align 16
 	.global kkm_intr_entry_205
 kkm_intr_entry_205:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$205
@@ -2094,7 +2094,7 @@ kkm_intr_entry_205:
 	.align 16
 	.global kkm_intr_entry_206
 kkm_intr_entry_206:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$206
@@ -2104,7 +2104,7 @@ kkm_intr_entry_206:
 	.align 16
 	.global kkm_intr_entry_207
 kkm_intr_entry_207:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$207
@@ -2114,7 +2114,7 @@ kkm_intr_entry_207:
 	.align 16
 	.global kkm_intr_entry_208
 kkm_intr_entry_208:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$208
@@ -2124,7 +2124,7 @@ kkm_intr_entry_208:
 	.align 16
 	.global kkm_intr_entry_209
 kkm_intr_entry_209:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$209
@@ -2134,7 +2134,7 @@ kkm_intr_entry_209:
 	.align 16
 	.global kkm_intr_entry_210
 kkm_intr_entry_210:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$210
@@ -2144,7 +2144,7 @@ kkm_intr_entry_210:
 	.align 16
 	.global kkm_intr_entry_211
 kkm_intr_entry_211:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$211
@@ -2154,7 +2154,7 @@ kkm_intr_entry_211:
 	.align 16
 	.global kkm_intr_entry_212
 kkm_intr_entry_212:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$212
@@ -2164,7 +2164,7 @@ kkm_intr_entry_212:
 	.align 16
 	.global kkm_intr_entry_213
 kkm_intr_entry_213:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$213
@@ -2174,7 +2174,7 @@ kkm_intr_entry_213:
 	.align 16
 	.global kkm_intr_entry_214
 kkm_intr_entry_214:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$214
@@ -2184,7 +2184,7 @@ kkm_intr_entry_214:
 	.align 16
 	.global kkm_intr_entry_215
 kkm_intr_entry_215:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$215
@@ -2194,7 +2194,7 @@ kkm_intr_entry_215:
 	.align 16
 	.global kkm_intr_entry_216
 kkm_intr_entry_216:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$216
@@ -2204,7 +2204,7 @@ kkm_intr_entry_216:
 	.align 16
 	.global kkm_intr_entry_217
 kkm_intr_entry_217:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$217
@@ -2214,7 +2214,7 @@ kkm_intr_entry_217:
 	.align 16
 	.global kkm_intr_entry_218
 kkm_intr_entry_218:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$218
@@ -2224,7 +2224,7 @@ kkm_intr_entry_218:
 	.align 16
 	.global kkm_intr_entry_219
 kkm_intr_entry_219:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$219
@@ -2234,7 +2234,7 @@ kkm_intr_entry_219:
 	.align 16
 	.global kkm_intr_entry_220
 kkm_intr_entry_220:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$220
@@ -2244,7 +2244,7 @@ kkm_intr_entry_220:
 	.align 16
 	.global kkm_intr_entry_221
 kkm_intr_entry_221:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$221
@@ -2254,7 +2254,7 @@ kkm_intr_entry_221:
 	.align 16
 	.global kkm_intr_entry_222
 kkm_intr_entry_222:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$222
@@ -2264,7 +2264,7 @@ kkm_intr_entry_222:
 	.align 16
 	.global kkm_intr_entry_223
 kkm_intr_entry_223:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$223
@@ -2274,7 +2274,7 @@ kkm_intr_entry_223:
 	.align 16
 	.global kkm_intr_entry_224
 kkm_intr_entry_224:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$224
@@ -2284,7 +2284,7 @@ kkm_intr_entry_224:
 	.align 16
 	.global kkm_intr_entry_225
 kkm_intr_entry_225:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$225
@@ -2294,7 +2294,7 @@ kkm_intr_entry_225:
 	.align 16
 	.global kkm_intr_entry_226
 kkm_intr_entry_226:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$226
@@ -2304,7 +2304,7 @@ kkm_intr_entry_226:
 	.align 16
 	.global kkm_intr_entry_227
 kkm_intr_entry_227:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$227
@@ -2314,7 +2314,7 @@ kkm_intr_entry_227:
 	.align 16
 	.global kkm_intr_entry_228
 kkm_intr_entry_228:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$228
@@ -2324,7 +2324,7 @@ kkm_intr_entry_228:
 	.align 16
 	.global kkm_intr_entry_229
 kkm_intr_entry_229:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$229
@@ -2334,7 +2334,7 @@ kkm_intr_entry_229:
 	.align 16
 	.global kkm_intr_entry_230
 kkm_intr_entry_230:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$230
@@ -2344,7 +2344,7 @@ kkm_intr_entry_230:
 	.align 16
 	.global kkm_intr_entry_231
 kkm_intr_entry_231:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$231
@@ -2354,7 +2354,7 @@ kkm_intr_entry_231:
 	.align 16
 	.global kkm_intr_entry_232
 kkm_intr_entry_232:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$232
@@ -2364,7 +2364,7 @@ kkm_intr_entry_232:
 	.align 16
 	.global kkm_intr_entry_233
 kkm_intr_entry_233:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$233
@@ -2374,7 +2374,7 @@ kkm_intr_entry_233:
 	.align 16
 	.global kkm_intr_entry_234
 kkm_intr_entry_234:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$234
@@ -2384,7 +2384,7 @@ kkm_intr_entry_234:
 	.align 16
 	.global kkm_intr_entry_235
 kkm_intr_entry_235:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$235
@@ -2394,7 +2394,7 @@ kkm_intr_entry_235:
 	.align 16
 	.global kkm_intr_entry_236
 kkm_intr_entry_236:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$236
@@ -2404,7 +2404,7 @@ kkm_intr_entry_236:
 	.align 16
 	.global kkm_intr_entry_237
 kkm_intr_entry_237:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$237
@@ -2414,7 +2414,7 @@ kkm_intr_entry_237:
 	.align 16
 	.global kkm_intr_entry_238
 kkm_intr_entry_238:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$238
@@ -2424,7 +2424,7 @@ kkm_intr_entry_238:
 	.align 16
 	.global kkm_intr_entry_239
 kkm_intr_entry_239:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$239
@@ -2434,7 +2434,7 @@ kkm_intr_entry_239:
 	.align 16
 	.global kkm_intr_entry_240
 kkm_intr_entry_240:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$240
@@ -2444,7 +2444,7 @@ kkm_intr_entry_240:
 	.align 16
 	.global kkm_intr_entry_241
 kkm_intr_entry_241:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$241
@@ -2454,7 +2454,7 @@ kkm_intr_entry_241:
 	.align 16
 	.global kkm_intr_entry_242
 kkm_intr_entry_242:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$242
@@ -2464,7 +2464,7 @@ kkm_intr_entry_242:
 	.align 16
 	.global kkm_intr_entry_243
 kkm_intr_entry_243:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$243
@@ -2474,7 +2474,7 @@ kkm_intr_entry_243:
 	.align 16
 	.global kkm_intr_entry_244
 kkm_intr_entry_244:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$244
@@ -2484,7 +2484,7 @@ kkm_intr_entry_244:
 	.align 16
 	.global kkm_intr_entry_245
 kkm_intr_entry_245:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$245
@@ -2494,7 +2494,7 @@ kkm_intr_entry_245:
 	.align 16
 	.global kkm_intr_entry_246
 kkm_intr_entry_246:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$246
@@ -2504,7 +2504,7 @@ kkm_intr_entry_246:
 	.align 16
 	.global kkm_intr_entry_247
 kkm_intr_entry_247:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$247
@@ -2514,7 +2514,7 @@ kkm_intr_entry_247:
 	.align 16
 	.global kkm_intr_entry_248
 kkm_intr_entry_248:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$248
@@ -2524,7 +2524,7 @@ kkm_intr_entry_248:
 	.align 16
 	.global kkm_intr_entry_249
 kkm_intr_entry_249:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$249
@@ -2534,7 +2534,7 @@ kkm_intr_entry_249:
 	.align 16
 	.global kkm_intr_entry_250
 kkm_intr_entry_250:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$250
@@ -2544,7 +2544,7 @@ kkm_intr_entry_250:
 	.align 16
 	.global kkm_intr_entry_251
 kkm_intr_entry_251:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$251
@@ -2554,7 +2554,7 @@ kkm_intr_entry_251:
 	.align 16
 	.global kkm_intr_entry_252
 kkm_intr_entry_252:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$252
@@ -2564,7 +2564,7 @@ kkm_intr_entry_252:
 	.align 16
 	.global kkm_intr_entry_253
 kkm_intr_entry_253:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$253
@@ -2574,7 +2574,7 @@ kkm_intr_entry_253:
 	.align 16
 	.global kkm_intr_entry_254
 kkm_intr_entry_254:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$254
@@ -2584,7 +2584,7 @@ kkm_intr_entry_254:
 	.align 16
 	.global kkm_intr_entry_255
 kkm_intr_entry_255:
-	clac
+	/*clac*/
 	clc
 	push	$-1
 	push	$255
@@ -2761,7 +2761,7 @@ kkm_intr_entry_asm_common:
 	.align 16
 	.global kkm_intr_entry_\name
 kkm_intr_entry_\name:
-	clac
+	/*clac*/
 	clc
 	push $\num
 
