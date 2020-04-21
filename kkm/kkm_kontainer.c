@@ -71,6 +71,10 @@ int kkm_kontainer_init(struct kkm *kkm)
 		goto error;
 	}
 
+	mutex_init(&kkm->pf_lock);
+	mutex_init(&kkm->mem_lock);
+	mutex_init(&kkm->kontext_lock);
+
 error:
 	if (ret_val != 0) {
 		kkm_kontainer_cleanup(kkm);

@@ -127,6 +127,12 @@ struct kkm {
 	struct kkm_kontext kontext[KKM_MAX_CONTEXTS];
 
 	/*
+	 * page fault lock
+	 * process only one page fault per mm
+	 */
+	struct mutex pf_lock;
+
+	/*
 	 * guest kernel pml4 page
 	 */
 	struct page *guest_kernel_page;

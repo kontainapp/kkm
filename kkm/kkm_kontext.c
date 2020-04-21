@@ -222,7 +222,7 @@ begin:
 		    kkm_kontext->prev_trap_no == X86_TRAP_PF &&
 		    kkm_kontext->prev_trap_addr == kkm_kontext->trap_addr) {
 			printk(KERN_NOTICE
-			       "repeated page fault at the same address %llx\n",
+			       "kkm_kontext_switch_kernel: repeated page fault at the same address %llx\n",
 			       kkm_kontext->trap_addr);
 			goto error;
 		}
@@ -690,6 +690,8 @@ int kkm_process_page_fault(struct kkm_kontext *kkm_kontext,
 
 	kkm_kontext->trap_addr = ga->sregs.cr2;
 
+	mutex_lock(&kkm_kontext->kkm->pf_lock);
+
 	/*
 	 * convert guest address to monitor address
 	 */
@@ -750,6 +752,8 @@ error:
 		       kkm_kontext->kontext_fd, ret_val,
 		       kkm_kontext->trap_addr);
 	}
+	mutex_unlock(&kkm_kontext->kkm->pf_lock);
+
 	return ret_val;
 }
 
