@@ -218,6 +218,9 @@ begin:
 
 	ret_val = kkm_process_intr(kkm_kontext);
 	if (ret_val == KKM_KONTEXT_FAULT_PROCESS_DONE) {
+		if (ga->kkm_intr_no == LOCAL_TIMER_VECTOR) {
+			schedule();
+		}
 		if (ga->kkm_intr_no == X86_TRAP_PF &&
 		    kkm_kontext->prev_trap_no == X86_TRAP_PF &&
 		    kkm_kontext->prev_trap_addr == kkm_kontext->trap_addr) {
