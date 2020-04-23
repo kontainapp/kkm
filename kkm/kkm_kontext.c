@@ -140,6 +140,11 @@ int kkm_kontext_switch_kernel(struct kkm_kontext *kkm_kontext)
 	kkm_kontext->prev_trap_addr = -1;
 
 begin:
+	if (signal_pending(current) != 0) {
+		kkm_run->exit_reason = KKM_EXIT_UNKNOWN;
+		ret_val = -EINTR;
+		goto error;
+	}
 	ret_val = 0;
 	cpu = -1;
 
@@ -227,6 +232,7 @@ begin:
 			printk(KERN_NOTICE
 			       "kkm_kontext_switch_kernel: repeated page fault at the same address %llx\n",
 			       kkm_kontext->trap_addr);
+			ret_val = -EFAULT;
 			goto error;
 		}
 		kkm_kontext->prev_trap_no = ga->kkm_intr_no;
