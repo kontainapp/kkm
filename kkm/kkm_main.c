@@ -584,6 +584,11 @@ static int __init kkm_init(void)
 {
 	int ret_val = 0;
 
+	if (!static_cpu_has(X86_FEATURE_PTI)) {
+		printk(KERN_ERR "kkm_init: X86_FEATURE_PTI not supported.\n");
+		return -EINVAL;
+	}
+
 	/*
 	 * register /dev/kkm
 	 */
