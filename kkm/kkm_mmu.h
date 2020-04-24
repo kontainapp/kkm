@@ -124,11 +124,14 @@
  *     virtual address for stack growing down
  */
 /* bytes offset into pml4 table for 16TB(monitor guest mapping) */
-#define KKM_PGD_MONITOR_PAYLOAD_OFFSET (256)
+#define	KKM_PGD_MONITOR_PAYLOAD_ENTRY	(32)
+#define KKM_PGD_MONITOR_PAYLOAD_ENTRY_OFFSET (KKM_PGD_MONITOR_PAYLOAD_ENTRY * 8)
 /* byte offset into pml4 payload virtual address for code */
-#define KKM_PGD_GUEST_PAYLOAD_OFFSET_0 (0)
+#define KKM_PGD_GUEST_PAYLOAD_BOTTOM_ENTRY (0)
+#define KKM_PGD_GUEST_PAYLOAD_BOTTOM_ENTRY_OFFSET (KKM_PGD_GUEST_PAYLOAD_BOTTOM_ENTRY * 8)
 /* byte offset into pml4 payload virtual address for stack */
-#define KKM_PGD_GUEST_PAYLOAD_OFFSET_255 (255 * 8)
+#define KKM_PGD_GUEST_PAYLOAD_TOP_ENTRY (255)
+#define KKM_PGD_GUEST_PAYLOAD_TOP_ENTRY_OFFSET (KKM_PGD_GUEST_PAYLOAD_TOP_ENTRY * 8)
 /* one pml4 entry */
 #define KKM_PGD_PAYLOAD_SIZE (8)
 

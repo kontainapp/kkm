@@ -32,6 +32,11 @@ void kkm_mmu_cleanup(void)
 	kkm_cleanup_p4ml(&kkm_mmu);
 }
 
+static inline uint64_t kkm_mmu_entry_pa(uint64_t entry)
+{
+	return  entry & PTE_PFN_MASK;
+}
+
 /*
  * allocate pages and initialize page table hierrarchy
  */
@@ -278,18 +283,32 @@ int kkm_mmu_copy_kernel_pgd(uint64_t current_pgd_base, uint64_t guest_kernel_va,
 int kkm_mmu_sync(uint64_t current_pgd_base, uint64_t guest_kernel_va,
 		 uint64_t guest_payload_va, struct kkm_mmu *guest)
 {
-	uint64_t *pgd_pointer = NULL;
+	uint64_t native_kernel_entry = -1;
+	uint64_t guest_payload_entry = -1;
+	uint64_t new_guest_entry = -1;
+
+	native_kernel_entry = ((uint64_t *)current_pgd_base)[KKM_PGD_MONITOR_PAYLOAD_ENTRY];
+	guest_payload_entry = ((uint64_t *)guest_payload_va)[KKM_PGD_GUEST_PAYLOAD_BOTTOM_ENTRY];
+
+	/*
+	 * if entries Physical Address are same, nothing to be done
+	 */
+	if (kkm_mmu_entry_pa(native_kernel_entry) == kkm_mmu_entry_pa(guest_payload_entry)) {
+		return 0;
+	}
+
+	/*
+	 * change pml4 entry to allow execution
+	 * km code is in entry 0 and mmap'ed libraries are in entry 255
+	 */
+	new_guest_entry = native_kernel_entry & ~_PAGE_NX;
 
 	/*
 	 * keep kernel and user pgd same for payload area
 	 * entry 0 for code + data
 	 */
-	kkm_mmu_copy_range(current_pgd_base, KKM_PGD_MONITOR_PAYLOAD_OFFSET,
-			   guest_kernel_va, KKM_PGD_GUEST_PAYLOAD_OFFSET_0,
-			   KKM_PGD_PAYLOAD_SIZE);
-	kkm_mmu_copy_range(current_pgd_base, KKM_PGD_MONITOR_PAYLOAD_OFFSET,
-			   guest_payload_va, KKM_PGD_GUEST_PAYLOAD_OFFSET_0,
-			   KKM_PGD_PAYLOAD_SIZE);
+	((uint64_t *)guest_kernel_va)[KKM_PGD_GUEST_PAYLOAD_BOTTOM_ENTRY] = new_guest_entry;
+	((uint64_t *)guest_payload_va)[KKM_PGD_GUEST_PAYLOAD_BOTTOM_ENTRY] = new_guest_entry;
 
 	/*
 	 * set entry 1 for guest va(vdso, vvar + code copied from km to payload)
@@ -300,29 +319,8 @@ int kkm_mmu_sync(uint64_t current_pgd_base, uint64_t guest_kernel_va,
 	/*
 	 * entry 255 for stack + mmap
 	 */
-	kkm_mmu_copy_range(current_pgd_base, KKM_PGD_MONITOR_PAYLOAD_OFFSET,
-			   guest_kernel_va, KKM_PGD_GUEST_PAYLOAD_OFFSET_255,
-			   KKM_PGD_PAYLOAD_SIZE);
-	kkm_mmu_copy_range(current_pgd_base, KKM_PGD_MONITOR_PAYLOAD_OFFSET,
-			   guest_payload_va, KKM_PGD_GUEST_PAYLOAD_OFFSET_255,
-			   KKM_PGD_PAYLOAD_SIZE);
-
-	/*
-	 * change pml4 entry 0 to allow execution
-	 */
-	pgd_pointer = (uint64_t *)guest_payload_va;
-	if (pgd_pointer[0] & _PAGE_NX) {
-		pgd_pointer[0] &= ~_PAGE_NX;
-	}
-
-	/*
-	 * change pml4 entry 255 to allow execution
-	 * .so objects are mapped in this area
-	 */
-	pgd_pointer = (uint64_t *)guest_payload_va;
-	if (pgd_pointer[255] & _PAGE_NX) {
-		pgd_pointer[255] &= ~_PAGE_NX;
-	}
+	((uint64_t *)guest_kernel_va)[KKM_PGD_GUEST_PAYLOAD_TOP_ENTRY] = new_guest_entry;
+	((uint64_t *)guest_payload_va)[KKM_PGD_GUEST_PAYLOAD_TOP_ENTRY] = new_guest_entry;
 
 	/*
 	 * fix memory alias created
@@ -400,7 +398,7 @@ bool kkm_kontext_mmu_get_table_va(uint64_t *table_va, int index)
 	/*
 	 * get physical address of page from entry
 	 */
-	entry_pa = entry & PTE_PFN_MASK;
+	entry_pa = kkm_mmu_entry_pa(entry);
 
 	/*
 	 * convert physical address of page to kernel virtual address
