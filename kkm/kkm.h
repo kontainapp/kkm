@@ -89,9 +89,19 @@ struct kkm_kontext {
 	bool exception_posted;
 	uint64_t exception_saved_rbx;
 
+	/*
+	 * current trap info
+	 */
 	uint64_t trap_addr;
+	uint64_t error_code;
+
+	/*
+	 * paranoid entry check
+	 * save previous trap
+	 */
 	uint64_t prev_trap_no;
 	uint64_t prev_trap_addr;
+	uint64_t prev_error_code;
 };
 
 struct kkm_mem_slot {
