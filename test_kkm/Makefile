@@ -9,7 +9,7 @@
 #  Kontain Inc.
 
 test_kkm : test_kkm.c ../kkm/kkm_ioctl.h
-	gcc -g -I../kkm -o $@ $<
+	gcc -Wall -g -I../kkm -o $@ $<
 
 clean :
 	rm -f test_kkm

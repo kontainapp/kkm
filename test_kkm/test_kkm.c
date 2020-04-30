@@ -140,7 +140,7 @@ void add_memory(kkm_t *kkm)
 		perror("ioctl:");
 		goto error;
 	}
-	printf("added %x bytes of memory at userspace %llx guest phys %llx\n",
+	printf("added %lx bytes of memory at userspace %lx guest phys %lx\n",
 	       mm.memory_size, mm.userspace_addr, mm.guest_phys_addr);
 error:
 	return;
