@@ -188,7 +188,8 @@ void kkm_hw_debug_registers_restore(uint64_t *registers);
 int kkm_process_intr(struct kkm_kontext *kkm_kontext);
 void kkm_setup_hypercall(struct kkm_kontext *kkm_kontext,
 			 struct kkm_guest_area *ga, struct kkm_run *kkm_run,
-			 uint16_t port, uint32_t addr);
+			 uint16_t port, uint32_t addr,
+			 enum fault_reason reason);
 int kkm_process_common_without_error(struct kkm_kontext *kkm_kontext,
 				     struct kkm_guest_area *ga,
 				     struct kkm_run *kkm_run);

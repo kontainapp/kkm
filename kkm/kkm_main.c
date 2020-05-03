@@ -57,6 +57,7 @@ static int kkm_execution_kontext_release(struct inode *inode_p,
 					 struct file *file_p)
 {
 	struct kkm_kontext *kkm_kontext = file_p->private_data;
+	struct kkm *kkm = kkm_kontext->kkm;
 	int i = 0;
 	struct kkm_kontext_mmap_area *kkma = NULL;
 
@@ -70,7 +71,15 @@ static int kkm_execution_kontext_release(struct inode *inode_p,
 		}
 	}
 
+	kkm_kontext->used = false;
+	kkm_kontext->first_thread = false;
+
 	kkm_reference_count_down(kkm_kontext->kkm);
+
+	mutex_lock(&kkm->kontext_lock);
+	kkm->kontext_count--;
+	mutex_unlock(&kkm->kontext_lock);
+
 	return 0;
 }
 
@@ -242,6 +251,7 @@ int kkm_add_execution_kontext(struct kkm *kkm)
 	kkm_kontext = &kkm->kontext[i];
 
 	kkm_kontext->used = true;
+	kkm_kontext->first_thread = (kkm->kontext_count == 0) ? true : false;
 	kkm_kontext->task = current;
 	kkm_kontext->kkm = kkm;
 
@@ -270,6 +280,8 @@ int kkm_add_execution_kontext(struct kkm *kkm)
 	kkm_kontext_init(kkm_kontext);
 
 	kkm_reference_count_up(kkm);
+
+	kkm->kontext_count++;
 
 error:
 	mutex_unlock(&kkm->kontext_lock);

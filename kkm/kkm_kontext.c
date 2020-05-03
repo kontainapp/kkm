@@ -26,6 +26,7 @@
 #include "kkm_guest_entry.h"
 #include "kkm_guest_exit.h"
 #include "kkm_idt_cache.h"
+#include "kkm_ioctl.h"
 #include "kkm_offsets.h"
 #include "kkm_intr.h"
 #include "kkm_intr_table.h"
@@ -72,6 +73,8 @@ int kkm_kontext_init(struct kkm_kontext *kkm_kontext)
 	ga->kkm_kontext = kkm_kontext;
 	ga->guest_area_beg = (uint64_t)ga;
 
+	kkm_kontext->new_thread = true;
+
 	kkm_kontext->syscall_pending = false;
 	kkm_kontext->ret_val_mva = -1;
 
@@ -105,12 +108,28 @@ int kkm_kontext_switch_kernel(struct kkm_kontext *kkm_kontext)
 	int cpu = -1;
 	uint64_t syscall_ret_value = 0;
 	struct kkm_run *kkm_run = NULL;
+	struct kkm_private_area *pa = NULL;
 
 	ga = (struct kkm_guest_area *)kkm_kontext->guest_area;
 
 	kkm_run = (struct kkm_run *)kkm_kontext->mmap_area[0].kvaddr;
 	if (kkm_run->immediate_exit == 1) {
 		goto error;
+	}
+
+	/*
+	 * new thread, adjust stack if this is started by clone.
+	 */
+	if (kkm_kontext->new_thread == true) {
+		kkm_kontext->new_thread = false;
+		if (kkm_kontext->first_thread == false) {
+			pa = (struct kkm_private_area *)kkm_kontext
+				     ->mmap_area[1]
+				     .kvaddr;
+			if (pa->reason == FAULT_SYSCALL) {
+				ga->regs.rsp += KKM_KM_HC_ARGS_SIZE;
+			}
+		}
 	}
 
 	if (kkm_kontext->syscall_pending == true) {
@@ -525,9 +544,9 @@ int kkm_process_intr(struct kkm_kontext *kkm_kontext)
 
 void kkm_setup_hypercall(struct kkm_kontext *kkm_kontext,
 			 struct kkm_guest_area *ga, struct kkm_run *kkm_run,
-			 uint16_t port, uint32_t addr)
+			 uint16_t port, uint32_t addr, enum fault_reason reason)
 {
-	uint32_t *data_address = NULL;
+	struct kkm_private_area *pa = NULL;
 
 	kkm_run->exit_reason = KKM_EXIT_IO;
 	kkm_run->io.direction = KKM_EXIT_IO_OUT;
@@ -535,8 +554,9 @@ void kkm_setup_hypercall(struct kkm_kontext *kkm_kontext,
 	kkm_run->io.port = port | KKM_HYPERCALL_IO_PORT_BASE;
 	kkm_run->io.count = KKM_HYPERCALL_IO_COUNT;
 	kkm_run->io.data_offset = PAGE_SIZE;
-	data_address = (uint32_t *)kkm_kontext->mmap_area[1].kvaddr;
-	data_address[0] = addr;
+	pa = (struct kkm_private_area *)kkm_kontext->mmap_area[1].kvaddr;
+	pa->data = addr;
+	pa->reason = reason;
 }
 
 /*
@@ -575,7 +595,7 @@ int kkm_process_common_without_error(struct kkm_kontext *kkm_kontext,
 	}
 
 	kkm_setup_hypercall(kkm_kontext, ga, kkm_run, KKM_EXCEPTION_IO_PORT,
-			    ga->regs.rsp);
+			    ga->regs.rsp, FAULT_UNKNOWN);
 
 	kkm_kontext->exception_posted = true;
 	kkm_kontext->exception_saved_rbx = ga->regs.rbx;
@@ -623,7 +643,7 @@ int kkm_process_common_with_error(struct kkm_kontext *kkm_kontext,
 	}
 
 	kkm_setup_hypercall(kkm_kontext, ga, kkm_run, KKM_EXCEPTION_IO_PORT,
-			    ga->regs.rsp);
+			    ga->regs.rsp, FAULT_UNKNOWN);
 
 	kkm_kontext->exception_posted = true;
 	kkm_kontext->exception_saved_rbx = ga->regs.rbx;
@@ -683,7 +703,7 @@ int kkm_process_general_protection(struct kkm_kontext *kkm_kontext,
 
 	if (ga->instruction_decode[0] == KKM_OUT_OPCODE) {
 		kkm_setup_hypercall(kkm_kontext, ga, kkm_run, ga->regs.rdx,
-				    ga->regs.rax);
+				    ga->regs.rax, FAULT_HYPER_CALL);
 		ga->regs.rip += 1;
 	}
 
@@ -754,7 +774,6 @@ int kkm_process_page_fault(struct kkm_kontext *kkm_kontext,
 		 * clear fault address
 		 */
 		ga->sregs.cr2 = 0;
-
 	}
 
 error:
@@ -780,7 +799,8 @@ int kkm_process_syscall(struct kkm_kontext *kkm_kontext,
 
 	gva = ga->regs.rsp - sizeof(struct kkm_hc_args);
 
-	kkm_setup_hypercall(kkm_kontext, ga, kkm_run, ga->regs.rax, gva);
+	kkm_setup_hypercall(kkm_kontext, ga, kkm_run, ga->regs.rax, gva,
+			    FAULT_SYSCALL);
 
 	args.ret_val = 0;
 	args.argument1 = ga->regs.rdi;

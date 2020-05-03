@@ -36,15 +36,13 @@
 #define KKM_GUEST_VA_OFFSET                                                    \
 	(KKM_GUEST_MEM_TOP_VA - (KKM_GUEST_MAX_PHYS_MEM - 2 * KKM_MIB))
 
-
 /*
  * monitor mapping area for guest physical memory
  */
 #define KKM_KM_USER_MEM_BASE                                                   \
 	(0x100000000000ULL) /* keep in sync with KM_USER_MEM_BASE */
 
-
-#define	KKM_KM_GUEST_PRIVATE_MEM_START_VA	(512 * KKM_GIB)
+#define KKM_KM_GUEST_PRIVATE_MEM_START_VA (512 * KKM_GIB)
 
 /*
  * VDSO/VVAR related macros == 0x8000000000
@@ -54,6 +52,9 @@
 /*
  * == 0x8000008000
  */
-#define KKM_GUEST_KMGUESTMEM_BASE_VA (KKM_KM_GUEST_PRIVATE_MEM_START_VA + 0x8000)
+#define KKM_GUEST_KMGUESTMEM_BASE_VA                                           \
+	(KKM_KM_GUEST_PRIVATE_MEM_START_VA + 0x8000)
+
+#define KKM_KM_HC_ARGS_SIZE (56)
 
 #endif /* __KKM_EXTERNS_H__ */

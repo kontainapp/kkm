@@ -226,4 +226,15 @@ struct kkm_memory_region {
 #define KKM_MAX_CONTEXTS (64)
 #define KKM_MAX_MEMORY_SLOTS (64)
 
+enum fault_reason {
+	FAULT_UNKNOWN = 0,
+	FAULT_HYPER_CALL = 1,
+	FAULT_SYSCALL = 2,
+};
+
+struct kkm_private_area {
+	uint32_t data;
+	enum fault_reason reason;
+};
+
 #endif /* __KKM_IOCTL_H__ */

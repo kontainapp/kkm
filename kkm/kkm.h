@@ -33,6 +33,8 @@ struct kkm_kontext_mmap_area {
  */
 struct kkm_kontext {
 	bool used;
+	bool first_thread;
+	bool new_thread;
 	int kontext_fd;
 	struct task_struct
 		*task; /* kernel task associated with this kontain kontext */
