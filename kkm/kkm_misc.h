@@ -21,5 +21,7 @@ void kkm_init_guest_area_redzone(struct kkm_guest_area *ga);
 void kkm_verify_guest_area_redzone(struct kkm_guest_area *ga);
 bool kkm_verify_bytes(uint8_t *data, uint32_t count, uint8_t value);
 void kkm_show_trap_info(struct kkm_guest_area *ga);
+void kkm_show_registers(struct kkm_guest_area *ga);
+void kkm_show_guest_qwords(struct kkm_guest_area *ga, uint64_t gva, uint64_t count);
 
 #endif /* __KKM_MISC_H__ */
