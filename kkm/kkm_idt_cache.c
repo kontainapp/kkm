@@ -86,6 +86,12 @@ int kkm_idt_descr_init(void)
 	struct gate_struct *gs;
 	uint64_t intr_entry_addr = 0;
 
+	if ((&kkm_intr_fill - &kkm_intr_entry_0) >= KKM_IDT_CODE_SIZE) {
+		printk(KERN_ERR "kkm_init: kx code overflow.\n");
+		ret_val = -EINVAL;
+		goto error;
+	}
+
 	idt_entry = &kkm_idt_cache->idt_entry;
 
 	/*
@@ -220,7 +226,7 @@ int kkm_idt_cache_init(void)
 		kkm_idt_cache->desc_entries[i].inited = false;
 	}
 
-	if (kkm_idt_descr_init() != 0) {
+	if ((ret_val = kkm_idt_descr_init()) != 0) {
 		printk(KERN_NOTICE
 		       "kkm_idt_cache_init: failed to initialize idt\n");
 		goto error;
