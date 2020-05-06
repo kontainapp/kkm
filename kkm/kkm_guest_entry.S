@@ -26,6 +26,7 @@
  * we are on native kernel stack on entry and
  * guest kernel stack before calling C functions
  */
+	.align 16
 	.global kkm_switch_to_gk_asm
 kkm_switch_to_gk_asm:
 
@@ -78,6 +79,7 @@ kkm_restore_label:
  * on entry we are using guest kernel stack
  * we are on native kernel stack before returning to kernel functions
  */
+	.align 16
 	.global kkm_switch_to_hk_asm
 kkm_switch_to_hk_asm:
 
@@ -120,6 +122,7 @@ kkm_switch_to_hk_asm:
  * in the middle switch to iret stack
  * by the end of this function we are running on guest payload stack
  */
+	.align 16
 	.global kkm_switch_to_gp_asm
 kkm_switch_to_gp_asm:
 
@@ -246,4 +249,15 @@ kkm_switch_to_gp_asm:
 	iretq
 
 	.size kkm_switch_to_gp_asm, .-kkm_switch_to_gp_asm
+
+/*
+ * keep at the end of this file
+ */
+	.align 16
+	.global kkm_guest_entry_end
+
+kkm_guest_entry_end:
+	nop
+
+	.size kkm_guest_entry_end, .-kkm_guest_entry_end
 

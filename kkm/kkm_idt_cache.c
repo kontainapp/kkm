@@ -86,7 +86,15 @@ int kkm_idt_descr_init(void)
 	struct gate_struct *gs;
 	uint64_t intr_entry_addr = 0;
 
-	if ((&kkm_intr_fill - &kkm_intr_entry_0) >= KKM_IDT_CODE_SIZE) {
+	if ((((void *)&kkm_intr_fill) - ((void *)&kkm_intr_entry_0)) >=
+	    KKM_KX_INTR_CODE_SIZE) {
+		printk(KERN_ERR "kkm_init: kx code overflow.\n");
+		ret_val = -EINVAL;
+		goto error;
+	}
+
+	if ((((void *)&kkm_guest_entry_end) -
+	     ((void *)&kkm_switch_to_gp_asm)) >= KKM_KX_ENTRY_CODE_SIZE) {
 		printk(KERN_ERR "kkm_init: kx code overflow.\n");
 		ret_val = -EINVAL;
 		goto error;
@@ -191,7 +199,13 @@ int kkm_idt_descr_init(void)
 	/*
 	 * copy interrupt entry code to kx area
 	 */
-	memcpy(idt_entry->idt_text_va, kkm_intr_entry_0, KKM_IDT_CODE_SIZE);
+	memcpy(idt_entry->idt_text_va, kkm_intr_entry_0, KKM_KX_INTR_CODE_SIZE);
+
+	/*
+	 * copy guest entry code to kx area
+	 */
+	memcpy(idt_entry->idt_text_va + KKM_KX_INTR_CODE_SIZE,
+	       kkm_switch_to_gp_asm, KKM_KX_ENTRY_CODE_SIZE);
 
 	/*
 	 * clear kx global area

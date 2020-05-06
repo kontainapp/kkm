@@ -34,7 +34,7 @@ void kkm_mmu_cleanup(void)
 
 static inline uint64_t kkm_mmu_entry_pa(uint64_t entry)
 {
-	return  entry & PTE_PFN_MASK;
+	return entry & PTE_PFN_MASK;
 }
 
 /*
@@ -259,10 +259,7 @@ int kkm_mmu_copy_kernel_pgd(uint64_t current_pgd_base, uint64_t guest_kernel_va,
 	 * kernel pml4 is even page
 	 * user pml4 is odd page
 	 */
-
-	/* keep all memory map for now.
-	 * current_pgd_base += PAGE_SIZE;
-	 */
+	current_pgd_base += PAGE_SIZE;
 	kkm_mmu_copy_range(current_pgd_base, KKM_PGD_KERNEL_OFFSET,
 			   guest_payload_va, KKM_PGD_KERNEL_OFFSET,
 			   KKM_PGD_KERNEL_SIZE);
@@ -287,13 +284,17 @@ int kkm_mmu_sync(uint64_t current_pgd_base, uint64_t guest_kernel_va,
 	uint64_t guest_payload_entry = -1;
 	uint64_t new_guest_entry = -1;
 
-	native_kernel_entry = ((uint64_t *)current_pgd_base)[KKM_PGD_MONITOR_PAYLOAD_ENTRY];
-	guest_payload_entry = ((uint64_t *)guest_payload_va)[KKM_PGD_GUEST_PAYLOAD_BOTTOM_ENTRY];
+	native_kernel_entry =
+		((uint64_t *)current_pgd_base)[KKM_PGD_MONITOR_PAYLOAD_ENTRY];
+	guest_payload_entry =
+		((uint64_t *)
+			 guest_payload_va)[KKM_PGD_GUEST_PAYLOAD_BOTTOM_ENTRY];
 
 	/*
 	 * if entries Physical Address are same, nothing to be done
 	 */
-	if (kkm_mmu_entry_pa(native_kernel_entry) == kkm_mmu_entry_pa(guest_payload_entry)) {
+	if (kkm_mmu_entry_pa(native_kernel_entry) ==
+	    kkm_mmu_entry_pa(guest_payload_entry)) {
 		return 0;
 	}
 
@@ -307,8 +308,10 @@ int kkm_mmu_sync(uint64_t current_pgd_base, uint64_t guest_kernel_va,
 	 * keep kernel and user pgd same for payload area
 	 * entry 0 for code + data
 	 */
-	((uint64_t *)guest_kernel_va)[KKM_PGD_GUEST_PAYLOAD_BOTTOM_ENTRY] = new_guest_entry;
-	((uint64_t *)guest_payload_va)[KKM_PGD_GUEST_PAYLOAD_BOTTOM_ENTRY] = new_guest_entry;
+	((uint64_t *)guest_kernel_va)[KKM_PGD_GUEST_PAYLOAD_BOTTOM_ENTRY] =
+		new_guest_entry;
+	((uint64_t *)guest_payload_va)[KKM_PGD_GUEST_PAYLOAD_BOTTOM_ENTRY] =
+		new_guest_entry;
 
 	/*
 	 * set entry 1 for guest va(vdso, vvar + code copied from km to payload)
@@ -319,8 +322,10 @@ int kkm_mmu_sync(uint64_t current_pgd_base, uint64_t guest_kernel_va,
 	/*
 	 * entry 255 for stack + mmap
 	 */
-	((uint64_t *)guest_kernel_va)[KKM_PGD_GUEST_PAYLOAD_TOP_ENTRY] = new_guest_entry;
-	((uint64_t *)guest_payload_va)[KKM_PGD_GUEST_PAYLOAD_TOP_ENTRY] = new_guest_entry;
+	((uint64_t *)guest_kernel_va)[KKM_PGD_GUEST_PAYLOAD_TOP_ENTRY] =
+		new_guest_entry;
+	((uint64_t *)guest_payload_va)[KKM_PGD_GUEST_PAYLOAD_TOP_ENTRY] =
+		new_guest_entry;
 
 	/*
 	 * fix memory alias created

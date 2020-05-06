@@ -32,7 +32,9 @@
  *           --------------------  0xFFFFFE8000004000ULL
  *      RW   |  redirect addr   |
  *           --------------------  0xFFFFFE8000003000ULL
- *      RWX  |  INTR entry 8k   |
+ *      RWX  |  guest entry 2k  |
+ *           --------------------  0xFFFFFE8000002800ULL
+ *      RWX  |  INTR entry 6k   |
  *           --------------------  0xFFFFFE8000001000ULL
  *      R    |  Guest IDT       |
  *           --------------------  0xFFFFFE8000000000ULL
@@ -88,9 +90,9 @@
 #define KKM_IDT_START_VA (KKM_PRIVATE_START_VA)
 /* IDT table size */
 #define KKM_IDT_SIZE (KKM_IDT_TABLE * PAGE_SIZE)
-/* kx entry code start address */
+/* kx code start address */
 #define KKM_IDT_CODE_START_VA (KKM_IDT_START_VA + KKM_IDT_SIZE)
-/* kx entry code size */
+/* kx code size */
 #define KKM_IDT_CODE_SIZE (KKM_IDT_TEXT * PAGE_SIZE)
 /* kx global data start address */
 #define KKM_IDT_GLOBAL_START (KKM_IDT_CODE_START_VA + KKM_IDT_CODE_SIZE)
@@ -99,6 +101,27 @@
 
 /* 16 bytes is code generated for each intr entry */
 #define KKM_IDT_ENTRY_FUNCTION_SIZE (16)
+
+/*
+ * Maximum allowed kx exit code size
+ */
+#define KKM_KX_INTR_CODE_SIZE (6 * 1024)
+
+/*
+ * Maximum allowed kx entry code size
+ */
+#define KKM_KX_ENTRY_CODE_SIZE (2 * 1024)
+
+/*
+ * kx exit code start addr
+ */
+#define KKM_KX_INTR_CODE_START_ADDR (KKM_IDT_CODE_START_VA)
+
+/*
+ * kx entry code start addr
+ */
+#define KKM_KX_ENTRY_CODE_START_ADDR                                           \
+	(KKM_KX_INTR_CODE_START_ADDR + KKM_KX_INTR_CODE_SIZE)
 
 /* IDT address end */
 
@@ -124,14 +147,16 @@
  *     virtual address for stack growing down
  */
 /* bytes offset into pml4 table for 16TB(monitor guest mapping) */
-#define	KKM_PGD_MONITOR_PAYLOAD_ENTRY	(32)
+#define KKM_PGD_MONITOR_PAYLOAD_ENTRY (32)
 #define KKM_PGD_MONITOR_PAYLOAD_ENTRY_OFFSET (KKM_PGD_MONITOR_PAYLOAD_ENTRY * 8)
 /* byte offset into pml4 payload virtual address for code */
 #define KKM_PGD_GUEST_PAYLOAD_BOTTOM_ENTRY (0)
-#define KKM_PGD_GUEST_PAYLOAD_BOTTOM_ENTRY_OFFSET (KKM_PGD_GUEST_PAYLOAD_BOTTOM_ENTRY * 8)
+#define KKM_PGD_GUEST_PAYLOAD_BOTTOM_ENTRY_OFFSET                              \
+	(KKM_PGD_GUEST_PAYLOAD_BOTTOM_ENTRY * 8)
 /* byte offset into pml4 payload virtual address for stack */
 #define KKM_PGD_GUEST_PAYLOAD_TOP_ENTRY (255)
-#define KKM_PGD_GUEST_PAYLOAD_TOP_ENTRY_OFFSET (KKM_PGD_GUEST_PAYLOAD_TOP_ENTRY * 8)
+#define KKM_PGD_GUEST_PAYLOAD_TOP_ENTRY_OFFSET                                 \
+	(KKM_PGD_GUEST_PAYLOAD_TOP_ENTRY * 8)
 /* one pml4 entry */
 #define KKM_PGD_PAYLOAD_SIZE (8)
 

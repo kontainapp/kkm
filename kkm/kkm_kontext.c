@@ -34,6 +34,12 @@
 DEFINE_PER_CPU(struct kkm_kontext *, current_kontext);
 
 /*
+ * function pointer to guest payload entry code in kx area
+ */
+void (*kkm_switch_to_gp_asm_func_ptr)(struct kkm_guest_area *ga) =
+	(void (*)(struct kkm_guest_area *ga))KKM_KX_ENTRY_CODE_START_ADDR;
+
+/*
  * initialize context to execute payload
  */
 int kkm_kontext_init(struct kkm_kontext *kkm_kontext)
@@ -350,8 +356,9 @@ void kkm_guest_kernel_start_payload(struct kkm_guest_area *ga)
 
 	/*
 	 * start payload
+	 * call function in kx area
 	 */
-	kkm_switch_to_gp_asm(ga);
+	kkm_switch_to_gp_asm_func_ptr(ga);
 
 	/* NOTREACHED */
 }
