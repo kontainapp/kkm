@@ -83,6 +83,7 @@ void kkm_init_guest_area_redzone(struct kkm_guest_area *ga)
  */
 void kkm_verify_guest_area_redzone(struct kkm_guest_area *ga)
 {
+#if KKM_REDZONE_CHECK_ENABLE
 	if (kkm_verify_bytes(ga->redzone_top, GUEST_STACK_REDZONE_SIZE,
 			     REDZONE_DATA) == false) {
 		printk(KERN_NOTICE
@@ -93,6 +94,7 @@ void kkm_verify_guest_area_redzone(struct kkm_guest_area *ga)
 		printk(KERN_NOTICE
 		       "kkm_verify_guest_area_redzone: bottom rezone mismatch\n");
 	}
+#endif
 }
 
 /*

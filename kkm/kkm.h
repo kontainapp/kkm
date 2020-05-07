@@ -13,6 +13,9 @@
 #ifndef __KKM_H__
 #define __KKM_H__
 
+#define	KKM_REDZONE_CHECK_ENABLE (1)
+#define	KKM_HW_DEBUG_REG_SAVE_ENABLE (1)
+
 #include "kkm_externs.h"
 #include "kkm_ioctl.h"
 #include "kkm_mmu.h"
