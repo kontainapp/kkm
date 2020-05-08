@@ -124,61 +124,64 @@ static long kkm_execution_kontext_ioctl(struct file *file_p,
 	struct kkm_guest_area *ga =
 		(struct kkm_guest_area *)kkm_kontext->guest_area;
 
-	switch (ioctl_type) {
-	case KKM_RUN:
+	if (ioctl_type == KKM_RUN) {
 		/* switch to guest payload */
 		ret_val = kkm_run(kkm_kontext);
-		break;
-	case KKM_GET_REGS:
-		/* get guest state */
-		ret_val = kkm_to_user((void *)arg, &ga->regs,
-				      sizeof(struct kkm_regs));
-		break;
-	case KKM_SET_REGS:
-		/* set guest state */
-		ret_val = kkm_from_user(&ga->regs, (void *)arg,
-					sizeof(struct kkm_regs));
-		break;
-	case KKM_GET_SREGS:
-		/* get guest system registers and segment registers */
-		ret_val = kkm_to_user((void *)arg, &ga->sregs,
-				      sizeof(struct kkm_sregs));
-		break;
-	case KKM_SET_SREGS:
-		/* set guest system registers and segment registers */
-		ret_val = kkm_from_user(&ga->sregs, (void *)arg,
-					sizeof(struct kkm_sregs));
-		break;
-	case KKM_SET_MSRS:
-		/* return success */
-		break;
-	case KKM_GET_FPU:
-		/* get guest fpu state */
-		ret_val = kkm_to_user((void *)arg, &ga->fpu,
-				      sizeof(struct kkm_fpu));
-		break;
-	case KKM_SET_FPU:
-		/* set guest fpu state */
-		ret_val = kkm_from_user(&ga->fpu, (void *)arg,
-					sizeof(struct kkm_fpu));
-		break;
-	case KKM_SET_CPUID:
-		/* return success */
-		break;
-	case KKM_SET_DEBUG:
-		/* set guest debug state */
-		ret_val = kkm_from_user(&ga->debug, (void *)arg,
-					sizeof(struct kkm_debug));
-		/* enable save/restore of hw debug registers */
-		kkm_kontext->debug_registers_set = true;
-		break;
-	case KKM_GET_EVENTS:
-	default:
-		printk(KERN_NOTICE
-		       "kkm_execution_kontext_ioctl: unsupported ioctl_type(%x)\n",
-		       ioctl_type);
-		ret_val = -EOPNOTSUPP;
-		break;
+	} else {
+		switch (ioctl_type) {
+		case KKM_RUN:
+			break;
+		case KKM_GET_REGS:
+			/* get guest state */
+			ret_val = kkm_to_user((void *)arg, &ga->regs,
+					      sizeof(struct kkm_regs));
+			break;
+		case KKM_SET_REGS:
+			/* set guest state */
+			ret_val = kkm_from_user(&ga->regs, (void *)arg,
+						sizeof(struct kkm_regs));
+			break;
+		case KKM_GET_SREGS:
+			/* get guest system registers and segment registers */
+			ret_val = kkm_to_user((void *)arg, &ga->sregs,
+					      sizeof(struct kkm_sregs));
+			break;
+		case KKM_SET_SREGS:
+			/* set guest system registers and segment registers */
+			ret_val = kkm_from_user(&ga->sregs, (void *)arg,
+						sizeof(struct kkm_sregs));
+			break;
+		case KKM_SET_MSRS:
+			/* return success */
+			break;
+		case KKM_GET_FPU:
+			/* get guest fpu state */
+			ret_val = kkm_to_user((void *)arg, &ga->fpu,
+					      sizeof(struct kkm_fpu));
+			break;
+		case KKM_SET_FPU:
+			/* set guest fpu state */
+			ret_val = kkm_from_user(&ga->fpu, (void *)arg,
+						sizeof(struct kkm_fpu));
+			break;
+		case KKM_SET_CPUID:
+			/* return success */
+			break;
+		case KKM_SET_DEBUG:
+			/* set guest debug state */
+			ret_val = kkm_from_user(&ga->debug, (void *)arg,
+						sizeof(struct kkm_debug));
+			/* enable save/restore of hw debug registers */
+			kkm_kontext->debug_registers_set = true;
+			break;
+		case KKM_GET_EVENTS:
+		default:
+			printk(KERN_NOTICE
+			       "kkm_execution_kontext_ioctl: unsupported ioctl_type(%x)\n",
+			       ioctl_type);
+			ret_val = -EOPNOTSUPP;
+			break;
+		}
 	}
 	return ret_val;
 }
