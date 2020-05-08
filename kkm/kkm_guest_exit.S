@@ -2600,6 +2600,12 @@ kkm_intr_entry_255:
 	.global kkm_intr_entry_asm
 kkm_intr_entry_asm:
 	/*
+	 * skip swapgs if trap is not from user area
+	 */
+	testb	$0x3, 0x18(%rsp)
+	jz	kkm_intr_entry_asm_common
+
+	/*
 	 * change to kernel thread local storage
 	 */
 	swapgs
