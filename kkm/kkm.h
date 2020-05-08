@@ -13,8 +13,7 @@
 #ifndef __KKM_H__
 #define __KKM_H__
 
-#define	KKM_REDZONE_CHECK_ENABLE (1)
-#define	KKM_HW_DEBUG_REG_SAVE_ENABLE (1)
+#define	KKM_REDZONE_CHECK_ENABLE (0)
 
 #include "kkm_externs.h"
 #include "kkm_ioctl.h"
@@ -38,6 +37,11 @@ struct kkm_kontext {
 	bool used;
 	bool first_thread;
 	bool new_thread;
+	/*
+	 * save/restore of debug only if the cureent context
+	 * is using hardware debug functionality
+	 */
+	bool debug_registers_set;
 	int kontext_fd;
 	struct task_struct
 		*task; /* kernel task associated with this kontain kontext */

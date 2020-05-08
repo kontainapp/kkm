@@ -173,6 +173,8 @@ static long kkm_execution_kontext_ioctl(struct file *file_p,
 		/* set guest debug state */
 		ret_val = kkm_from_user(&ga->debug, (void *)arg,
 					sizeof(struct kkm_debug));
+		/* enable save/restore of hw debug registers */
+		kkm_kontext->debug_registers_set = true;
 		break;
 	case KKM_GET_EVENTS:
 	default:

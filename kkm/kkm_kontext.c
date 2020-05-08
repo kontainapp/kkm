@@ -80,6 +80,7 @@ int kkm_kontext_init(struct kkm_kontext *kkm_kontext)
 	ga->guest_area_beg = (uint64_t)ga;
 
 	kkm_kontext->new_thread = true;
+	kkm_kontext->debug_registers_set = false;
 
 	kkm_kontext->syscall_pending = false;
 	kkm_kontext->ret_val_mva = -1;
@@ -230,7 +231,9 @@ begin:
 	 */
 	rdmsrl(MSR_LSTAR, kkm_kontext->native_kernel_entry_syscall_64);
 
-	kkm_hw_debug_registers_save(kkm_kontext->native_debug_registers);
+	if (kkm_kontext->debug_registers_set == true) {
+		kkm_hw_debug_registers_save(kkm_kontext->native_debug_registers);
+	}
 
 	ga->kkm_intr_no = -1;
 	/*
@@ -240,7 +243,9 @@ begin:
 	kkm_switch_to_gk_asm(ga, (uint64_t)ga->redzone_bottom);
 
 	/* code is from intr/fault return path */
-	kkm_hw_debug_registers_restore(kkm_kontext->native_debug_registers);
+	if (kkm_kontext->debug_registers_set == true) {
+		kkm_hw_debug_registers_restore(kkm_kontext->native_debug_registers);
+	}
 
 	/*
 	 * enable interrupts
@@ -282,6 +287,7 @@ void kkm_guest_kernel_start_payload(struct kkm_guest_area *ga)
 	struct cpu_entry_area *cea = NULL;
 	uint64_t estack_start = 0;
 	uint64_t syscall_entry_addr = 0;
+	struct kkm_kontext *kkm_kontext = ga->kkm_kontext;
 
 	ga = kkm_mmu_get_cur_cpu_guest_va();
 
@@ -326,7 +332,9 @@ void kkm_guest_kernel_start_payload(struct kkm_guest_area *ga)
 		ga->regs.rflags |= X86_EFLAGS_RF;
 	}
 
-	kkm_hw_debug_registers_restore(ga->debug.registers);
+	if (kkm_kontext->debug_registers_set == true) {
+		kkm_hw_debug_registers_restore(ga->debug.registers);
+	}
 
 	/*
 	 * verify stack redzone
@@ -386,7 +394,9 @@ void kkm_switch_to_host_kernel(void)
 	ga->regs.rip = ga->trap_info.rip;
 	ga->regs.rflags = ga->trap_info.rflags;
 
-	kkm_hw_debug_registers_save(ga->debug.registers);
+	if (kkm_kontext->debug_registers_set == true) {
+		kkm_hw_debug_registers_save(ga->debug.registers);
+	}
 
 	/*
 	 * restore native kernel tss sp0 (intr stack)
@@ -431,7 +441,6 @@ void kkm_switch_to_host_kernel(void)
 
 void kkm_hw_debug_registers_save(uint64_t *registers)
 {
-#if KKM_HW_DEBUG_REG_SAVE_ENABLE
 	get_debugreg(registers[0], 0);
 	get_debugreg(registers[1], 1);
 	get_debugreg(registers[2], 2);
@@ -440,19 +449,16 @@ void kkm_hw_debug_registers_save(uint64_t *registers)
 	get_debugreg(registers[7], 7);
 
 	registers[6] &= 0x1E00FULL;
-#endif
 }
 
 void kkm_hw_debug_registers_restore(uint64_t *registers)
 {
-#if KKM_HW_DEBUG_REG_SAVE_ENABLE
 	set_debugreg(registers[0], 0);
 	set_debugreg(registers[1], 1);
 	set_debugreg(registers[2], 2);
 	set_debugreg(registers[3], 3);
 	set_debugreg(registers[6], 6);
 	set_debugreg(registers[7], 7);
-#endif
 }
 
 /*
