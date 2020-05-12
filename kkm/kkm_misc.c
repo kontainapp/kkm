@@ -122,7 +122,7 @@ void kkm_show_trap_info(struct kkm_guest_area *ga)
 {
 	printk(KERN_NOTICE
 	       "kkm_show_trap_info: thread %d ga %px cr2 %llx intr_no %llx error %llx rip %llx cs %llx rflags %llx rsp %llx ss %llx\n",
-	       ga->kkm_kontext->kontext_fd, ga, ga->sregs.cr2, ga->kkm_intr_no,
+	       ga->kkm_kontext->kontext_fd, ga, ga->sregs.cr2, ga->intr_no,
 	       ga->trap_info.error, ga->trap_info.rip, ga->trap_info.cs,
 	       ga->trap_info.rflags, ga->trap_info.rsp, ga->trap_info.ss);
 }

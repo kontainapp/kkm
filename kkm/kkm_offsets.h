@@ -66,7 +66,7 @@
 #define OFF_TI_RSP ((REG_BASE_OFF) + 8 * 122) /* trap_info.rsp */
 #define OFF_TI_SS ((REG_BASE_OFF) + 8 * 123) /* trap_info.ss */
 
-#define OFF_TI_INTR_NO ((REG_BASE_OFF) + 8 * 124) /* kkm_intr_no */
+#define OFF_TI_INTR_NO ((REG_BASE_OFF) + 8 * 124) /* intr_no */
 
 #define OFF_PAY_ENT_STK (4096) /* payload_entry_stack bottom */
 #define OFF_GUEST_STK (7936) /* guest kernel stack bottom */

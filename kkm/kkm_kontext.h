@@ -147,7 +147,10 @@ struct kkm_guest_area {
 			struct kkm_fpu fpu;
 			struct kkm_trap_info trap_info;
 
-			uint64_t kkm_intr_no;
+			/*
+			 * current interrupt
+			 */
+			uint64_t intr_no;
 
 			/*
 			 * this padding makes sure

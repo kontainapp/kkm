@@ -235,7 +235,7 @@ begin:
 		kkm_hw_debug_registers_save(kkm_kontext->native_debug_registers);
 	}
 
-	ga->kkm_intr_no = -1;
+	ga->intr_no = -1;
 	/*
 	 * switch to guest kernel
 	 * this code will switch stacks
@@ -254,10 +254,10 @@ begin:
 
 	ret_val = kkm_process_intr(kkm_kontext);
 	if (ret_val == KKM_KONTEXT_FAULT_PROCESS_DONE) {
-		if (ga->kkm_intr_no == LOCAL_TIMER_VECTOR) {
+		if (ga->intr_no == LOCAL_TIMER_VECTOR) {
 			schedule();
 		}
-		if (ga->kkm_intr_no == X86_TRAP_PF &&
+		if (ga->intr_no == X86_TRAP_PF &&
 		    kkm_kontext->prev_trap_no == X86_TRAP_PF &&
 		    kkm_kontext->prev_trap_addr == kkm_kontext->trap_addr &&
 		    kkm_kontext->prev_error_code == kkm_kontext->error_code) {
@@ -267,7 +267,7 @@ begin:
 			ret_val = -EFAULT;
 			goto error;
 		}
-		kkm_kontext->prev_trap_no = ga->kkm_intr_no;
+		kkm_kontext->prev_trap_no = ga->intr_no;
 		kkm_kontext->prev_trap_addr = kkm_kontext->trap_addr;
 		kkm_kontext->prev_error_code = kkm_kontext->error_code;
 		goto begin;
@@ -481,7 +481,7 @@ int kkm_process_intr(struct kkm_kontext *kkm_kontext)
 	kkm_run = (struct kkm_run *)kkm_kontext->mmap_area[0].kvaddr;
 	kkm_run->exit_reason = KKM_EXIT_UNKNOWN;
 
-	switch (ga->kkm_intr_no) {
+	switch (ga->intr_no) {
 	case X86_TRAP_DE:
 		ret_val = kkm_process_common_without_error(kkm_kontext, ga,
 							   kkm_run);
@@ -548,7 +548,7 @@ int kkm_process_intr(struct kkm_kontext *kkm_kontext)
 			kkm_process_common_with_error(kkm_kontext, ga, kkm_run);
 		break;
 	default:
-		kkm_forward_intr(intr_forward_pointers[ga->kkm_intr_no]);
+		kkm_forward_intr(intr_forward_pointers[ga->intr_no]);
 		ret_val = KKM_KONTEXT_FAULT_PROCESS_DONE;
 		break;
 	}
@@ -613,7 +613,7 @@ int kkm_process_common_without_error(struct kkm_kontext *kkm_kontext,
 
 	kkm_kontext->exception_posted = true;
 	kkm_kontext->exception_saved_rbx = ga->regs.rbx;
-	ga->regs.rbx = ga->kkm_intr_no;
+	ga->regs.rbx = ga->intr_no;
 
 error:
 	return ret_val;
@@ -661,7 +661,7 @@ int kkm_process_common_with_error(struct kkm_kontext *kkm_kontext,
 
 	kkm_kontext->exception_posted = true;
 	kkm_kontext->exception_saved_rbx = ga->regs.rbx;
-	ga->regs.rbx = ga->kkm_intr_no;
+	ga->regs.rbx = ga->intr_no;
 
 error:
 	return ret_val;
