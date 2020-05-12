@@ -202,8 +202,8 @@ begin:
 	kkm_kontext->native_kernel_cr3 = __read_cr3();
 	kkm_kontext->native_kernel_cr4 = __read_cr4();
 
-	ga->guest_kernel_cr3 = kkm->guest_kernel_pa;
-	ga->guest_payload_cr3 = kkm->guest_payload_pa;
+	ga->guest_kernel_cr3 = kkm->gk_pml4_pa;
+	ga->guest_payload_cr3 = kkm->gp_pml4_pa;
 
 	ga->guest_kernel_cr4 = __read_cr4();
 

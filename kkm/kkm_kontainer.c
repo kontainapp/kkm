@@ -36,9 +36,9 @@ int kkm_kontainer_init(struct kkm *kkm)
 	/*
 	 * allocated pages for pml4
 	 */
-	ret_val = kkm_mm_allocate_pages(&kkm->guest_kernel_page,
-					(void **)&kkm->guest_kernel_va,
-					&kkm->guest_kernel_pa, 2);
+	ret_val = kkm_mm_allocate_pages(&kkm->gk_pml4_page,
+					(void **)&kkm->gk_pml4_va,
+					&kkm->gk_pml4_pa, 2);
 	if (ret_val != 0) {
 		printk(KERN_NOTICE
 		       "kkm_kontainer_init: Failed to allocate memory for guest kernel page table error(%d)\n",
@@ -46,7 +46,7 @@ int kkm_kontainer_init(struct kkm *kkm)
 		goto error;
 	}
 
-	if ((kkm->guest_kernel_va & KKM_USER_PGTABLE_MASK) ==
+	if ((kkm->gk_pml4_va & KKM_USER_PGTABLE_MASK) ==
 	    KKM_USER_PGTABLE_MASK) {
 		printk(KERN_ERR
 		       "kkm_kontainer_init: unexpected odd start page address\n");
@@ -60,8 +60,8 @@ int kkm_kontainer_init(struct kkm *kkm)
 	 *     guest mode pml4
 	 * kernel code depends on kernel page table at even page and user page table at next(odd) page
 	 */
-	kkm->guest_payload_va = kkm->guest_kernel_va + PAGE_SIZE;
-	kkm->guest_payload_pa += kkm->guest_kernel_pa + PAGE_SIZE;
+	kkm->gp_pml4_va = kkm->gk_pml4_va + PAGE_SIZE;
+	kkm->gp_pml4_pa += kkm->gk_pml4_pa + PAGE_SIZE;
 
 	ret_val = kkm_create_p4ml(&kkm->kkm_guest_pml4e, KKM_KM_GUEST_PRIVATE_MEM_START_VA);
 	if (ret_val != 0) {
@@ -88,14 +88,14 @@ error:
 void kkm_kontainer_cleanup(struct kkm *kkm)
 {
 	kkm_cleanup_p4ml(&kkm->kkm_guest_pml4e);
-	if (kkm->guest_kernel_page != NULL) {
-		free_page(kkm->guest_kernel_va);
-		kkm->guest_kernel_page = NULL;
+	if (kkm->gk_pml4_page != NULL) {
+		free_page(kkm->gk_pml4_va);
+		kkm->gk_pml4_page = NULL;
 
-		kkm->guest_kernel_va = 0;
-		kkm->guest_kernel_pa = 0;
+		kkm->gk_pml4_va = 0;
+		kkm->gk_pml4_pa = 0;
 
-		kkm->guest_payload_va = 0;
-		kkm->guest_payload_pa = 0;
+		kkm->gp_pml4_va = 0;
+		kkm->gp_pml4_pa = 0;
 	}
 }

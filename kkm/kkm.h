@@ -154,16 +154,16 @@ struct kkm {
 	/*
 	 * guest kernel pml4 page
 	 */
-	struct page *guest_kernel_page;
-	uint64_t guest_kernel_va;
-	phys_addr_t guest_kernel_pa;
+	struct page *gk_pml4_page;
+	uint64_t gk_pml4_va;
+	phys_addr_t gk_pml4_pa;
 
 	/*
 	 * guest payload pml4 page
 	 */
-	struct page *guest_payload_page;
-	uint64_t guest_payload_va;
-	phys_addr_t guest_payload_pa;
+	struct page *gp_pml4_page;
+	uint64_t gp_pml4_va;
+	phys_addr_t gp_pml4_pa;
 
 	/*
 	 * guest private area page table hierarchy
