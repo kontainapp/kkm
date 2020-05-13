@@ -29,6 +29,8 @@
 #define KKM_USER_PGTABLE_BIT (PAGE_SHIFT)
 #define KKM_USER_PGTABLE_MASK (1 << KKM_USER_PGTABLE_BIT)
 
+#define KKM_KONTAINER_PML4_PAGE_COUNT (2)
+
 int kkm_kontainer_init(struct kkm *kkm)
 {
 	int ret_val = 0;
@@ -37,7 +39,8 @@ int kkm_kontainer_init(struct kkm *kkm)
 	 * allocated pages for pml4
 	 */
 	ret_val = kkm_mm_allocate_pages(&kkm->gk_pml4.page, &kkm->gk_pml4.va,
-					&kkm->gk_pml4.pa, 2);
+					&kkm->gk_pml4.pa,
+					KKM_KONTAINER_PML4_PAGE_COUNT);
 	if (ret_val != 0) {
 		printk(KERN_NOTICE
 		       "kkm_kontainer_init: Failed to allocate memory for guest kernel page table error(%d)\n",
@@ -89,7 +92,8 @@ void kkm_kontainer_cleanup(struct kkm *kkm)
 {
 	kkm_cleanup_p4ml(&kkm->kkm_guest_pml4e);
 	if (kkm->gk_pml4.page != NULL) {
-		free_page((uint64_t)kkm->gk_pml4.va);
+		kkm_mm_free_pages(kkm->gk_pml4.va,
+				  KKM_KONTAINER_PML4_PAGE_COUNT);
 		kkm->gk_pml4.page = NULL;
 
 		kkm->gk_pml4.va = 0;

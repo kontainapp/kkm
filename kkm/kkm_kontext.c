@@ -98,7 +98,8 @@ error:
 void kkm_kontext_cleanup(struct kkm_kontext *kkm_kontext)
 {
 	if (kkm_kontext->guest_area_page != NULL) {
-		free_page((uint64_t)kkm_kontext->guest_area);
+		kkm_mm_free_pages(kkm_kontext->guest_area,
+				  KKM_GUEST_AREA_PAGES);
 		kkm_kontext->guest_area_page = NULL;
 		kkm_kontext->guest_area = NULL;
 	}

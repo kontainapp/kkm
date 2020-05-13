@@ -70,3 +70,20 @@ int kkm_mm_allocate_page(struct page **page, void **virtual_address,
 	return kkm_mm_allocate_pages(page, virtual_address, physical_address,
 				     1);
 }
+
+void kkm_mm_free_pages(void *virtual_address, int count)
+{
+	int pow2count = 0;
+
+	if (count == 0) {
+		return;
+	}
+	pow2count = order_base_2(count); /* convert page count to power of 2 */
+
+	free_pages((uint64_t)virtual_address, pow2count);
+}
+
+void kkm_mm_free_page(void *virtual_address)
+{
+	kkm_mm_free_pages(virtual_address, 1);
+}

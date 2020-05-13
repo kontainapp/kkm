@@ -101,13 +101,13 @@ error:
 void kkm_cleanup_p4ml(struct kkm_mmu *kmu)
 {
 	if (kmu->pud.page != NULL) {
-		free_page((uint64_t)kmu->pud.va);
+		kkm_mm_free_page(kmu->pud.va);
 	}
 	if (kmu->pmd.page != NULL) {
-		free_page((uint64_t)kmu->pmd.va);
+		kkm_mm_free_page(kmu->pmd.va);
 	}
 	if (kmu->pt.page != NULL) {
-		free_page((uint64_t)kmu->pt.va);
+		kkm_mm_free_page(kmu->pt.va);
 	}
 }
 
