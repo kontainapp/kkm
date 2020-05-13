@@ -101,13 +101,13 @@ error:
 void kkm_cleanup_p4ml(struct kkm_mmu *kmu)
 {
 	if (kmu->pud.page != NULL) {
-		free_page((unsigned long long)kmu->pud.va);
+		free_page((uint64_t)kmu->pud.va);
 	}
 	if (kmu->pmd.page != NULL) {
-		free_page((unsigned long long)kmu->pmd.va);
+		free_page((uint64_t)kmu->pmd.va);
 	}
 	if (kmu->pt.page != NULL) {
-		free_page((unsigned long long)kmu->pt.va);
+		free_page((uint64_t)kmu->pt.va);
 	}
 }
 
@@ -233,8 +233,8 @@ static void kkm_mmu_copy_range(uint64_t src_base, uint64_t src_offset,
  *     guest kernel
  *     guest payload
  */
-int kkm_mmu_copy_kernel_pgd(uint64_t current_pgd_base, uint64_t guest_kernel_va,
-			    uint64_t guest_payload_va)
+int kkm_mmu_copy_kernel_pgd(uint64_t current_pgd_base, void *guest_kernel_va,
+			    void *guest_payload_va)
 {
 	if (current_pgd_base == 0) {
 		printk(KERN_NOTICE
@@ -243,7 +243,7 @@ int kkm_mmu_copy_kernel_pgd(uint64_t current_pgd_base, uint64_t guest_kernel_va,
 	}
 
 	kkm_mmu_copy_range(current_pgd_base, KKM_PGD_KERNEL_OFFSET,
-			   guest_kernel_va, KKM_PGD_KERNEL_OFFSET,
+			   (uint64_t)guest_kernel_va, KKM_PGD_KERNEL_OFFSET,
 			   KKM_PGD_KERNEL_SIZE);
 
 	/*
@@ -261,7 +261,7 @@ int kkm_mmu_copy_kernel_pgd(uint64_t current_pgd_base, uint64_t guest_kernel_va,
 	 */
 	current_pgd_base += PAGE_SIZE;
 	kkm_mmu_copy_range(current_pgd_base, KKM_PGD_KERNEL_OFFSET,
-			   guest_payload_va, KKM_PGD_KERNEL_OFFSET,
+			   (uint64_t)guest_payload_va, KKM_PGD_KERNEL_OFFSET,
 			   KKM_PGD_KERNEL_SIZE);
 
 	/* set private area in guest pml4 */
@@ -277,8 +277,8 @@ int kkm_mmu_copy_kernel_pgd(uint64_t current_pgd_base, uint64_t guest_kernel_va,
  * copy the above pml4 entry to point to 0TB in guest payload for text
  * copy the above pml4 entry to point to 128TB in guest payload for stack and mmap
  */
-int kkm_mmu_sync(uint64_t current_pgd_base, uint64_t guest_kernel_va,
-		 uint64_t guest_payload_va, struct kkm_mmu *guest)
+int kkm_mmu_sync(uint64_t current_pgd_base, void *guest_kernel_va,
+		 void *guest_payload_va, struct kkm_mmu *guest)
 {
 	uint64_t native_kernel_entry = -1;
 	uint64_t guest_payload_entry = -1;

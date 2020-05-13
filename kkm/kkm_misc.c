@@ -131,43 +131,53 @@ void kkm_show_registers(struct kkm_guest_area *ga)
 {
 	printk(KERN_NOTICE
 	       "kkm_show_registers: thread %d rax %llx rbx %llx rcx %llx rdx %llx\n",
-	       ga->kkm_kontext->kontext_fd, ga->regs.rax, ga->regs.rbx, ga->regs.rcx, ga->regs.rdx);
+	       ga->kkm_kontext->kontext_fd, ga->regs.rax, ga->regs.rbx,
+	       ga->regs.rcx, ga->regs.rdx);
 	printk(KERN_NOTICE
 	       "kkm_show_registers: thread %d rsi %llx rdi %llx rsp %llx rbp %llx\n",
-	       ga->kkm_kontext->kontext_fd, ga->regs.rsi, ga->regs.rdi, ga->regs.rsp, ga->regs.rbp);
+	       ga->kkm_kontext->kontext_fd, ga->regs.rsi, ga->regs.rdi,
+	       ga->regs.rsp, ga->regs.rbp);
 	printk(KERN_NOTICE
 	       "kkm_show_registers: thread %d r8 %llx r9 %llx r10 %llx r11 %llx\n",
-	       ga->kkm_kontext->kontext_fd, ga->regs.r8, ga->regs.r9, ga->regs.r10, ga->regs.r11);
+	       ga->kkm_kontext->kontext_fd, ga->regs.r8, ga->regs.r9,
+	       ga->regs.r10, ga->regs.r11);
 	printk(KERN_NOTICE
 	       "kkm_show_registers: thread %d r12 %llx r13 %llx r14 %llx r15 %llx\n",
-	       ga->kkm_kontext->kontext_fd, ga->regs.r12, ga->regs.r13, ga->regs.r14, ga->regs.r15);
+	       ga->kkm_kontext->kontext_fd, ga->regs.r12, ga->regs.r13,
+	       ga->regs.r14, ga->regs.r15);
 	printk(KERN_NOTICE
 	       "kkm_show_registers: thread %d rip %llx rflags %llx\n",
 	       ga->kkm_kontext->kontext_fd, ga->regs.rip, ga->regs.rflags);
 }
 
-void kkm_show_guest_qwords(struct kkm_guest_area *ga, uint64_t gva, uint64_t count)
+void kkm_show_guest_qwords(struct kkm_guest_area *ga, uint64_t gva,
+			   uint64_t count)
 {
 	uint64_t byte_count = count * sizeof(uint64_t);
 	uint64_t mva;
 	uint64_t *buffer_addr = NULL;
 	uint64_t i = 0;
 
-	if (kkm_guest_va_to_monitor_va(ga->kkm_kontext, gva, &mva, NULL) == false) {
+	if (kkm_guest_va_to_monitor_va(ga->kkm_kontext, gva, &mva, NULL) ==
+	    false) {
 		printk(KERN_NOTICE "kkm_show_guest_data: gva to mva failed\n");
 		goto error;
 	}
 	if ((buffer_addr = kzalloc(byte_count, GFP_KERNEL)) == NULL) {
-		printk(KERN_NOTICE "kkm_show_guest_data: memory allocation failed szie %lld\n", byte_count);
+		printk(KERN_NOTICE
+		       "kkm_show_guest_data: memory allocation failed szie %lld\n",
+		       byte_count);
 		goto error;
 	}
 	if (copy_from_user(buffer_addr, (void *)mva, byte_count)) {
-		printk(KERN_NOTICE "kkm_show_guest_data: copy from user failed\n");
+		printk(KERN_NOTICE
+		       "kkm_show_guest_data: copy from user failed\n");
 		goto error;
 	}
 
 	for (i = 0; i < count; i++) {
-		printk(KERN_NOTICE "addr %llx data %llx\n", mva + i * 8, buffer_addr[i]);
+		printk(KERN_NOTICE "addr %llx data %llx\n", mva + i * 8,
+		       buffer_addr[i]);
 	}
 error:
 	if (buffer_addr != NULL) {

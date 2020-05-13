@@ -98,7 +98,7 @@ error:
 void kkm_kontext_cleanup(struct kkm_kontext *kkm_kontext)
 {
 	if (kkm_kontext->guest_area_page != NULL) {
-		free_page((unsigned long long)kkm_kontext->guest_area);
+		free_page((uint64_t)kkm_kontext->guest_area);
 		kkm_kontext->guest_area_page = NULL;
 		kkm_kontext->guest_area = NULL;
 	}
@@ -202,8 +202,8 @@ begin:
 	kkm_kontext->native_kernel_cr3 = __read_cr3();
 	kkm_kontext->native_kernel_cr4 = __read_cr4();
 
-	ga->guest_kernel_cr3 = kkm->gk_pml4_pa;
-	ga->guest_payload_cr3 = kkm->gp_pml4_pa;
+	ga->guest_kernel_cr3 = kkm->gk_pml4.pa;
+	ga->guest_payload_cr3 = kkm->gp_pml4.pa;
 
 	ga->guest_kernel_cr4 = __read_cr4();
 
@@ -232,7 +232,8 @@ begin:
 	rdmsrl(MSR_LSTAR, kkm_kontext->native_kernel_entry_syscall_64);
 
 	if (kkm_kontext->debug_registers_set == true) {
-		kkm_hw_debug_registers_save(kkm_kontext->native_debug_registers);
+		kkm_hw_debug_registers_save(
+			kkm_kontext->native_debug_registers);
 	}
 
 	ga->intr_no = -1;
@@ -244,7 +245,8 @@ begin:
 
 	/* code is from intr/fault return path */
 	if (kkm_kontext->debug_registers_set == true) {
-		kkm_hw_debug_registers_restore(kkm_kontext->native_debug_registers);
+		kkm_hw_debug_registers_restore(
+			kkm_kontext->native_debug_registers);
 	}
 
 	/*

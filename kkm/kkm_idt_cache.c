@@ -255,7 +255,7 @@ void kkm_idt_cache_cleanup(void)
 	struct kkm_idt_entry *idt_entry;
 
 	idt_entry = &kkm_idt_cache->idt_entry;
-	free_page((unsigned long long)idt_entry->idt_va);
+	free_page((uint64_t)idt_entry->idt_va);
 	idt_entry->idt_page = NULL;
 	idt_entry->idt_va = NULL;
 

@@ -13,7 +13,7 @@
 #ifndef __KKM_H__
 #define __KKM_H__
 
-#define	KKM_REDZONE_CHECK_ENABLE (0)
+#define KKM_REDZONE_CHECK_ENABLE (0)
 
 #include "kkm_externs.h"
 #include "kkm_ioctl.h"
@@ -154,16 +154,12 @@ struct kkm {
 	/*
 	 * guest kernel pml4 page
 	 */
-	struct page *gk_pml4_page;
-	uint64_t gk_pml4_va;
-	phys_addr_t gk_pml4_pa;
+	struct kkm_mmu_page_info gk_pml4;
 
 	/*
 	 * guest payload pml4 page
 	 */
-	struct page *gp_pml4_page;
-	uint64_t gp_pml4_va;
-	phys_addr_t gp_pml4_pa;
+	struct kkm_mmu_page_info gp_pml4;
 
 	/*
 	 * guest private area page table hierarchy
