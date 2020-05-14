@@ -596,8 +596,13 @@ static int __init kkm_init(void)
 {
 	int ret_val = 0;
 
-	if (!static_cpu_has(X86_FEATURE_PTI)) {
+	if (!IS_ENABLED(CONFIG_PAGE_TABLE_ISOLATION)) {
 		printk(KERN_ERR "kkm_init: X86_FEATURE_PTI not supported.\n");
+		return -EINVAL;
+	}
+
+	if (!cpu_feature_enabled(X86_FEATURE_PCID)) {
+		printk(KERN_ERR "kkm_init: X86_FEATURE_PCID not supported.\n");
 		return -EINVAL;
 	}
 
