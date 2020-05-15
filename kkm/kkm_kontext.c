@@ -206,7 +206,7 @@ begin:
 	ga->guest_kernel_cr3 = kkm->gk_pml4.pa;
 	ga->guest_payload_cr3 = kkm->gp_pml4.pa;
 
-	ga->guest_kernel_cr4 = __read_cr4();
+	ga->guest_kernel_cr4 = kkm_kontext->native_kernel_cr4;
 
 	/*
 	 * change to guest kernel address space
