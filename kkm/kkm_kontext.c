@@ -484,76 +484,85 @@ int kkm_process_intr(struct kkm_kontext *kkm_kontext)
 	kkm_run = (struct kkm_run *)kkm_kontext->mmap_area[0].kvaddr;
 	kkm_run->exit_reason = KKM_EXIT_UNKNOWN;
 
-	switch (ga->intr_no) {
-	case X86_TRAP_DE:
-		ret_val = kkm_process_common_without_error(kkm_kontext, ga,
-							   kkm_run);
-		break;
-	case X86_TRAP_DB:
-		ret_val = kkm_process_debug(kkm_kontext, ga, kkm_run);
-		break;
-	case X86_TRAP_NMI:
-		break;
-	case X86_TRAP_BP:
-		ret_val = kkm_process_breakpoint(kkm_kontext, ga, kkm_run);
-		break;
-	case X86_TRAP_OF:
-	case X86_TRAP_BR:
-	case X86_TRAP_UD:
-	case X86_TRAP_NM:
-		ret_val = kkm_process_common_without_error(kkm_kontext, ga,
-							   kkm_run);
-		break;
-	case X86_TRAP_DF:
-		ret_val =
-			kkm_process_common_with_error(kkm_kontext, ga, kkm_run);
-		break;
-	case X86_TRAP_OLD_MF:
-		ret_val = kkm_process_common_without_error(kkm_kontext, ga,
-							   kkm_run);
-		break;
-	case X86_TRAP_TS:
-	case X86_TRAP_NP:
-	case X86_TRAP_SS:
-		ret_val =
-			kkm_process_common_with_error(kkm_kontext, ga, kkm_run);
-		break;
-	case X86_TRAP_GP:
+	if (ga->intr_no == X86_TRAP_GP) {
 		ret_val = kkm_process_general_protection(kkm_kontext, ga,
 							 kkm_run);
-		break;
-	case X86_TRAP_PF:
+	} else if (ga->intr_no == X86_TRAP_PF) {
 		ret_val = kkm_process_page_fault(kkm_kontext, ga, kkm_run);
-		break;
-	case X86_TRAP_SPURIOUS:
-	case X86_TRAP_MF:
-		ret_val = kkm_process_common_without_error(kkm_kontext, ga,
-							   kkm_run);
-		break;
-	case X86_TRAP_AC:
-		ret_val =
-			kkm_process_common_with_error(kkm_kontext, ga, kkm_run);
-		break;
-	case X86_TRAP_MC:
-	case X86_TRAP_XF:
-		ret_val = kkm_process_common_without_error(kkm_kontext, ga,
-							   kkm_run);
-		break;
-	case KKM_INTR_SYSCALL:
-		ret_val = kkm_process_syscall(kkm_kontext, ga, kkm_run);
-		break;
-	case X86_TRAP_VC:
-		ret_val = kkm_process_common_without_error(kkm_kontext, ga,
-							   kkm_run);
-		break;
-	case X86_TRAP_SE:
-		ret_val =
-			kkm_process_common_with_error(kkm_kontext, ga, kkm_run);
-		break;
-	default:
-		kkm_forward_intr(intr_forward_pointers[ga->intr_no]);
-		ret_val = KKM_KONTEXT_FAULT_PROCESS_DONE;
-		break;
+	} else {
+		switch (ga->intr_no) {
+		case X86_TRAP_DE:
+			ret_val = kkm_process_common_without_error(kkm_kontext,
+								   ga, kkm_run);
+			break;
+		case X86_TRAP_DB:
+			ret_val = kkm_process_debug(kkm_kontext, ga, kkm_run);
+			break;
+		case X86_TRAP_NMI:
+			break;
+		case X86_TRAP_BP:
+			ret_val = kkm_process_breakpoint(kkm_kontext, ga,
+							 kkm_run);
+			break;
+		case X86_TRAP_OF:
+		case X86_TRAP_BR:
+		case X86_TRAP_UD:
+		case X86_TRAP_NM:
+			ret_val = kkm_process_common_without_error(kkm_kontext,
+								   ga, kkm_run);
+			break;
+		case X86_TRAP_DF:
+			ret_val = kkm_process_common_with_error(kkm_kontext, ga,
+								kkm_run);
+			break;
+		case X86_TRAP_OLD_MF:
+			ret_val = kkm_process_common_without_error(kkm_kontext,
+								   ga, kkm_run);
+			break;
+		case X86_TRAP_TS:
+		case X86_TRAP_NP:
+		case X86_TRAP_SS:
+			ret_val = kkm_process_common_with_error(kkm_kontext, ga,
+								kkm_run);
+			break;
+		case X86_TRAP_GP:
+			ret_val = kkm_process_general_protection(kkm_kontext,
+								 ga, kkm_run);
+			break;
+		case X86_TRAP_PF:
+			ret_val = kkm_process_page_fault(kkm_kontext, ga,
+							 kkm_run);
+			break;
+		case X86_TRAP_SPURIOUS:
+		case X86_TRAP_MF:
+			ret_val = kkm_process_common_without_error(kkm_kontext,
+								   ga, kkm_run);
+			break;
+		case X86_TRAP_AC:
+			ret_val = kkm_process_common_with_error(kkm_kontext, ga,
+								kkm_run);
+			break;
+		case X86_TRAP_MC:
+		case X86_TRAP_XF:
+			ret_val = kkm_process_common_without_error(kkm_kontext,
+								   ga, kkm_run);
+			break;
+		case KKM_INTR_SYSCALL:
+			ret_val = kkm_process_syscall(kkm_kontext, ga, kkm_run);
+			break;
+		case X86_TRAP_VC:
+			ret_val = kkm_process_common_without_error(kkm_kontext,
+								   ga, kkm_run);
+			break;
+		case X86_TRAP_SE:
+			ret_val = kkm_process_common_with_error(kkm_kontext, ga,
+								kkm_run);
+			break;
+		default:
+			kkm_forward_intr(intr_forward_pointers[ga->intr_no]);
+			ret_val = KKM_KONTEXT_FAULT_PROCESS_DONE;
+			break;
+		}
 	}
 
 	return ret_val;
