@@ -800,6 +800,11 @@ int kkm_process_page_fault(struct kkm_kontext *kkm_kontext,
 		 * clear fault address
 		 */
 		ga->sregs.cr2 = 0;
+	} else {
+		printk(KERN_NOTICE
+		       "kkm_process_page_fault: page fault from kernel thread %d\n",
+		       kkm_kontext->kontext_fd);
+		kkm_show_trap_info(ga);
 	}
 
 error:
