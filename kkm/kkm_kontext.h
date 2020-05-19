@@ -112,7 +112,7 @@ struct kkm_guest_area {
 			uint64_t guest_kernel_cr3; /* guest kernels pml4 pointer */
 			uint64_t guest_kernel_cr4; /* guest kernel cr4 */
 			uint64_t guest_payload_cr3; /* guest payload pml4 pointer */
-			uint64_t guest_stack_variable_address; /* debug variable */
+			uint64_t reserved0; /* unused variable */
 
 			/*
 			 * we use our own cs and ss instead of km provided values.

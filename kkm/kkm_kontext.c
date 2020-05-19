@@ -297,8 +297,6 @@ void kkm_guest_kernel_start_payload(struct kkm_guest_area *ga)
 	cpu = get_cpu();
 	cea = get_cpu_entry_area(cpu);
 
-	ga->guest_stack_variable_address = (uint64_t)&cpu;
-
 	/*
 	 * setup segments for switching to payload
 	 */
