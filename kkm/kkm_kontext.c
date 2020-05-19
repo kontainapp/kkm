@@ -209,11 +209,6 @@ begin:
 	ga->guest_kernel_cr4 = kkm_kontext->native_kernel_cr4;
 
 	/*
-	 * change to guest kernel address space
-	 */
-	kkm_change_address_space(ga->guest_kernel_cr3);
-
-	/*
 	 * save native kernel segment registers
 	 */
 	savesegment(ds, kkm_kontext->native_kernel_ds);
@@ -238,6 +233,13 @@ begin:
 	}
 
 	ga->intr_no = -1;
+
+	/*
+	 * change to guest kernel address space
+	 * TODO: move this code to kkm_switch_to_gk_asm
+	 */
+	kkm_change_address_space(ga->guest_kernel_cr3);
+
 	/*
 	 * switch to guest kernel
 	 * this code will switch stacks
