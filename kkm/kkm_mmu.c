@@ -13,6 +13,7 @@
 #include <linux/mm.h>
 #include <linux/log2.h>
 #include <asm/io.h>
+#include <asm/tlbflush.h>
 
 #include "kkm.h"
 #include "kkm_mm.h"
@@ -29,12 +30,31 @@ int kkm_mmu_init(void)
 
 void kkm_mmu_cleanup(void)
 {
+	kkm_mmu_flush_tlb();
 	kkm_cleanup_p4ml(&kkm_mmu);
 }
 
 static inline uint64_t kkm_mmu_entry_pa(uint64_t entry)
 {
 	return entry & PTE_PFN_MASK;
+}
+
+/*
+ * flush TLB entries for GUEST_KERNEL_PCID and GUEST_PAYLOAD_PCID
+ */
+void kkm_mmu_flush_tlb(void)
+{
+	invpcid_flush_single_context(GUEST_KERNEL_PCID);
+	invpcid_flush_single_context(GUEST_PAYLOAD_PCID);
+}
+
+/*
+ * flush one page TLB entry for GUEST_KERNEL_PCID and GUEST_PAYLOAD_PCID
+ */
+void kkm_mmu_flush_tlb_one_page(uint64_t addr)
+{
+	invpcid_flush_one(GUEST_KERNEL_PCID, addr);
+	invpcid_flush_one(GUEST_PAYLOAD_PCID, addr);
 }
 
 /*
@@ -259,7 +279,7 @@ int kkm_mmu_copy_kernel_pgd(uint64_t current_pgd_base, void *guest_kernel_va,
 	 * kernel pml4 is even page
 	 * user pml4 is odd page
 	 */
-	current_pgd_base += PAGE_SIZE;
+	//current_pgd_base += PAGE_SIZE;
 	kkm_mmu_copy_range(current_pgd_base, KKM_PGD_KERNEL_OFFSET,
 			   (uint64_t)guest_payload_va, KKM_PGD_KERNEL_OFFSET,
 			   KKM_PGD_KERNEL_SIZE);

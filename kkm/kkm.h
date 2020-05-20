@@ -22,6 +22,8 @@
 #define KKM_CONTEXT_MAP_PAGE_COUNT (3)
 #define KKM_CONTEXT_MAP_SIZE (KKM_CONTEXT_MAP_PAGE_COUNT * 4096)
 
+#define	KKM_INVALID_ID	(-1ULL)
+
 struct kkm_kontext_mmap_area {
 	struct page *page;
 	unsigned long kvaddr;

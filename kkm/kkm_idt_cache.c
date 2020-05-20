@@ -60,12 +60,7 @@ struct kkm_idt_entry {
  * kernel maintains separate copy of these descriptors in cea
  */
 struct kkm_desc_entry {
-	bool inited;
-
-	/*
-	 * native kernel tss
-	 */
-	uint64_t native_tss_reg;
+	uint64_t last_id;
 };
 
 struct kkm_idt_cache {
@@ -237,7 +232,7 @@ int kkm_idt_cache_init(void)
 
 	kkm_idt_cache->n_entries = NR_CPUS;
 	for (i = 0; i < NR_CPUS; i++) {
-		kkm_idt_cache->desc_entries[i].inited = false;
+		kkm_idt_cache->desc_entries[i].last_id = KKM_INVALID_ID;
 	}
 
 	if ((ret_val = kkm_idt_descr_init()) != 0) {
@@ -276,4 +271,14 @@ int kkm_idt_get_desc(struct desc_ptr *native_desc, struct desc_ptr *guest_desc)
 	guest_desc->address = idt_entry->guest_idt_desc.address;
 
 	return 0;
+}
+
+void kkm_idt_set_id(int cpu, uint64_t id)
+{
+	kkm_idt_cache->desc_entries[cpu].last_id = id;
+}
+
+uint64_t kkm_idt_get_id(int cpu)
+{
+	return kkm_idt_cache->desc_entries[cpu].last_id;
 }

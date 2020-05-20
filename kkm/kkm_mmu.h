@@ -46,6 +46,13 @@
  */
 // clang-format on
 
+/*
+ * use 2 pcids that are not used by linux kernel
+ */
+#define PCID_MASK (0xFFFULL)
+#define GUEST_KERNEL_PCID (0x7FULL)
+#define GUEST_PAYLOAD_PCID (0xFFULL)
+
 /* use unused kernel virtual address for kkm fixed mapping */
 #define KKM_PRIVATE_START_VA (0xFFFFFE8000000000ULL)
 
@@ -180,6 +187,8 @@ struct kkm_mmu {
 
 int kkm_mmu_init(void);
 void kkm_mmu_cleanup(void);
+void kkm_mmu_flush_tlb(void);
+void kkm_mmu_flush_tlb_one_page(uint64_t addr);
 int kkm_create_p4ml(struct kkm_mmu *kmu, uint64_t address);
 void kkm_cleanup_p4ml(struct kkm_mmu *kmu);
 
