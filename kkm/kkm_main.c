@@ -31,6 +31,8 @@
 
 uint32_t kkm_version = 12;
 
+atomic64_t kkm_object_id;
+
 void kkm_destroy_app(struct kkm *kkm)
 {
 	kfree(kkm);
@@ -71,6 +73,7 @@ static int kkm_execution_kontext_release(struct inode *inode_p,
 		}
 	}
 
+	kkm_kontext->id = atomic64_inc_return(&kkm_object_id);
 	kkm_kontext->used = false;
 	kkm_kontext->first_thread = false;
 
@@ -463,6 +466,7 @@ int kkm_create_kontainer(unsigned long arg)
 		goto error;
 	}
 
+	kkm->id = atomic64_inc_return(&kkm_object_id);
 	kkm->mm = current->mm;
 
 	ret_val = kkm_kontainer_init(kkm);
@@ -632,6 +636,8 @@ static int __init kkm_init(void)
 		printk(KERN_ERR "kkm_init: Cannot initialize idt cache.\n");
 		return ret_val;
 	}
+
+	atomic64_set(&kkm_object_id, 1ULL);
 
 	printk(KERN_INFO "kkm_init: Registered kkm.\n");
 
