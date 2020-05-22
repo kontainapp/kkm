@@ -169,7 +169,7 @@ struct kkm {
 	 * guest private area page table hierarchy
 	 * vdso, vvar and monitor -> guest code
 	 */
-	struct kkm_mmu kkm_guest_pml4e;
+	struct kkm_mmu_pml4e kkm_guest_pml4e;
 };
 
 #endif /* __KKM_H__ */
