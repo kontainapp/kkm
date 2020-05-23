@@ -11,6 +11,7 @@
  */
 
 #include <linux/mm.h>
+#include <linux/moduleparam.h>
 #include <asm/desc.h>
 #include <asm/tlbflush.h>
 #include <asm/debugreg.h>
@@ -30,6 +31,9 @@
 #include "kkm_offsets.h"
 #include "kkm_intr.h"
 #include "kkm_intr_table.h"
+
+static bool __read_mostly lazy_flush_tlb = true;
+module_param(lazy_flush_tlb, bool, S_IRUGO | S_IWUSR);
 
 DEFINE_PER_CPU(struct kkm_kontext *, current_kontext);
 
@@ -198,8 +202,8 @@ begin:
 	cpu = get_cpu();
 	per_cpu(current_kontext, cpu) = kkm_kontext;
 
-	if ((cpu != ga->cpu) || (kkm->id != kkm_idt_get_id(cpu))) {
-
+	if ((lazy_flush_tlb == false) || (cpu != ga->cpu) ||
+	    (kkm->id != kkm_idt_get_id(cpu))) {
 		/*
 		 * invalidate older TLB entries
 		 */
