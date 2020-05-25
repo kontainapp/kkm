@@ -53,7 +53,7 @@ kkm_switch_to_gk_asm:
 	 *	old - native kernel stack
 	 *	new - guest kernel stack
 	 */
-	mov	%rsi, %rsp
+	movq	%rsi, %rsp
 
 	/* guest private area is still in %rdi */
 	call kkm_guest_kernel_start_payload
@@ -93,14 +93,14 @@ kkm_switch_to_hk_asm:
 	 *	old - guest kernel address space
 	 *	new - native kernel address space
 	 */
-	mov	%rdi, %cr3
+	movq	%rdi, %cr3
 
 	/*
 	 * switch stacks
 	 *	old - guest kernel stack
 	 *	new - native kernel stack
 	 */
-	mov	%rsi, %rsp
+	movq	%rsi, %rsp
 	jmp	kkm_restore_label
 
 	/* NOTREACHED */
