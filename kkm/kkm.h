@@ -22,6 +22,8 @@
 #define KKM_CONTEXT_MAP_PAGE_COUNT (3)
 #define KKM_CONTEXT_MAP_SIZE (KKM_CONTEXT_MAP_PAGE_COUNT * 4096)
 
+#define	KKM_INVALID_ID	(-1ULL)
+
 struct kkm_kontext_mmap_area {
 	struct page *page;
 	unsigned long kvaddr;
@@ -34,6 +36,7 @@ struct kkm_kontext_mmap_area {
  * required to return to native kernel
  */
 struct kkm_kontext {
+	uint64_t id;
 	bool used;
 	bool first_thread;
 	bool new_thread;
@@ -124,6 +127,7 @@ struct kkm_mem_slot {
  * per guest data structure
  */
 struct kkm {
+	uint64_t id;
 	int kontainer_fd;
 	refcount_t reference_count;
 
@@ -165,7 +169,7 @@ struct kkm {
 	 * guest private area page table hierarchy
 	 * vdso, vvar and monitor -> guest code
 	 */
-	struct kkm_mmu kkm_guest_pml4e;
+	struct kkm_mmu_pml4e kkm_guest_pml4e;
 };
 
 #endif /* __KKM_H__ */

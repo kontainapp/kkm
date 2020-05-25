@@ -94,11 +94,11 @@ kkm_switch_to_hk_asm:
 	 * invlidate TLB
 	 * toggle CR4_PGE bit and then restore
 	 */
-	movq	%cr4, %rax
-	movq	%rax, %rbx
-	xorq	$0x80, %rax
-	movq	%rax, %cr4
-	movq	%rbx, %cr4
+	/*movq	%cr4, %rax*/
+	/*movq	%rax, %rbx*/
+	/*xorq	$0x80, %rax*/
+	/*movq	%rax, %cr4*/
+	/*movq	%rbx, %cr4*/
 
 	/*
 	 * switch stacks
@@ -223,12 +223,12 @@ kkm_switch_to_gp_asm:
 	 * invlidate TLB
 	 * toggle CR4_PGE bit and then restore
 	 */
-	movq	%cr4, %rax
-	pushq	%rax
-	xorq	$0x80, %rax
-	movq	%rax, %cr4
-	popq	%rax
-	movq	%rax, %cr4
+	/*movq	%cr4, %rax*/
+	/*pushq	%rax*/
+	/*xorq	$0x80, %rax*/
+	/*movq	%rax, %cr4*/
+	/*popq	%rax*/
+	/*movq	%rax, %cr4*/
 
 	/*
 	 * rbx, rax, rdi were used as scratch registers.
@@ -249,6 +249,7 @@ kkm_switch_to_gp_asm:
 	iretq
 
 	.size kkm_switch_to_gp_asm, .-kkm_switch_to_gp_asm
+
 
 /*
  * keep at the end of this file

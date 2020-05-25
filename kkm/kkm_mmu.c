@@ -13,23 +13,28 @@
 #include <linux/mm.h>
 #include <linux/log2.h>
 #include <asm/io.h>
+#include <asm/tlbflush.h>
 
 #include "kkm.h"
 #include "kkm_mm.h"
 
-struct kkm_mmu kkm_mmu;
+/*
+ * page table hierarchy for kx area
+ */
+struct kkm_mmu_pml4e kkm_mmu_kx;
 
 /*
  * allocate pages and initialize pud, pmd, pt for private area
  */
 int kkm_mmu_init(void)
 {
-	return kkm_create_p4ml(&kkm_mmu, KKM_PRIVATE_START_VA);
+	return kkm_create_p4ml(&kkm_mmu_kx, KKM_PRIVATE_START_VA);
 }
 
 void kkm_mmu_cleanup(void)
 {
-	kkm_cleanup_p4ml(&kkm_mmu);
+	kkm_mmu_flush_tlb();
+	kkm_cleanup_p4ml(&kkm_mmu_kx);
 }
 
 static inline uint64_t kkm_mmu_entry_pa(uint64_t entry)
@@ -38,15 +43,33 @@ static inline uint64_t kkm_mmu_entry_pa(uint64_t entry)
 }
 
 /*
+ * flush TLB entries for GUEST_KERNEL_PCID and GUEST_PAYLOAD_PCID
+ */
+void kkm_mmu_flush_tlb(void)
+{
+	invpcid_flush_single_context(GUEST_KERNEL_PCID);
+	invpcid_flush_single_context(GUEST_PAYLOAD_PCID);
+}
+
+/*
+ * flush one page TLB entry for GUEST_KERNEL_PCID and GUEST_PAYLOAD_PCID
+ */
+void kkm_mmu_flush_tlb_one_page(uint64_t addr)
+{
+	invpcid_flush_one(GUEST_KERNEL_PCID, addr);
+	invpcid_flush_one(GUEST_PAYLOAD_PCID, addr);
+}
+
+/*
  * allocate pages and initialize page table hierrarchy
  */
-int kkm_create_p4ml(struct kkm_mmu *kmu, uint64_t address)
+int kkm_create_p4ml(struct kkm_mmu_pml4e *kmu, uint64_t address)
 {
 	int ret_val = 0;
 	int pud_idx;
 	int pmd_idx;
 
-	memset(kmu, 0, sizeof(struct kkm_mmu));
+	memset(kmu, 0, sizeof(struct kkm_mmu_pml4e));
 
 	/* alocate page for pud */
 	ret_val = kkm_mm_allocate_page(&kmu->pud.page, &kmu->pud.va,
@@ -98,7 +121,7 @@ error:
 	return ret_val;
 }
 
-void kkm_cleanup_p4ml(struct kkm_mmu *kmu)
+void kkm_cleanup_p4ml(struct kkm_mmu_pml4e *kmu)
 {
 	if (kmu->pud.page != NULL) {
 		kkm_mm_free_page(kmu->pud.va);
@@ -116,7 +139,7 @@ void kkm_cleanup_p4ml(struct kkm_mmu *kmu)
  */
 uint64_t kkm_mmu_get_pgd_entry(void)
 {
-	return kkm_mmu.pgd_entry;
+	return kkm_mmu_kx.pgd_entry;
 }
 
 /*
@@ -157,10 +180,10 @@ void kkm_mmu_set_guest_area(phys_addr_t pa0, phys_addr_t pa1, phys_addr_t pa2,
 	int page_index = kkm_mmu_get_per_cpu_start_index();
 	uint64_t flags = _PAGE_NX | _PAGE_RW | _PAGE_PRESENT;
 
-	kkm_mmu_insert_page(kkm_mmu.pt.va, page_index, pa0, flags);
-	kkm_mmu_insert_page(kkm_mmu.pt.va, page_index + 1, pa1, flags);
-	kkm_mmu_insert_page(kkm_mmu.pt.va, page_index + 2, pa2, flags);
-	kkm_mmu_insert_page(kkm_mmu.pt.va, page_index + 3, pa3, flags);
+	kkm_mmu_insert_page(kkm_mmu_kx.pt.va, page_index, pa0, flags);
+	kkm_mmu_insert_page(kkm_mmu_kx.pt.va, page_index + 1, pa1, flags);
+	kkm_mmu_insert_page(kkm_mmu_kx.pt.va, page_index + 2, pa2, flags);
+	kkm_mmu_insert_page(kkm_mmu_kx.pt.va, page_index + 3, pa3, flags);
 }
 
 /*
@@ -182,7 +205,7 @@ void kkm_mmu_set_idt(phys_addr_t idt_pa)
 	/*
 	 * pte KKM_PTE_INDEX_IDT corresponds to KKM_IDT_START_VA
 	 */
-	kkm_mmu_insert_page(kkm_mmu.pt.va, KKM_PTE_INDEX_IDT, idt_pa,
+	kkm_mmu_insert_page(kkm_mmu_kx.pt.va, KKM_PTE_INDEX_IDT, idt_pa,
 			    _PAGE_NX | _PAGE_PRESENT);
 }
 
@@ -199,9 +222,9 @@ void kkm_mmu_set_idt_text(phys_addr_t text_page0_pa, phys_addr_t text_page1_pa)
 	/*
 	 * pte KKM_PTE_INDEX_TEXT_0 corresponds to KKM_IDT_GLOBAL_START
 	 */
-	kkm_mmu_insert_page(kkm_mmu.pt.va, KKM_PTE_INDEX_TEXT_0, text_page0_pa,
+	kkm_mmu_insert_page(kkm_mmu_kx.pt.va, KKM_PTE_INDEX_TEXT_0, text_page0_pa,
 			    _PAGE_RW | _PAGE_PRESENT);
-	kkm_mmu_insert_page(kkm_mmu.pt.va, KKM_PTE_INDEX_TEXT_1, text_page1_pa,
+	kkm_mmu_insert_page(kkm_mmu_kx.pt.va, KKM_PTE_INDEX_TEXT_1, text_page1_pa,
 			    _PAGE_RW | _PAGE_PRESENT);
 }
 
@@ -213,7 +236,7 @@ void kkm_mmu_set_kx_global(phys_addr_t kx_global_pa)
 	/*
 	 * pte KKM_PTE_INDEX_KX corresponds to KKM_IDT_GLOBAL_START
 	 */
-	kkm_mmu_insert_page(kkm_mmu.pt.va, KKM_PTE_INDEX_KX, kx_global_pa,
+	kkm_mmu_insert_page(kkm_mmu_kx.pt.va, KKM_PTE_INDEX_KX, kx_global_pa,
 			    _PAGE_NX | _PAGE_RW | _PAGE_PRESENT);
 }
 
@@ -250,7 +273,7 @@ int kkm_mmu_copy_kernel_pgd(uint64_t current_pgd_base, void *guest_kernel_va,
 	 * set private area in kernel pml4 area
 	 */
 	kkm_mmu_set_entry((void *)guest_kernel_va, KKM_PGD_INDEX,
-			  kkm_mmu.pgd_entry);
+			  kkm_mmu_kx.pgd_entry);
 
 	/*
 	 * point to user pgd.
@@ -259,14 +282,14 @@ int kkm_mmu_copy_kernel_pgd(uint64_t current_pgd_base, void *guest_kernel_va,
 	 * kernel pml4 is even page
 	 * user pml4 is odd page
 	 */
-	current_pgd_base += PAGE_SIZE;
+	//current_pgd_base += PAGE_SIZE;
 	kkm_mmu_copy_range(current_pgd_base, KKM_PGD_KERNEL_OFFSET,
 			   (uint64_t)guest_payload_va, KKM_PGD_KERNEL_OFFSET,
 			   KKM_PGD_KERNEL_SIZE);
 
 	/* set private area in guest pml4 */
 	kkm_mmu_set_entry((void *)guest_payload_va, KKM_PGD_INDEX,
-			  kkm_mmu.pgd_entry);
+			  kkm_mmu_kx.pgd_entry);
 
 	return 0;
 }
@@ -278,7 +301,7 @@ int kkm_mmu_copy_kernel_pgd(uint64_t current_pgd_base, void *guest_kernel_va,
  * copy the above pml4 entry to point to 128TB in guest payload for stack and mmap
  */
 int kkm_mmu_sync(uint64_t current_pgd_base, void *guest_kernel_va,
-		 void *guest_payload_va, struct kkm_mmu *guest)
+		 void *guest_payload_va, struct kkm_mmu_pml4e *guest)
 {
 	uint64_t native_kernel_entry = -1;
 	uint64_t guest_payload_entry = -1;
@@ -341,7 +364,7 @@ int kkm_mmu_sync(uint64_t current_pgd_base, void *guest_kernel_va,
 bool kkm_kontext_mmu_update_priv_area(uint64_t guest_fault_address,
 				      uint64_t monitor_fault_address,
 				      uint64_t current_pgd_base,
-				      struct kkm_mmu *guest)
+				      struct kkm_mmu_pml4e *guest)
 {
 	bool ret_val = true;
 	uint64_t pgd_idx = pgd_index(monitor_fault_address);

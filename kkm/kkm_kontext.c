@@ -11,6 +11,7 @@
  */
 
 #include <linux/mm.h>
+#include <linux/moduleparam.h>
 #include <asm/desc.h>
 #include <asm/tlbflush.h>
 #include <asm/debugreg.h>
@@ -30,6 +31,9 @@
 #include "kkm_offsets.h"
 #include "kkm_intr.h"
 #include "kkm_intr_table.h"
+
+static bool __read_mostly lazy_flush_tlb = true;
+module_param(lazy_flush_tlb, bool, S_IRUGO | S_IWUSR);
 
 DEFINE_PER_CPU(struct kkm_kontext *, current_kontext);
 
@@ -78,6 +82,7 @@ int kkm_kontext_init(struct kkm_kontext *kkm_kontext)
 	 */
 	ga->kkm_kontext = kkm_kontext;
 	ga->guest_area_beg = (uint64_t)ga;
+	ga->cpu = KKM_INVALID_CPU_ID;
 
 	kkm_kontext->new_thread = true;
 	kkm_kontext->debug_registers_set = false;
@@ -197,14 +202,27 @@ begin:
 	cpu = get_cpu();
 	per_cpu(current_kontext, cpu) = kkm_kontext;
 
+	if ((lazy_flush_tlb == false) || (cpu != ga->cpu) ||
+	    (kkm->id != kkm_idt_get_id(cpu))) {
+		/*
+		 * invalidate older TLB entries
+		 */
+		kkm_mmu_flush_tlb();
+
+		ga->cpu = cpu;
+		kkm_idt_set_id(cpu, kkm->id);
+	}
+
 	/*
 	 * save native kernel address space(cr3 and cr4)
 	 */
 	kkm_kontext->native_kernel_cr3 = __read_cr3();
 	kkm_kontext->native_kernel_cr4 = __read_cr4();
 
-	ga->guest_kernel_cr3 = kkm->gk_pml4.pa;
-	ga->guest_payload_cr3 = kkm->gp_pml4.pa;
+	ga->guest_kernel_cr3 =
+		(kkm->gk_pml4.pa & ~PCID_MASK) | GUEST_KERNEL_PCID;
+	ga->guest_payload_cr3 =
+		(kkm->gp_pml4.pa & ~PCID_MASK) | GUEST_PAYLOAD_PCID;
 
 	ga->guest_kernel_cr4 = kkm_kontext->native_kernel_cr4;
 
@@ -238,7 +256,7 @@ begin:
 	 * change to guest kernel address space
 	 * TODO: move this code to kkm_switch_to_gk_asm
 	 */
-	kkm_change_address_space(ga->guest_kernel_cr3);
+	//kkm_change_address_space(ga->guest_kernel_cr3);
 
 	/*
 	 * switch to guest kernel
@@ -294,9 +312,10 @@ void kkm_guest_kernel_start_payload(struct kkm_guest_area *ga)
 	uint64_t syscall_entry_addr = 0;
 	struct kkm_kontext *kkm_kontext = ga->kkm_kontext;
 
-	ga = kkm_mmu_get_cur_cpu_guest_va();
+	//ga = kkm_mmu_get_cur_cpu_guest_va();
 
-	cpu = get_cpu();
+	//cpu = get_cpu();
+	cpu = ga->cpu;
 	cea = get_cpu_entry_area(cpu);
 
 	/*
@@ -369,7 +388,8 @@ void kkm_guest_kernel_start_payload(struct kkm_guest_area *ga)
 	 * start payload
 	 * call function in kx area
 	 */
-	kkm_switch_to_gp_asm_func_ptr(ga);
+	//kkm_switch_to_gp_asm_func_ptr(ga);
+	kkm_switch_to_gp_asm(ga);
 
 	/* NOTREACHED */
 }
@@ -792,6 +812,12 @@ int kkm_process_page_fault(struct kkm_kontext *kkm_kontext,
 							 (uint64_t)kkm->mm->pgd,
 							 &kkm->kkm_guest_pml4e);
 		}
+
+		/*
+		 * invalidate this address from TLB
+		 * this is required as we are no longer flusing TLB on re-entry
+		 */
+		kkm_mmu_flush_tlb_one_page(ga->sregs.cr2);
 
 		ret_val = KKM_KONTEXT_FAULT_PROCESS_DONE;
 

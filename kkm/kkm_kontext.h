@@ -35,6 +35,8 @@
 #define KKM_OUT_OPCODE (0xEF)
 #define KKM_INTR_SYSCALL (511) /* system call instruction is executed */
 
+#define KKM_INVALID_CPU_ID	(-1ULL)
+
 /*
  * keep in sync with km_hcalls.h:km_hc_args
  */
@@ -112,7 +114,7 @@ struct kkm_guest_area {
 			uint64_t guest_kernel_cr3; /* guest kernels pml4 pointer */
 			uint64_t guest_kernel_cr4; /* guest kernel cr4 */
 			uint64_t guest_payload_cr3; /* guest payload pml4 pointer */
-			uint64_t reserved0; /* unused variable */
+			uint64_t cpu; /* physical cpu this kontext is running */
 
 			/*
 			 * we use our own cs and ss instead of km provided values.

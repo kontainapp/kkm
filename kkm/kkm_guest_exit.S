@@ -2659,12 +2659,12 @@ kkm_intr_entry_asm_common:
 	 * invlidate TLB
 	 * toggle CR4_PGE bit and then restore
 	 */
-	movq	%cr4, %rdi
-	pushq	%rdi
-	xorq	$0x80, %rdi
-	movq	%rdi, %cr4
-	popq	%rdi
-	movq	%rdi, %cr4
+	/*movq	%cr4, %rdi*/
+	/*pushq	%rdi*/
+	/*xorq	$0x80, %rdi*/
+	/*movq	%rdi, %cr4*/
+	/*popq	%rdi*/
+	/*movq	%rdi, %cr4*/
 
 	/*
 	 * %rsp is currently in guest area

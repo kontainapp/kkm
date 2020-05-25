@@ -46,6 +46,13 @@
  */
 // clang-format on
 
+/*
+ * use 2 pcids that are not used by linux kernel
+ */
+#define PCID_MASK (0xFFFULL)
+#define GUEST_KERNEL_PCID (0x7FULL)
+#define GUEST_PAYLOAD_PCID (0xFFULL)
+
 /* use unused kernel virtual address for kkm fixed mapping */
 #define KKM_PRIVATE_START_VA (0xFFFFFE8000000000ULL)
 
@@ -171,7 +178,12 @@ struct kkm_mmu_page_info {
 	phys_addr_t pa; /* page physical address */
 };
 
-struct kkm_mmu {
+/*
+ * For each pml4 entry maintain all pages here
+ * this currently allows only for one child for each parent entry
+ * Lowest level entry(page table) can have as many entries.
+ */
+struct kkm_mmu_pml4e {
 	uint64_t pgd_entry; /* pml4 entry for kkm private area */
 	struct kkm_mmu_page_info pud; /* page for pdpt */
 	struct kkm_mmu_page_info pmd; /* page for pd */
@@ -180,8 +192,10 @@ struct kkm_mmu {
 
 int kkm_mmu_init(void);
 void kkm_mmu_cleanup(void);
-int kkm_create_p4ml(struct kkm_mmu *kmu, uint64_t address);
-void kkm_cleanup_p4ml(struct kkm_mmu *kmu);
+void kkm_mmu_flush_tlb(void);
+void kkm_mmu_flush_tlb_one_page(uint64_t addr);
+int kkm_create_p4ml(struct kkm_mmu_pml4e *kmu, uint64_t address);
+void kkm_cleanup_p4ml(struct kkm_mmu_pml4e *kmu);
 
 uint64_t kkm_mmu_get_pgd_entry(void);
 int kkm_mmu_get_per_cpu_start_index(void);
@@ -199,11 +213,11 @@ void kkm_mmu_set_kx_global(phys_addr_t kx_global_pa);
 int kkm_mmu_copy_kernel_pgd(uint64_t current_pgd_base, void *guest_kernel_va,
 			    void *guest_payload_va);
 int kkm_mmu_sync(uint64_t current_pgd_base, void *guest_kernel_va,
-		 void *guest_payload_va, struct kkm_mmu *guest);
+		 void *guest_payload_va, struct kkm_mmu_pml4e *guest);
 bool kkm_kontext_mmu_update_priv_area(uint64_t guest_fault_address,
 				      uint64_t monitor_fault_address,
 				      uint64_t current_pgd_base,
-				      struct kkm_mmu *guest);
+				      struct kkm_mmu_pml4e *guest);
 bool kkm_kontext_mmu_get_table_va(uint64_t *table_va, int index);
 
 #endif /* __KKM_MMU_H__ */
