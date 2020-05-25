@@ -91,16 +91,6 @@ kkm_switch_to_hk_asm:
 	mov	%rdi, %cr3
 
 	/*
-	 * invlidate TLB
-	 * toggle CR4_PGE bit and then restore
-	 */
-	/*movq	%cr4, %rax*/
-	/*movq	%rax, %rbx*/
-	/*xorq	$0x80, %rax*/
-	/*movq	%rax, %cr4*/
-	/*movq	%rbx, %cr4*/
-
-	/*
 	 * switch stacks
 	 *	old - guest kernel stack
 	 *	new - native kernel stack
@@ -218,17 +208,6 @@ kkm_switch_to_gp_asm:
 	 */
 	movq	OFF_GP_CR3(%rdi), %rax
 	movq	%rax, %cr3
-
-	/*
-	 * invlidate TLB
-	 * toggle CR4_PGE bit and then restore
-	 */
-	/*movq	%cr4, %rax*/
-	/*pushq	%rax*/
-	/*xorq	$0x80, %rax*/
-	/*movq	%rax, %cr4*/
-	/*popq	%rax*/
-	/*movq	%rax, %cr4*/
 
 	/*
 	 * rbx, rax, rdi were used as scratch registers.

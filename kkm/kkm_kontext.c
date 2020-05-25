@@ -253,12 +253,6 @@ begin:
 	ga->intr_no = -1;
 
 	/*
-	 * change to guest kernel address space
-	 * TODO: move this code to kkm_switch_to_gk_asm
-	 */
-	//kkm_change_address_space(ga->guest_kernel_cr3);
-
-	/*
 	 * switch to guest kernel
 	 * this code will switch stacks
 	 */
@@ -312,9 +306,6 @@ void kkm_guest_kernel_start_payload(struct kkm_guest_area *ga)
 	uint64_t syscall_entry_addr = 0;
 	struct kkm_kontext *kkm_kontext = ga->kkm_kontext;
 
-	//ga = kkm_mmu_get_cur_cpu_guest_va();
-
-	//cpu = get_cpu();
 	cpu = ga->cpu;
 	cea = get_cpu_entry_area(cpu);
 
