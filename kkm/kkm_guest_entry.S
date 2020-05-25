@@ -28,7 +28,9 @@
  */
 	.align 16
 	.global kkm_switch_to_gk_asm
+	.type kkm_switch_to_gk_asm, @function
 kkm_switch_to_gk_asm:
+	.cfi_startproc
 
 	/*
 	 * save callee saved registers according to C-ABI
@@ -70,6 +72,7 @@ kkm_restore_label:
 	popq	%rbp
 	retq
 
+	.cfi_endproc
 	.size kkm_switch_to_gk_asm, .-kkm_switch_to_gk_asm
 
 /*
@@ -81,7 +84,9 @@ kkm_restore_label:
  */
 	.align 16
 	.global kkm_switch_to_hk_asm
+	.type kkm_switch_to_hk_asm, @function
 kkm_switch_to_hk_asm:
+	.cfi_startproc
 
 	/*
 	 * switch address space
@@ -100,6 +105,7 @@ kkm_switch_to_hk_asm:
 
 	/* NOTREACHED */
 
+	.cfi_endproc
 	.size kkm_switch_to_hk_asm, .-kkm_switch_to_hk_asm
 
 /*
@@ -114,7 +120,9 @@ kkm_switch_to_hk_asm:
  */
 	.align 16
 	.global kkm_switch_to_gp_asm
+	.type kkm_switch_to_gp_asm, @function
 kkm_switch_to_gp_asm:
+	.cfi_startproc
 
 	pushq	%rbp
 	pushq	%rbx
@@ -227,6 +235,7 @@ kkm_switch_to_gp_asm:
 	 */
 	iretq
 
+	.cfi_endproc
 	.size kkm_switch_to_gp_asm, .-kkm_switch_to_gp_asm
 
 
@@ -235,9 +244,12 @@ kkm_switch_to_gp_asm:
  */
 	.align 16
 	.global kkm_guest_entry_end
-
+	.type kkm_guest_entry_end, @function
 kkm_guest_entry_end:
-	nop
+	.cfi_startproc
 
+	retq
+
+	.cfi_endproc
 	.size kkm_guest_entry_end, .-kkm_guest_entry_end
 

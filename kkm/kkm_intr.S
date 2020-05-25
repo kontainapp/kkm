@@ -21,7 +21,9 @@
  */
 	.align 16
 	.global kkm_forward_intr
+	.type kkm_forward_intr, @function
 kkm_forward_intr:
+	.cfi_startproc
 
 	/*
 	 * save callee saved registers according to C-ABI
@@ -50,6 +52,7 @@ kkm_forward_intr_ret:
 	popq	%rbp
 	retq
 
+	.cfi_endproc
 	.size kkm_forward_intr, .-kkm_forward_intr
 
 	.align 16
