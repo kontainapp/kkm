@@ -35,12 +35,10 @@ struct kkm_idt_entry {
 	 */
 	struct kkm_mmu_page_info idt;
 
-	void *idt_text_va;
-	phys_addr_t idt_text_page0_pa;
-	phys_addr_t idt_text_page1_pa;
+	struct kkm_mmu_page_info idt_text_page0;
+	struct kkm_mmu_page_info idt_text_page1;
 
-	void *kx_global_va;
-	phys_addr_t kx_global_pa;
+	struct kkm_mmu_page_info kx_global;
 
 	/*
 	 * save native kernel idt descriptor
@@ -111,22 +109,25 @@ int kkm_idt_descr_init(void)
 	/*
 	 * covneniece variables to track various addresses
 	 */
-	idt_entry->idt_text_va = idt_entry->idt.va + KKM_IDT_SIZE;
-	idt_entry->idt_text_page0_pa = virt_to_phys(idt_entry->idt_text_va);
-	idt_entry->idt_text_page1_pa =
-		virt_to_phys(idt_entry->idt_text_va + PAGE_SIZE);
+	idt_entry->idt_text_page0.va = idt_entry->idt.va + KKM_IDT_SIZE;
+	idt_entry->idt_text_page0.pa =
+		virt_to_phys(idt_entry->idt_text_page0.va);
 
-	idt_entry->kx_global_va = idt_entry->idt_text_va + KKM_IDT_CODE_SIZE;
-	idt_entry->kx_global_pa = virt_to_phys(idt_entry->kx_global_va);
+	idt_entry->idt_text_page1.va = idt_entry->idt_text_page0.va + PAGE_SIZE;
+	idt_entry->idt_text_page1.pa =
+		virt_to_phys(idt_entry->idt_text_page1.va);
+
+	idt_entry->kx_global.va = idt_entry->idt_text_page1.va + PAGE_SIZE;
+	idt_entry->kx_global.pa = virt_to_phys(idt_entry->kx_global.va);
 
 	/*
 	 * insert idt page, idt text and kx global in kx area
 	 * idt in kx area is readonly
 	 */
 	kkm_mmu_set_kx_global_info(idt_entry->idt.pa,
-				   idt_entry->idt_text_page0_pa,
-				   idt_entry->idt_text_page1_pa,
-				   idt_entry->kx_global_pa);
+				   idt_entry->idt_text_page0.pa,
+				   idt_entry->idt_text_page1.pa,
+				   idt_entry->kx_global.pa);
 
 	/*
 	 * save native kernel idt descriptor
@@ -192,23 +193,24 @@ int kkm_idt_descr_init(void)
 	/*
 	 * copy interrupt entry code to kx area
 	 */
-	memcpy(idt_entry->idt_text_va, kkm_intr_entry_0, KKM_KX_INTR_CODE_SIZE);
+	memcpy(idt_entry->idt_text_page0.va, kkm_intr_entry_0,
+	       KKM_KX_INTR_CODE_SIZE);
 
 	/*
 	 * copy guest entry code to kx area
 	 */
-	memcpy(idt_entry->idt_text_va + KKM_KX_INTR_CODE_SIZE,
+	memcpy(idt_entry->idt_text_page0.va + KKM_KX_INTR_CODE_SIZE,
 	       kkm_switch_to_gp_asm, KKM_KX_ENTRY_CODE_SIZE);
 
 	/*
 	 * clear kx global area
 	 */
-	memset(idt_entry->kx_global_va, 0, KKM_IDT_GLOBAL_SIZE);
+	memset(idt_entry->kx_global.va, 0, KKM_IDT_GLOBAL_SIZE);
 
 	/*
 	 * set redirect pointer in kx_global area
 	 */
-	*(uint64_t *)idt_entry->kx_global_va =
+	*(uint64_t *)idt_entry->kx_global.va =
 		(uint64_t)kkm_switch_to_host_kernel;
 
 error:
