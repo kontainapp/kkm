@@ -28,13 +28,13 @@ struct kkm_mmu_pml4e kkm_mmu_kx;
  */
 int kkm_mmu_init(void)
 {
-	return kkm_create_p4ml(&kkm_mmu_kx, KKM_PRIVATE_START_VA);
+	return kkm_create_pml4(&kkm_mmu_kx, KKM_PRIVATE_START_VA);
 }
 
 void kkm_mmu_cleanup(void)
 {
 	kkm_mmu_flush_tlb();
-	kkm_cleanup_p4ml(&kkm_mmu_kx);
+	kkm_cleanup_pml4(&kkm_mmu_kx);
 }
 
 static inline uint64_t kkm_mmu_entry_pa(uint64_t entry)
@@ -63,7 +63,7 @@ void kkm_mmu_flush_tlb_one_page(uint64_t addr)
 /*
  * allocate pages and initialize page table hierrarchy
  */
-int kkm_create_p4ml(struct kkm_mmu_pml4e *kmu, uint64_t address)
+int kkm_create_pml4(struct kkm_mmu_pml4e *kmu, uint64_t address)
 {
 	int ret_val = 0;
 	int pud_idx;
@@ -76,7 +76,7 @@ int kkm_create_p4ml(struct kkm_mmu_pml4e *kmu, uint64_t address)
 				       &kmu->pud.pa);
 	if (ret_val != 0) {
 		printk(KERN_NOTICE
-		       "kkm_create_p4ml: failed to allocate pud page error(%d)\n",
+		       "kkm_create_pml4: failed to allocate pud page error(%d)\n",
 		       ret_val);
 		goto error;
 	}
@@ -85,7 +85,7 @@ int kkm_create_p4ml(struct kkm_mmu_pml4e *kmu, uint64_t address)
 				       &kmu->pmd.pa);
 	if (ret_val != 0) {
 		printk(KERN_NOTICE
-		       "kkm_create_p4ml: failed to allocate pmd page error(%d)\n",
+		       "kkm_create_pml4: failed to allocate pmd page error(%d)\n",
 		       ret_val);
 		goto error;
 	}
@@ -93,7 +93,7 @@ int kkm_create_p4ml(struct kkm_mmu_pml4e *kmu, uint64_t address)
 	ret_val = kkm_mm_allocate_page(&kmu->pt.page, &kmu->pt.va, &kmu->pt.pa);
 	if (ret_val != 0) {
 		printk(KERN_NOTICE
-		       "kkm_create_p4ml: failed to allocate pt page error(%d)\n",
+		       "kkm_create_pml4: failed to allocate pt page error(%d)\n",
 		       ret_val);
 		goto error;
 	}
@@ -121,7 +121,7 @@ error:
 	return ret_val;
 }
 
-void kkm_cleanup_p4ml(struct kkm_mmu_pml4e *kmu)
+void kkm_cleanup_pml4(struct kkm_mmu_pml4e *kmu)
 {
 	if (kmu->pud.page != NULL) {
 		kkm_mm_free_page(kmu->pud.va);

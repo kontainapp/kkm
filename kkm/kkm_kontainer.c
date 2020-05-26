@@ -65,7 +65,7 @@ int kkm_kontainer_init(struct kkm *kkm)
 	kkm->gp_pml4.va = kkm->gk_pml4.va + PAGE_SIZE;
 	kkm->gp_pml4.pa += kkm->gk_pml4.pa + PAGE_SIZE;
 
-	ret_val = kkm_create_p4ml(&kkm->kkm_guest_pml4e,
+	ret_val = kkm_create_pml4(&kkm->kkm_guest_pml4e,
 				  KKM_KM_GUEST_PRIVATE_MEM_START_VA);
 	if (ret_val != 0) {
 		printk(KERN_NOTICE
@@ -90,7 +90,7 @@ error:
  */
 void kkm_kontainer_cleanup(struct kkm *kkm)
 {
-	kkm_cleanup_p4ml(&kkm->kkm_guest_pml4e);
+	kkm_cleanup_pml4(&kkm->kkm_guest_pml4e);
 	if (kkm->gk_pml4.page != NULL) {
 		kkm_mm_free_pages(kkm->gk_pml4.va,
 				  KKM_KONTAINER_PML4_PAGE_COUNT);

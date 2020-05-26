@@ -194,8 +194,8 @@ int kkm_mmu_init(void);
 void kkm_mmu_cleanup(void);
 void kkm_mmu_flush_tlb(void);
 void kkm_mmu_flush_tlb_one_page(uint64_t addr);
-int kkm_create_p4ml(struct kkm_mmu_pml4e *kmu, uint64_t address);
-void kkm_cleanup_p4ml(struct kkm_mmu_pml4e *kmu);
+int kkm_create_pml4(struct kkm_mmu_pml4e *kmu, uint64_t address);
+void kkm_cleanup_pml4(struct kkm_mmu_pml4e *kmu);
 
 uint64_t kkm_mmu_get_pgd_entry(void);
 int kkm_mmu_get_per_cpu_start_index(void);
