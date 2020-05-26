@@ -33,9 +33,7 @@ struct kkm_idt_entry {
 	/*
 	 * kx idt page and virtual address
 	 */
-	struct page *idt_page;
-	void *idt_va;
-	phys_addr_t idt_pa;
+	struct kkm_mmu_page_info idt;
 
 	void *idt_text_va;
 	phys_addr_t idt_text_page0_pa;
@@ -100,8 +98,8 @@ int kkm_idt_descr_init(void)
 	/*
 	 * allocate KKM_IDT_ALLOCATION_PAGES pages
 	 */
-	ret_val = kkm_mm_allocate_pages(&idt_entry->idt_page,
-					&idt_entry->idt_va, &idt_entry->idt_pa,
+	ret_val = kkm_mm_allocate_pages(&idt_entry->idt.page,
+					&idt_entry->idt.va, &idt_entry->idt.pa,
 					KKM_IDT_ALLOCATION_PAGES);
 	if (ret_val != 0) {
 		printk(KERN_NOTICE
@@ -113,7 +111,7 @@ int kkm_idt_descr_init(void)
 	/*
 	 * covneniece variables to track various addresses
 	 */
-	idt_entry->idt_text_va = idt_entry->idt_va + KKM_IDT_SIZE;
+	idt_entry->idt_text_va = idt_entry->idt.va + KKM_IDT_SIZE;
 	idt_entry->idt_text_page0_pa = virt_to_phys(idt_entry->idt_text_va);
 	idt_entry->idt_text_page1_pa =
 		virt_to_phys(idt_entry->idt_text_va + PAGE_SIZE);
@@ -125,10 +123,10 @@ int kkm_idt_descr_init(void)
 	 * insert idt page, idt text and kx global in kx area
 	 * idt in kx area is readonly
 	 */
-	kkm_mmu_set_idt(idt_entry->idt_pa);
-	kkm_mmu_set_idt_text(idt_entry->idt_text_page0_pa,
-			     idt_entry->idt_text_page1_pa);
-	kkm_mmu_set_kx_global(idt_entry->kx_global_pa);
+	kkm_mmu_set_kx_global_info(idt_entry->idt.pa,
+				   idt_entry->idt_text_page0_pa,
+				   idt_entry->idt_text_page1_pa,
+				   idt_entry->kx_global_pa);
 
 	/*
 	 * save native kernel idt descriptor
@@ -164,7 +162,7 @@ int kkm_idt_descr_init(void)
 	 * initialize idt entries
 	 * use kva to initialize idt, kx idt page is readonly
 	 */
-	gs = (struct gate_struct *)idt_entry->idt_va;
+	gs = (struct gate_struct *)idt_entry->idt.va;
 	for (i = 0; i < NR_VECTORS; i++) {
 		intr_entry_addr = KKM_IDT_CODE_START_VA +
 				  intr_function_pointers[i] -
@@ -250,9 +248,9 @@ void kkm_idt_cache_cleanup(void)
 	struct kkm_idt_entry *idt_entry;
 
 	idt_entry = &kkm_idt_cache->idt_entry;
-	kkm_mm_free_pages(idt_entry->idt_va, KKM_IDT_ALLOCATION_PAGES);
-	idt_entry->idt_page = NULL;
-	idt_entry->idt_va = NULL;
+	kkm_mm_free_pages(idt_entry->idt.va, KKM_IDT_ALLOCATION_PAGES);
+	idt_entry->idt.page = NULL;
+	idt_entry->idt.va = NULL;
 
 	kfree(kkm_idt_cache);
 	kkm_idt_cache = NULL;

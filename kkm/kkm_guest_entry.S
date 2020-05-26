@@ -16,6 +16,7 @@
 #include "kkm_offsets.h"
 
 	.text
+	.align 4096
 /*
  * %rdi -- guest private area
  * %rsi -- stack start
