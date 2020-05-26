@@ -13,7 +13,6 @@
 #include <linux/linkage.h>
 #include <asm/percpu.h>
 #include <asm/asm-offsets.h>
-#include <asm/paravirt.h>
 #include <asm/segment.h>
 
 #include "kkm_offsets.h"
@@ -2609,7 +2608,7 @@ kkm_intr_entry_asm:
 	/*
 	 * change to kernel thread local storage
 	 */
-	SWAPGS
+	swapgs
 
 kkm_intr_entry_asm_common:
 
@@ -2788,7 +2787,7 @@ kkm_syscall_entry_asm:
 	/*
 	 * change to kernel thread local storage
 	 */
-	SWAPGS
+	swapgs
 
 	/*
 	 * save current stack
