@@ -13,6 +13,7 @@
 #include <linux/linkage.h>
 #include <asm/percpu.h>
 #include <asm/asm-offsets.h>
+#include <asm/paravirt.h>
 #include "kkm_offsets.h"
 
 	.text
@@ -228,7 +229,7 @@ kkm_switch_to_gp_asm:
 	/*
 	 * set kernel thread local storage to NULL
 	 */
-	swapgs
+	SWAPGS
 
 	/*
 	 * start payload with context picked up from stack
