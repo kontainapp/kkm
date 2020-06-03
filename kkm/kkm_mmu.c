@@ -385,7 +385,7 @@ bool kkm_kontext_mmu_update_priv_area(uint64_t guest_fault_address,
 		goto end;
 	}
 
-	/* final paga talbe */
+	/* final paga table */
 	((uint64_t *)guest->pt.va)[gva_pte_idx] =
 		((uint64_t *)table_va)[pte_idx];
 
