@@ -390,17 +390,11 @@ void kkm_guest_kernel_start_payload(struct kkm_guest_area *ga)
  * enters with guest kernel cr3
  * running on guest stack
  */
-void kkm_switch_to_host_kernel(void)
+void kkm_switch_to_host_kernel(struct kkm_guest_area *ga)
 {
-	int cpu = -1;
-	struct cpu_entry_area *cea = NULL;
 	struct kkm_kontext *kkm_kontext = NULL;
-	struct kkm_guest_area *ga = NULL;
 
-	cpu = get_cpu();
-	cea = get_cpu_entry_area(cpu);
-	kkm_kontext = per_cpu(current_kontext, cpu);
-	ga = (struct kkm_guest_area *)kkm_kontext->guest_area;
+	kkm_kontext = ga->kkm_kontext;
 
 	/*
 	 * adjust registers from trap info

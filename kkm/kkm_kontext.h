@@ -185,7 +185,7 @@ int kkm_kontext_init(struct kkm_kontext *kkm_kontext);
 void kkm_kontext_cleanup(struct kkm_kontext *kkm_kontext);
 int kkm_kontext_switch_kernel(struct kkm_kontext *kkm_kontext);
 void kkm_guest_kernel_start_payload(struct kkm_guest_area *ga);
-void kkm_switch_to_host_kernel(void);
+void kkm_switch_to_host_kernel(struct kkm_guest_area *ga);
 
 void kkm_hw_debug_registers_save(uint64_t *registers);
 void kkm_hw_debug_registers_restore(uint64_t *registers);
