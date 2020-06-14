@@ -185,3 +185,17 @@ error:
 	}
 	return;
 }
+
+void kkm_show_debug_registers(struct kkm_guest_area *ga)
+{
+	printk(KERN_NOTICE "kkm_show_debug_registers: control %x\n",
+	       ga->debug.control);
+	printk(KERN_NOTICE
+	       "kkm_show_debug_registers: dr0 %llx dr1 %llx dr2 %llx dr3 %llx\n",
+	       ga->debug.registers[0], ga->debug.registers[1],
+	       ga->debug.registers[2], ga->debug.registers[3]);
+	printk(KERN_NOTICE
+	       "kkm_show_debug_registers: dr4 %llx dr5 %llx dr6 %llx dr7 %llx\n",
+	       ga->debug.registers[4], ga->debug.registers[5],
+	       ga->debug.registers[6], ga->debug.registers[7]);
+}

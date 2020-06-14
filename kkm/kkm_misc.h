@@ -24,5 +24,6 @@ void kkm_show_trap_info(struct kkm_guest_area *ga);
 void kkm_show_registers(struct kkm_guest_area *ga);
 void kkm_show_guest_qwords(struct kkm_guest_area *ga, uint64_t gva,
 			   uint64_t count);
+void kkm_show_debug_registers(struct kkm_guest_area *ga);
 
 #endif /* __KKM_MISC_H__ */
