@@ -173,6 +173,15 @@ struct kkm_fpu {
 	uint32_t pad2;
 };
 
+// kkm_debug control flags
+#define KKM_GUESTDBG_ENABLE (0x1)
+#define KKM_GUESTDBG_SINGLESTEP (0x2)
+
+#define KKM_GUESTDBG_USE_SW_BP (0x10000)
+#define KKM_GUESTDBG_USE_HW_BP (0x20000)
+#define KKM_GUESTDBG_INJECT_DB (0x40000)
+#define KKM_GUESTDBG_INJECT_BP (0x80000)
+
 // KKM_SET_DEBUG
 struct kkm_debug {
 	uint32_t control;

@@ -345,6 +345,17 @@ void kkm_guest_kernel_start_payload(struct kkm_guest_area *ga)
 		ga->regs.rflags |= X86_EFLAGS_RF;
 	}
 
+	/*
+	 * single step is requested, set required flags
+	 */
+	if ((ga->debug.control &
+	     (KKM_GUESTDBG_SINGLESTEP | KKM_GUESTDBG_ENABLE)) ==
+	    (KKM_GUESTDBG_SINGLESTEP | KKM_GUESTDBG_ENABLE)) {
+		ga->regs.rflags |= X86_EFLAGS_TF;
+	} else {
+		ga->regs.rflags &= ~X86_EFLAGS_TF;
+	}
+
 	if (kkm_kontext->debug_registers_set == true) {
 		kkm_hw_debug_registers_restore(ga->debug.registers);
 	}
