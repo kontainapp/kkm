@@ -833,9 +833,8 @@ error:
 
 	if (ret_val && ret_val != KKM_KONTEXT_FAULT_PROCESS_DONE) {
 		printk(KERN_NOTICE
-		       "kkm_process_page_fault: thread %d ret_val %d %llx\n",
-		       kkm_kontext->kontext_fd, ret_val,
-		       kkm_kontext->trap_addr);
+		       "kkm_process_page_fault: thread %lld ret_val %d %llx\n",
+		       kkm_kontext->id, ret_val, kkm_kontext->trap_addr);
 	}
 	mutex_unlock(&kkm_kontext->kkm->pf_lock);
 
