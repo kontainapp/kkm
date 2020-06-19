@@ -73,7 +73,6 @@ static int kkm_execution_kontext_release(struct inode *inode_p,
 		}
 	}
 
-	kkm_kontext->id = atomic64_inc_return(&kkm_object_id);
 	kkm_kontext->used = false;
 	kkm_kontext->first_thread = false;
 
@@ -254,6 +253,8 @@ int kkm_add_execution_kontext(struct kkm *kkm)
 
 	kkm_kontext = &kkm->kontext[i];
 
+	kkm_kontext->id = atomic64_inc_return(&kkm_object_id);
+
 	kkm_kontext->used = true;
 	kkm_kontext->first_thread = (kkm->kontext_count == 0) ? true : false;
 	kkm_kontext->task = current;
@@ -282,6 +283,7 @@ int kkm_add_execution_kontext(struct kkm *kkm)
 	}
 
 	kkm_kontext_init(kkm_kontext);
+
 
 	kkm_reference_count_up(kkm);
 
