@@ -49,6 +49,8 @@
 #define KKM_SET_DEBUG _IOW(KKM_IO, 0x9b, struct kkm_debug)
 #define KKM_GET_EVENTS _IOR(KKM_IO, 0x9f, struct kkm_ec_events)
 
+#define KKM_KONTEXT_REUSE _IO(KKM_IO, 0xf5)
+
 // KKM_GET_SUPPORTED_CONTEXT_INFO
 #define KKM_CONTEXT_INFO_ENTRY_COUNT (6)
 struct kkm_ec_entry {

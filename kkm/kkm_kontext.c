@@ -110,6 +110,19 @@ void kkm_kontext_cleanup(struct kkm_kontext *kkm_kontext)
 	}
 }
 
+int kkm_kontext_reinit(struct kkm_kontext *kkm_kontext)
+{
+	int ret_val = 0;
+
+	kkm_kontext->new_thread = true;
+	kkm_kontext->debug_registers_set = false;
+
+	kkm_kontext->syscall_pending = false;
+	kkm_kontext->ret_val_mva = -1;
+
+	return ret_val;
+}
+
 /*
  * running in native kernel address space
  */
