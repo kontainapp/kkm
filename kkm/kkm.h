@@ -18,11 +18,14 @@
 #include "kkm_externs.h"
 #include "kkm_ioctl.h"
 #include "kkm_mmu.h"
+#include "kkm_platform.h"
 
 #define KKM_CONTEXT_MAP_PAGE_COUNT (3)
 #define KKM_CONTEXT_MAP_SIZE (KKM_CONTEXT_MAP_PAGE_COUNT * 4096)
 
-#define	KKM_INVALID_ID	(-1ULL)
+#define KKM_INVALID_ID (-1ULL)
+
+extern struct kkm_platform_calls *kkm_platform;
 
 struct kkm_kontext_mmap_area {
 	struct page *page;

@@ -229,8 +229,8 @@ begin:
 	/*
 	 * save native kernel address space(cr3 and cr4)
 	 */
-	kkm_kontext->native_kernel_cr3 = __read_cr3();
-	kkm_kontext->native_kernel_cr4 = __read_cr4();
+	kkm_kontext->native_kernel_cr3 = kkm_platform->kkm_read_cr3();
+	kkm_kontext->native_kernel_cr4 = kkm_platform->kkm_read_cr4();
 
 	ga->guest_kernel_cr3 =
 		(kkm->gk_pml4.pa & ~PCID_MASK) | GUEST_KERNEL_PCID;

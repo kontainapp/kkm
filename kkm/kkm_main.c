@@ -33,6 +33,37 @@ uint32_t kkm_version = 12;
 
 atomic64_t kkm_object_id;
 
+static bool __read_mostly platform_pv = false;
+
+static int kkm_platform_pv_ops_set(const char *s, const struct kernel_param *kp)
+{
+	bool set_pv;
+	int ret_val;
+
+	ret_val = strtobool(s, &set_pv);
+	if (ret_val == 0) {
+		platform_pv = set_pv;
+		kkm_platform =
+			platform_pv ? &kkm_platfrom_pv : &kkm_platfrom_native;
+	}
+
+	return ret_val;
+}
+
+static int kkm_platform_pv_ops_get(char *s, const struct kernel_param *kp)
+{
+	return sprintf(s, "%s", platform_pv ? "1" : "0");
+}
+
+static struct kernel_param_ops kkm_platform_pv_ops = {
+	.set = kkm_platform_pv_ops_set,
+	.get = kkm_platform_pv_ops_get,
+};
+module_param_cb(use_platform_pv, &kkm_platform_pv_ops, &platform_pv,
+		S_IRUGO | S_IWUSR);
+
+struct kkm_platform_calls *kkm_platform = NULL;
+
 void kkm_destroy_app(struct kkm *kkm)
 {
 	kfree(kkm);
@@ -286,7 +317,6 @@ int kkm_add_execution_kontext(struct kkm *kkm)
 	}
 
 	kkm_kontext_init(kkm_kontext);
-
 
 	kkm_reference_count_up(kkm);
 
@@ -604,6 +634,8 @@ static struct miscdevice kkm_device = { MISC_DYNAMIC_MINOR, KKM_DEVICE_NAME,
 static int __init kkm_init(void)
 {
 	int ret_val = 0;
+
+	kkm_platform = &kkm_platfrom_native;
 
 	if (!IS_ENABLED(CONFIG_PAGE_TABLE_ISOLATION)) {
 		printk(KERN_ERR "kkm_init: X86_FEATURE_PTI not supported.\n");
