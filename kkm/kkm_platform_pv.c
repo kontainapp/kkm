@@ -35,9 +35,21 @@ static void kkm_platform_pv_write_cr4(uint64_t value)
 	__write_cr4(value);
 }
 
+static void kkm_platform_pv_load_idt(const struct desc_ptr *dptr)
+{
+	load_idt(dptr);
+}
+
+static void kkm_platform_pv_store_idt(struct desc_ptr *dptr)
+{
+	__asm__ volatile("sidt %0" : "=m" (*dptr));
+}
+
 struct kkm_platform_calls kkm_platfrom_pv = {
 	.kkm_read_cr3 = kkm_platfrom_pv_read_cr3,
 	.kkm_write_cr3 = kkm_platform_pv_write_cr3,
 	.kkm_read_cr4 = kkm_platfrom_pv_read_cr4,
 	.kkm_write_cr4 = kkm_platform_pv_write_cr4,
+	.kkm_load_idt = kkm_platform_pv_load_idt,
+	.kkm_store_idt = kkm_platform_pv_store_idt,
 };

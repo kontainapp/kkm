@@ -132,7 +132,7 @@ int kkm_idt_descr_init(void)
 	/*
 	 * save native kernel idt descriptor
 	 */
-	store_idt(&idt_entry->native_idt_desc);
+	kkm_platform->kkm_store_idt(&idt_entry->native_idt_desc);
 
 	if (idt_entry->native_idt_desc.size != (PAGE_SIZE - 1)) {
 		printk(KERN_NOTICE
