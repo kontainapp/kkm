@@ -35,6 +35,12 @@
 static bool __read_mostly lazy_flush_tlb = true;
 module_param(lazy_flush_tlb, bool, S_IRUGO | S_IWUSR);
 
+static bool __read_mostly log_failed_guest_va_translate = true;
+module_param(log_failed_guest_va_translate, bool, S_IRUGO | S_IWUSR);
+
+static bool __read_mostly log_failed_page_fault_handling = true;
+module_param(log_failed_page_fault_handling, bool, S_IRUGO | S_IWUSR);
+
 DEFINE_PER_CPU(struct kkm_kontext *, current_kontext);
 
 /*
@@ -844,7 +850,8 @@ int kkm_process_page_fault(struct kkm_kontext *kkm_kontext,
 
 error:
 
-	if (ret_val && ret_val != KKM_KONTEXT_FAULT_PROCESS_DONE) {
+	if ((ret_val && ret_val != KKM_KONTEXT_FAULT_PROCESS_DONE) &&
+	    (log_failed_page_fault_handling == true)) {
 		printk(KERN_NOTICE
 		       "kkm_process_page_fault: thread %lld ret_val %d %llx\n",
 		       kkm_kontext->id, ret_val, kkm_kontext->trap_addr);
@@ -958,7 +965,7 @@ bool kkm_guest_va_to_monitor_va(struct kkm_kontext *kkm_kontext,
 	}
 
 end:
-	if (ret_val == false) {
+	if ((ret_val == false) && (log_failed_guest_va_translate == true)) {
 		printk(KERN_NOTICE
 		       "kkm_guest_va_to_monitor_va: failed translation faulted guest va %llx monitor va %llx ret_val %d\n",
 		       guest_va, *monitor_va, ret_val);
