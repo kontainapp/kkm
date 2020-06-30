@@ -15,12 +15,22 @@
 
 static uint64_t kkm_platfrom_pv_read_cr3(void)
 {
-	return __read_cr3();
+	uint64_t value = 0;
+#ifdef CONFIG_PARAVIRT_XXL
+	value = __read_cr3();
+#else
+	__asm__ volatile("movq %%cr3, %0" : "=r"(value) : : "memory");
+#endif
+	return value;
 }
 
 static void kkm_platform_pv_write_cr3(uint64_t value)
 {
+#ifdef CONFIG_PARAVIRT_XXL
 	write_cr3(value);
+#else
+	__asm__ volatile("movq %0, %%cr3" : : "r"(value) : "memory");
+#endif
 }
 
 static uint64_t kkm_platfrom_pv_read_cr4(void)
@@ -32,17 +42,25 @@ static uint64_t kkm_platfrom_pv_read_cr4(void)
 
 static void kkm_platform_pv_write_cr4(uint64_t value)
 {
+#ifdef CONFIG_PARAVIRT_XXL
 	__write_cr4(value);
+#else
+	__asm__ volatile("movq %0, %%cr4" : : "r"(value) : "memory");
+#endif
 }
 
 static void kkm_platform_pv_load_idt(const struct desc_ptr *dptr)
 {
+#ifdef CONFIG_PARAVIRT_XXL
 	load_idt(dptr);
+#else
+	__asm__ volatile("lidt %0" : : "m"(*dptr));
+#endif
 }
 
 static void kkm_platform_pv_store_idt(struct desc_ptr *dptr)
 {
-	__asm__ volatile("sidt %0" : "=m" (*dptr));
+	__asm__ volatile("sidt %0" : "=m"(*dptr));
 }
 
 struct kkm_platform_calls kkm_platfrom_pv = {
