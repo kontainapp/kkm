@@ -190,6 +190,7 @@ int kkm_kontext_switch_kernel(struct kkm_kontext *kkm_kontext)
 	kkm_kontext->prev_trap_no = -1;
 	kkm_kontext->prev_trap_addr = -1;
 	kkm_kontext->prev_error_code = -1;
+	kkm_kontext->trap_repeat_counter = -1;
 
 begin:
 	if (signal_pending(current) != 0) {
@@ -297,15 +298,24 @@ begin:
 		    kkm_kontext->prev_trap_no == X86_TRAP_PF &&
 		    kkm_kontext->prev_trap_addr == kkm_kontext->trap_addr &&
 		    kkm_kontext->prev_error_code == kkm_kontext->error_code) {
+			kkm_kontext->trap_repeat_counter++;
 			printk(KERN_NOTICE
-			       "kkm_kontext_switch_kernel: repeated page fault at the same address %llx error code %llx\n",
+			       "kkm_kontext_switch_kernel: repeat page fault at the same address %llx error code %llx count %llx\n",
+			       kkm_kontext->trap_addr, kkm_kontext->error_code,
+			       kkm_kontext->trap_repeat_counter);
+			if (kkm_kontext->trap_repeat_counter > KKM_MAX_REPEAT_TRAP) {
+				printk(KERN_NOTICE
+			       	"kkm_kontext_switch_kernel: bailing out after max alowed repeat page fault at the same address %llx error code %llx\n",
 			       kkm_kontext->trap_addr, kkm_kontext->error_code);
-			ret_val = -EFAULT;
-			goto error;
+				ret_val = -EFAULT;
+				goto error;
+			}
+			goto begin;
 		}
 		kkm_kontext->prev_trap_no = ga->intr_no;
 		kkm_kontext->prev_trap_addr = kkm_kontext->trap_addr;
 		kkm_kontext->prev_error_code = kkm_kontext->error_code;
+		kkm_kontext->trap_repeat_counter = 0;
 		goto begin;
 	}
 

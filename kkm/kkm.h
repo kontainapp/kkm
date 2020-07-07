@@ -24,6 +24,10 @@
 #define KKM_CONTEXT_MAP_SIZE (KKM_CONTEXT_MAP_PAGE_COUNT * 4096)
 
 #define KKM_INVALID_ID (-1ULL)
+/*
+ * maximum number of times same trap is allowed to repreat.
+ */
+#define KKM_MAX_REPEAT_TRAP	(16)
 
 extern struct kkm_platform_calls *kkm_platform;
 
@@ -117,6 +121,7 @@ struct kkm_kontext {
 	uint64_t prev_trap_no;
 	uint64_t prev_trap_addr;
 	uint64_t prev_error_code;
+	uint64_t trap_repeat_counter;
 };
 
 struct kkm_mem_slot {
