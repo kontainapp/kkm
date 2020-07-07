@@ -65,8 +65,8 @@ int kkm_kontext_init(struct kkm_kontext *kkm_kontext)
 					KKM_GUEST_AREA_PAGES);
 	if (ret_val != 0) {
 		printk(KERN_NOTICE
-		       "kkm_kontext_init: Failed to allocate memory for stack0 error(%d)\n",
-		       ret_val);
+		       "kkm_kontext_init: Thread %llx failed to allocate memory for stack0 error(%d)\n",
+		       kkm_kontext->id, ret_val);
 		goto error;
 	}
 
@@ -300,13 +300,16 @@ begin:
 		    kkm_kontext->prev_error_code == kkm_kontext->error_code) {
 			kkm_kontext->trap_repeat_counter++;
 			printk(KERN_NOTICE
-			       "kkm_kontext_switch_kernel: repeat page fault at the same address %llx error code %llx count %llx\n",
-			       kkm_kontext->trap_addr, kkm_kontext->error_code,
+			       "kkm_kontext_switch_kernel: Thread %llx repeat page fault at the same address %llx error code %llx count %llx\n",
+			       kkm_kontext->id, kkm_kontext->trap_addr,
+			       kkm_kontext->error_code,
 			       kkm_kontext->trap_repeat_counter);
-			if (kkm_kontext->trap_repeat_counter > KKM_MAX_REPEAT_TRAP) {
+			if (kkm_kontext->trap_repeat_counter >
+			    KKM_MAX_REPEAT_TRAP) {
 				printk(KERN_NOTICE
-			       	"kkm_kontext_switch_kernel: bailing out after max alowed repeat page fault at the same address %llx error code %llx\n",
-			       kkm_kontext->trap_addr, kkm_kontext->error_code);
+				       "kkm_kontext_switch_kernel: Thread %llx bailing out after allowed repeat page faults at the same address %llx error code %llx\n",
+				       kkm_kontext->id, kkm_kontext->trap_addr,
+				       kkm_kontext->error_code);
 				ret_val = -EFAULT;
 				goto error;
 			}
@@ -853,8 +856,8 @@ int kkm_process_page_fault(struct kkm_kontext *kkm_kontext,
 		ga->sregs.cr2 = 0;
 	} else {
 		printk(KERN_NOTICE
-		       "kkm_process_page_fault: page fault from kernel thread %d\n",
-		       kkm_kontext->kontext_fd);
+		       "kkm_process_page_fault: Thread %llx page fault from kernel thread %d\n",
+		       kkm_kontext->id, kkm_kontext->kontext_fd);
 		kkm_show_trap_info(ga);
 	}
 
@@ -863,7 +866,7 @@ error:
 	if ((ret_val && ret_val != KKM_KONTEXT_FAULT_PROCESS_DONE) &&
 	    (log_failed_page_fault_handling == true)) {
 		printk(KERN_NOTICE
-		       "kkm_process_page_fault: thread %lld ret_val %d %llx\n",
+		       "kkm_process_page_fault: Thread %llx ret_val %d %llx\n",
 		       kkm_kontext->id, ret_val, kkm_kontext->trap_addr);
 	}
 	mutex_unlock(&kkm_kontext->kkm->pf_lock);
@@ -977,8 +980,8 @@ bool kkm_guest_va_to_monitor_va(struct kkm_kontext *kkm_kontext,
 end:
 	if ((ret_val == false) && (log_failed_guest_va_translate == true)) {
 		printk(KERN_NOTICE
-		       "kkm_guest_va_to_monitor_va: failed translation faulted guest va %llx monitor va %llx ret_val %d\n",
-		       guest_va, *monitor_va, ret_val);
+		       "kkm_guest_va_to_monitor_va: Thread %llx failed translation faulted guest va %llx monitor va %llx ret_val %d\n",
+		       kkm_kontext->id, guest_va, *monitor_va, ret_val);
 	}
 
 	return ret_val;
