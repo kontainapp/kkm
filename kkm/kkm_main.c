@@ -116,11 +116,41 @@ static int kkm_execution_kontext_release(struct inode *inode_p,
 	return 0;
 }
 
+static inline void kkm_set_regs(struct kkm_kontext *kontext)
+{
+	struct kkm_run *kkm_run = (struct kkm_run *)kontext->mmap_area[0].kvaddr;
+	struct kkm_guest_area *ga = (struct kkm_guest_area *)kontext->guest_area;
+
+	if (kkm_run->kkm_dirty_regs & KKM_SYNC_X86_REGS) {
+		memcpy(&ga->regs, &kkm_run->s.regs.regs, sizeof(struct kkm_regs));
+		kkm_run->kkm_dirty_regs &= ~KKM_SYNC_X86_REGS;
+	}
+	if (kkm_run->kkm_dirty_regs & KKM_SYNC_X86_SREGS) {
+		memcpy(&ga->sregs, &kkm_run->s.regs.sregs, sizeof(struct kkm_sregs));
+		kkm_run->kkm_dirty_regs &= ~KKM_SYNC_X86_SREGS;
+	}
+}
+
+static inline void kkm_get_regs(struct kkm_kontext *kontext)
+{
+	struct kkm_run *kkm_run = (struct kkm_run *)kontext->mmap_area[0].kvaddr;
+	struct kkm_guest_area *ga = (struct kkm_guest_area *)kontext->guest_area;
+
+	if (kkm_run->kkm_valid_regs & KKM_SYNC_X86_REGS) {
+		memcpy(&kkm_run->s.regs.regs, &ga->regs, sizeof(struct kkm_regs));
+	}
+	if (kkm_run->kkm_valid_regs & KKM_SYNC_X86_SREGS) {
+		memcpy(&kkm_run->s.regs.sregs, &ga->sregs, sizeof(struct kkm_sregs));
+	}
+}
+
 static long kkm_run(struct kkm_kontext *kkm_kontext)
 {
 	int ret_val = 0;
 
+	kkm_set_regs(kkm_kontext);
 	ret_val = kkm_kontext_switch_kernel(kkm_kontext);
+	kkm_get_regs(kkm_kontext);
 
 	return ret_val;
 }

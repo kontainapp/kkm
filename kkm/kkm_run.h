@@ -46,6 +46,10 @@ struct kkm_debug_exit_arch {
 	uint64_t dr7;
 };
 
+#define	KKM_SYNC_X86_REGS	(1ULL)
+#define	KKM_SYNC_X86_SREGS	(2ULL)
+#define	KKM_SYNC_X86_EVENTS	(4ULL)
+
 struct kkm_sync_regs {
 	struct kkm_regs regs;
 	struct kkm_sregs sregs;
@@ -136,8 +140,8 @@ struct kkm_run {
 	};
 
 #define REGISTER_SIZE_BYTES 2048
-	uint64_t kvm_valid_regs;
-	uint64_t kvm_dirty_regs;
+	uint64_t kkm_valid_regs;
+	uint64_t kkm_dirty_regs;
 	union {
 		struct kkm_sync_regs regs;
 		int8_t reserved2[REGISTER_SIZE_BYTES];
