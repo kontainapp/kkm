@@ -906,6 +906,7 @@ int kkm_process_syscall(struct kkm_kontext *kkm_kontext,
 
 	kkm_kontext->syscall_pending = true;
 	kkm_kontext->ret_val_mva = mva;
+	ga->regs.rax = gva;
 
 error:
 	return ret_val;
