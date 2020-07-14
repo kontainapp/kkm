@@ -26,6 +26,7 @@
 
 #define KKM_GET_VERSION _IO(KKM_IO, 0)
 #define KKM_CREATE_KONTAINER _IO(KKM_IO, 1)
+#define KKM_CHECK_EXTENSION _IO(KKM_IO, 3)
 #define KKM_GET_CONTEXT_MAP_SIZE _IO(KKM_IO, 4)
 #define KKM_GET_SUPPORTED_CONTEXT_INFO _IOWR(KKM_IO, 5, struct kkm_cpuid)
 
@@ -50,6 +51,14 @@
 #define KKM_GET_EVENTS _IOR(KKM_IO, 0x9f, struct kkm_ec_events)
 
 #define KKM_KONTEXT_REUSE _IO(KKM_IO, 0xf5)
+
+// capability check. values for KKM_CHECK_EXTENSION
+#define KKM_CAP_SYNC_REGS (74)
+
+// capabilites for KKM_CAP_SYNC_REGS
+#define KKM_SYNC_X86_REGS (1ULL)
+#define KKM_SYNC_X86_SREGS (2ULL)
+#define KKM_SYNC_X86_EVENTS (4ULL)
 
 // KKM_GET_SUPPORTED_CONTEXT_INFO
 #define KKM_CONTEXT_INFO_ENTRY_COUNT (6)

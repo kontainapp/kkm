@@ -46,10 +46,6 @@ struct kkm_debug_exit_arch {
 	uint64_t dr7;
 };
 
-#define	KKM_SYNC_X86_REGS	(1ULL)
-#define	KKM_SYNC_X86_SREGS	(2ULL)
-#define	KKM_SYNC_X86_EVENTS	(4ULL)
-
 struct kkm_sync_regs {
 	struct kkm_regs regs;
 	struct kkm_sregs sregs;

@@ -118,29 +118,37 @@ static int kkm_execution_kontext_release(struct inode *inode_p,
 
 static inline void kkm_set_regs(struct kkm_kontext *kontext)
 {
-	struct kkm_run *kkm_run = (struct kkm_run *)kontext->mmap_area[0].kvaddr;
-	struct kkm_guest_area *ga = (struct kkm_guest_area *)kontext->guest_area;
+	struct kkm_run *kkm_run =
+		(struct kkm_run *)kontext->mmap_area[0].kvaddr;
+	struct kkm_guest_area *ga =
+		(struct kkm_guest_area *)kontext->guest_area;
 
 	if (kkm_run->kkm_dirty_regs & KKM_SYNC_X86_REGS) {
-		memcpy(&ga->regs, &kkm_run->s.regs.regs, sizeof(struct kkm_regs));
+		memcpy(&ga->regs, &kkm_run->s.regs.regs,
+		       sizeof(struct kkm_regs));
 		kkm_run->kkm_dirty_regs &= ~KKM_SYNC_X86_REGS;
 	}
 	if (kkm_run->kkm_dirty_regs & KKM_SYNC_X86_SREGS) {
-		memcpy(&ga->sregs, &kkm_run->s.regs.sregs, sizeof(struct kkm_sregs));
+		memcpy(&ga->sregs, &kkm_run->s.regs.sregs,
+		       sizeof(struct kkm_sregs));
 		kkm_run->kkm_dirty_regs &= ~KKM_SYNC_X86_SREGS;
 	}
 }
 
 static inline void kkm_get_regs(struct kkm_kontext *kontext)
 {
-	struct kkm_run *kkm_run = (struct kkm_run *)kontext->mmap_area[0].kvaddr;
-	struct kkm_guest_area *ga = (struct kkm_guest_area *)kontext->guest_area;
+	struct kkm_run *kkm_run =
+		(struct kkm_run *)kontext->mmap_area[0].kvaddr;
+	struct kkm_guest_area *ga =
+		(struct kkm_guest_area *)kontext->guest_area;
 
 	if (kkm_run->kkm_valid_regs & KKM_SYNC_X86_REGS) {
-		memcpy(&kkm_run->s.regs.regs, &ga->regs, sizeof(struct kkm_regs));
+		memcpy(&kkm_run->s.regs.regs, &ga->regs,
+		       sizeof(struct kkm_regs));
 	}
 	if (kkm_run->kkm_valid_regs & KKM_SYNC_X86_SREGS) {
-		memcpy(&kkm_run->s.regs.sregs, &ga->sregs, sizeof(struct kkm_sregs));
+		memcpy(&kkm_run->s.regs.sregs, &ga->sregs,
+		       sizeof(struct kkm_sregs));
 	}
 }
 
@@ -560,6 +568,18 @@ error:
 }
 
 /*
+ * ane call per guest
+ */
+int kkm_check_extension(unsigned long arg)
+{
+	switch (arg) {
+	case KKM_CAP_SYNC_REGS:
+		return (KKM_SYNC_X86_SREGS | KKM_SYNC_X86_REGS);
+	}
+	return (0);
+}
+
+/*
  * support cpuid functions needed by km
  * cpuid functions used by monitor are in cpuid_functions array.
  * execute on native cpu and return results to monitor
@@ -631,6 +651,9 @@ static long kkm_device_ioctl(struct file *file_p, unsigned int ioctl_type,
 		break;
 	case KKM_CREATE_KONTAINER:
 		ret_val = kkm_create_kontainer(arg);
+		break;
+	case KKM_CHECK_EXTENSION:
+		ret_val = kkm_check_extension(arg);
 		break;
 	case KKM_GET_CONTEXT_MAP_SIZE:
 		ret_val = KKM_CONTEXT_MAP_SIZE;
