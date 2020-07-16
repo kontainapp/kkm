@@ -97,6 +97,7 @@ int kkm_kontext_init(struct kkm_kontext *kkm_kontext)
 	kkm_kontext->ret_val_mva = -1;
 
 	kkm_kontext->exception_posted = false;
+	kkm_kontext->exception_saved_rax = -1;
 	kkm_kontext->exception_saved_rbx = -1;
 
 error:
@@ -181,10 +182,12 @@ int kkm_kontext_switch_kernel(struct kkm_kontext *kkm_kontext)
 	kkm_kontext->ret_val_mva = -1;
 
 	if (kkm_kontext->exception_posted == true) {
+		ga->regs.rax = kkm_kontext->exception_saved_rax;
 		ga->regs.rbx = kkm_kontext->exception_saved_rbx;
 	}
 
 	kkm_kontext->exception_posted = false;
+	kkm_kontext->exception_saved_rax = -1;
 	kkm_kontext->exception_saved_rbx = -1;
 
 	kkm_kontext->prev_trap_no = -1;
@@ -672,6 +675,8 @@ int kkm_process_common_without_error(struct kkm_kontext *kkm_kontext,
 			    ga->regs.rsp, FAULT_UNKNOWN);
 
 	kkm_kontext->exception_posted = true;
+	kkm_kontext->exception_saved_rax = ga->regs.rax;
+	ga->regs.rax = gva;
 	kkm_kontext->exception_saved_rbx = ga->regs.rbx;
 	ga->regs.rbx = ga->intr_no;
 
@@ -720,6 +725,8 @@ int kkm_process_common_with_error(struct kkm_kontext *kkm_kontext,
 			    ga->regs.rsp, FAULT_UNKNOWN);
 
 	kkm_kontext->exception_posted = true;
+	kkm_kontext->exception_saved_rax = ga->regs.rax;
+	ga->regs.rax = gva;
 	kkm_kontext->exception_saved_rbx = ga->regs.rbx;
 	ga->regs.rbx = ga->intr_no;
 

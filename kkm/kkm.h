@@ -106,6 +106,7 @@ struct kkm_kontext {
 	 * to accomodate km
 	 */
 	bool exception_posted;
+	uint64_t exception_saved_rax;
 	uint64_t exception_saved_rbx;
 
 	/*
