@@ -127,6 +127,10 @@ int kkm_kontext_reinit(struct kkm_kontext *kkm_kontext)
 	kkm_kontext->syscall_pending = false;
 	kkm_kontext->ret_val_mva = -1;
 
+	kkm_kontext->exception_posted = false;
+	kkm_kontext->exception_saved_rax = -1;
+	kkm_kontext->exception_saved_rbx = -1;
+
 	return ret_val;
 }
 
@@ -160,7 +164,7 @@ int kkm_kontext_switch_kernel(struct kkm_kontext *kkm_kontext)
 				     ->mmap_area[1]
 				     .kvaddr;
 			if (pa->reason == FAULT_SYSCALL) {
-				ga->regs.rsp += KKM_KM_HC_ARGS_SIZE;
+				ga->regs.rsp += sizeof(struct kkm_hc_args);
 			}
 		}
 	}

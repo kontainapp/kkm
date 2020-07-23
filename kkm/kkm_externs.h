@@ -55,6 +55,20 @@
 #define KKM_GUEST_KMGUESTMEM_BASE_VA                                           \
 	(KKM_KM_GUEST_PRIVATE_MEM_START_VA + 0x8000)
 
-#define KKM_KM_HC_ARGS_SIZE (56)
+/*
+ * keep in sync with km_hcalls.h:km_hc_args
+ */
+struct kkm_hc_args {
+	uint64_t ret_val;
+	uint64_t argument1;
+	uint64_t argument2;
+	uint64_t argument3;
+	uint64_t argument4;
+	uint64_t argument5;
+	uint64_t argument6;
+};
+static_assert(sizeof(struct kkm_hc_args) == 56, "kkm_hc_args is known to monitor, size is fixed at 56 bytes");
+
+#define KKM_KM_HC_ARGS_SIZE (sizeof(struct kkm_hc_args))
 
 #endif /* __KKM_EXTERNS_H__ */

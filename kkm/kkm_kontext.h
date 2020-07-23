@@ -67,19 +67,6 @@ struct kkm_intr_stack_with_error_code {
 };
 
 /*
- * keep in sync with km_hcalls.h:km_hc_args
- */
-struct kkm_hc_args {
-	uint64_t ret_val;
-	uint64_t argument1;
-	uint64_t argument2;
-	uint64_t argument3;
-	uint64_t argument4;
-	uint64_t argument5;
-	uint64_t argument6;
-};
-
-/*
  * trap info. HW pushes the following information on stack
  * before calling intr entry point
  */
