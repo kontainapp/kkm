@@ -256,7 +256,5 @@ struct kkm_private_area {
 	uint32_t data;
 	enum fault_reason reason;
 };
-static_assert(sizeof(struct kkm_private_area) == 8,
-	      "kkm_private_area is known to monitor, size is fixed at 8 bytes");
 
 #endif /* __KKM_IOCTL_H__ */
