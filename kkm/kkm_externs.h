@@ -59,6 +59,7 @@
  * keep in sync with km_hcalls.h:km_hc_args
  */
 struct kkm_hc_args {
+	uint64_t rsp;
 	uint64_t ret_val;
 	uint64_t argument1;
 	uint64_t argument2;
@@ -67,7 +68,7 @@ struct kkm_hc_args {
 	uint64_t argument5;
 	uint64_t argument6;
 };
-static_assert(sizeof(struct kkm_hc_args) == 56, "kkm_hc_args is known to monitor, size is fixed at 56 bytes");
+static_assert(sizeof(struct kkm_hc_args) == 64, "kkm_hc_args is known to monitor, size is fixed at 64 bytes");
 
 #define KKM_KM_HC_ARGS_SIZE (sizeof(struct kkm_hc_args))
 

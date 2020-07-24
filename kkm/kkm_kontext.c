@@ -146,6 +146,9 @@ int kkm_kontext_switch_kernel(struct kkm_kontext *kkm_kontext)
 	uint64_t syscall_ret_value = 0;
 	struct kkm_run *kkm_run = NULL;
 	struct kkm_private_area *pa = NULL;
+	uint64_t hcargs_indirect_ptr_mva = 0;
+	uint64_t gva = 0;
+	uint64_t mva = 0;
 
 	ga = (struct kkm_guest_area *)kkm_kontext->guest_area;
 
@@ -170,11 +173,30 @@ int kkm_kontext_switch_kernel(struct kkm_kontext *kkm_kontext)
 	}
 
 	if (kkm_kontext->syscall_pending == true) {
+		if (kkm_guest_va_to_monitor_va(kkm_kontext, ga->sregs.gs.base,
+					       &hcargs_indirect_ptr_mva,
+					       NULL) == false) {
+			ret_val = -EFAULT;
+			goto error;
+		}
+
+		if (copy_from_user(&gva, (void *)hcargs_indirect_ptr_mva, sizeof(uint64_t))) {
+			ret_val = -EFAULT;
+			goto error;
+		}
+
+		if (kkm_guest_va_to_monitor_va(kkm_kontext, gva,
+					       &mva,
+					       NULL) == false) {
+			ret_val = -EFAULT;
+			goto error;
+		}
+
 		/*
 		 * copy system call return value from monitor
 		 */
 		if (copy_from_user(&syscall_ret_value,
-				   (void *)kkm_kontext->ret_val_mva,
+				   &((struct kkm_hc_args *)mva)->ret_val,
 				   sizeof(uint64_t))) {
 			ret_val = -EFAULT;
 			goto error;
@@ -356,6 +378,8 @@ void kkm_guest_kernel_start_payload(struct kkm_guest_area *ga)
 
 	loadsegment(fs, 0);
 	wrmsrl(MSR_FS_BASE, ga->sregs.fs.base);
+
+	wrmsrl(MSR_KERNEL_GS_BASE, ga->sregs.gs.base);
 
 	/*
 	 * set guest 64bit SYSCALL target address
@@ -892,6 +916,7 @@ int kkm_process_syscall(struct kkm_kontext *kkm_kontext,
 	struct kkm_hc_args args;
 	uint64_t gva = 0;
 	uint64_t mva = 0;
+	uint64_t hcargs_indirect_ptr_mva = 0;
 
 	gva = ga->regs.rsp - sizeof(struct kkm_hc_args);
 
@@ -911,6 +936,18 @@ int kkm_process_syscall(struct kkm_kontext *kkm_kontext,
 		goto error;
 	}
 	if (copy_to_user((void *)mva, &args, sizeof(struct kkm_hc_args))) {
+		ret_val = -EFAULT;
+		goto error;
+	}
+
+	if (kkm_guest_va_to_monitor_va(kkm_kontext, ga->sregs.gs.base,
+				       &hcargs_indirect_ptr_mva,
+				       NULL) == false) {
+		ret_val = -EFAULT;
+		goto error;
+	}
+
+	if (copy_to_user((void *)hcargs_indirect_ptr_mva, &gva, sizeof(uint64_t))) {
 		ret_val = -EFAULT;
 		goto error;
 	}
