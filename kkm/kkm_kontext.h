@@ -80,6 +80,13 @@ struct kkm_trap_info {
 };
 
 /*
+ * replicate entry_stack here
+ * entry stack has different sizes based on kernel version
+ */
+struct payload_entry_stack {
+	uint64_t words[64];
+};
+/*
  * per vcpu guest private area,
  * used for switching in and out of kontext payload
  * this will be mapped to per cpu private area just before switching to payload
@@ -157,7 +164,7 @@ struct kkm_guest_area {
 			 * first page of guest area(0xE00 - 0x1000)
 			 * payload_entry_stack is used in kkm_guest_entry.S
 			 */
-			struct entry_stack
+			struct payload_entry_stack
 				payload_entry_stack; /* stack used for switching to payload */
 		};
 		uint8_t data[GUEST_PRIVATE_DATA_SIZE];
