@@ -27,7 +27,7 @@
 /*
  * maximum number of times same trap is allowed to repreat.
  */
-#define KKM_MAX_REPEAT_TRAP	(16)
+#define KKM_MAX_REPEAT_TRAP (16)
 
 extern struct kkm_platform_calls *kkm_platform;
 
@@ -35,6 +35,19 @@ struct kkm_kontext_mmap_area {
 	struct page *page;
 	unsigned long kvaddr;
 	int offset;
+};
+
+/*
+ * save when KKM_SET_REGS happens
+ */
+struct saved_info {
+	bool si_used;
+
+	bool si_syscall_pending;
+	uint64_t si_ret_val_mva;
+	bool si_exception_posted;
+	uint64_t si_exception_saved_rax;
+	uint64_t si_exception_saved_rbx;
 };
 
 /*
@@ -123,6 +136,8 @@ struct kkm_kontext {
 	uint64_t prev_trap_addr;
 	uint64_t prev_error_code;
 	uint64_t trap_repeat_counter;
+
+	struct saved_info si;
 };
 
 struct kkm_mem_slot {

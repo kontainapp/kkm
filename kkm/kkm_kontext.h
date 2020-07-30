@@ -35,7 +35,7 @@
 #define KKM_OUT_OPCODE (0xEF)
 #define KKM_INTR_SYSCALL (511) /* system call instruction is executed */
 
-#define KKM_INVALID_CPU_ID	(-1ULL)
+#define KKM_INVALID_CPU_ID (-1ULL)
 
 /*
  * keep in sync with km_hcalls.h:km_hc_args
@@ -169,8 +169,11 @@ struct kkm_guest_area {
 static_assert(sizeof(struct kkm_guest_area) == 8192, "Size is not correct");
 
 int kkm_kontext_init(struct kkm_kontext *kkm_kontext);
+void kkm_kontext_si_init(struct kkm_kontext *kkm_kontext);
 void kkm_kontext_cleanup(struct kkm_kontext *kkm_kontext);
 int kkm_kontext_reinit(struct kkm_kontext *kkm_kontext);
+void kkm_kontext_save_info(struct kkm_kontext *kkm_kontext);
+void kkm_kontext_restore_info(struct kkm_kontext *kkm_kontext);
 int kkm_kontext_switch_kernel(struct kkm_kontext *kkm_kontext);
 void kkm_guest_kernel_start_payload(struct kkm_guest_area *ga);
 void kkm_switch_to_host_kernel(struct kkm_guest_area *ga);

@@ -100,11 +100,23 @@ int kkm_kontext_init(struct kkm_kontext *kkm_kontext)
 	kkm_kontext->exception_saved_rax = -1;
 	kkm_kontext->exception_saved_rbx = -1;
 
+	kkm_kontext_si_init(kkm_kontext);
+
 error:
 	if (ret_val != 0) {
 		kkm_kontext_cleanup(kkm_kontext);
 	}
 	return ret_val;
+}
+
+void kkm_kontext_si_init(struct kkm_kontext *kkm_kontext)
+{
+	kkm_kontext->si.si_used = false;
+	kkm_kontext->si.si_syscall_pending = false;
+	kkm_kontext->si.si_ret_val_mva = -1;
+	kkm_kontext->si.si_exception_posted = false;
+	kkm_kontext->si.si_exception_saved_rax = -1;
+	kkm_kontext->si.si_exception_saved_rbx = -1;
 }
 
 void kkm_kontext_cleanup(struct kkm_kontext *kkm_kontext)
@@ -131,7 +143,41 @@ int kkm_kontext_reinit(struct kkm_kontext *kkm_kontext)
 	kkm_kontext->exception_saved_rax = -1;
 	kkm_kontext->exception_saved_rbx = -1;
 
+	kkm_kontext_si_init(kkm_kontext);
+
 	return ret_val;
+}
+
+void kkm_kontext_save_info(struct kkm_kontext *kkm_kontext)
+{
+	kkm_kontext->si.si_used = true;
+	kkm_kontext->si.si_syscall_pending = kkm_kontext->syscall_pending;
+	kkm_kontext->si.si_ret_val_mva = kkm_kontext->ret_val_mva;
+	kkm_kontext->si.si_exception_posted = kkm_kontext->exception_posted;
+	kkm_kontext->si.si_exception_saved_rax =
+		kkm_kontext->exception_saved_rax;
+	kkm_kontext->si.si_exception_saved_rbx =
+		kkm_kontext->exception_saved_rbx;
+
+
+	kkm_kontext->syscall_pending = false;
+	kkm_kontext->ret_val_mva = -1;
+	kkm_kontext->exception_posted = false;
+	kkm_kontext->exception_saved_rax = -1;
+	kkm_kontext->exception_saved_rbx = -1;
+}
+
+void kkm_kontext_restore_info(struct kkm_kontext *kkm_kontext)
+{
+	kkm_kontext->syscall_pending = kkm_kontext->si.si_syscall_pending;
+	kkm_kontext->ret_val_mva = kkm_kontext->si.si_ret_val_mva;
+	kkm_kontext->exception_posted = kkm_kontext->si.si_exception_posted;
+	kkm_kontext->exception_saved_rax =
+		kkm_kontext->si.si_exception_saved_rax;
+	kkm_kontext->exception_saved_rbx =
+		kkm_kontext->si.si_exception_saved_rbx;
+
+	kkm_kontext_si_init(kkm_kontext);
 }
 
 /*
@@ -180,14 +226,14 @@ int kkm_kontext_switch_kernel(struct kkm_kontext *kkm_kontext)
 			goto error;
 		}
 
-		if (copy_from_user(&gva, (void *)hcargs_indirect_ptr_mva, sizeof(uint64_t))) {
+		if (copy_from_user(&gva, (void *)hcargs_indirect_ptr_mva,
+				   sizeof(uint64_t))) {
 			ret_val = -EFAULT;
 			goto error;
 		}
 
-		if (kkm_guest_va_to_monitor_va(kkm_kontext, gva,
-					       &mva,
-					       NULL) == false) {
+		if (kkm_guest_va_to_monitor_va(kkm_kontext, gva, &mva, NULL) ==
+		    false) {
 			ret_val = -EFAULT;
 			goto error;
 		}
@@ -947,7 +993,8 @@ int kkm_process_syscall(struct kkm_kontext *kkm_kontext,
 		goto error;
 	}
 
-	if (copy_to_user((void *)hcargs_indirect_ptr_mva, &gva, sizeof(uint64_t))) {
+	if (copy_to_user((void *)hcargs_indirect_ptr_mva, &gva,
+			 sizeof(uint64_t))) {
 		ret_val = -EFAULT;
 		goto error;
 	}
