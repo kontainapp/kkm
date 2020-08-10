@@ -159,7 +159,6 @@ void kkm_kontext_save_info(struct kkm_kontext *kkm_kontext)
 	kkm_kontext->si.si_exception_saved_rbx =
 		kkm_kontext->exception_saved_rbx;
 
-
 	kkm_kontext->syscall_pending = false;
 	kkm_kontext->ret_val_mva = -1;
 	kkm_kontext->exception_posted = false;
@@ -1011,6 +1010,8 @@ bool kkm_guest_va_to_monitor_va(struct kkm_kontext *kkm_kontext,
 				uint64_t guest_va, uint64_t *monitor_va,
 				bool *priv_area)
 {
+	struct kkm_guest_area *ga =
+		(struct kkm_guest_area *)kkm_kontext->guest_area;
 	struct kkm_mem_slot *mem_slot = NULL;
 	bool ret_val = false;
 
@@ -1076,8 +1077,9 @@ bool kkm_guest_va_to_monitor_va(struct kkm_kontext *kkm_kontext,
 end:
 	if ((ret_val == false) && (log_failed_guest_va_translate == true)) {
 		printk(KERN_NOTICE
-		       "kkm_guest_va_to_monitor_va: Thread %llx failed translation faulted guest va %llx monitor va %llx ret_val %d\n",
-		       kkm_kontext->id, guest_va, *monitor_va, ret_val);
+		       "kkm_guest_va_to_monitor_va: Thread %llx failed translation faulted guest va %llx monitor va %llx ret_val %d rip %llx rsp %llx\n",
+		       kkm_kontext->id, guest_va, *monitor_va, ret_val,
+		       ga->regs.rip, ga->regs.rsp);
 	}
 
 	return ret_val;
