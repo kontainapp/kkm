@@ -57,6 +57,7 @@ struct saved_info {
  */
 struct kkm_kontext {
 	uint64_t id;
+	uint64_t index;
 	bool used;
 	bool first_thread;
 	bool new_thread;

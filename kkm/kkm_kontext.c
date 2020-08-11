@@ -1077,9 +1077,9 @@ bool kkm_guest_va_to_monitor_va(struct kkm_kontext *kkm_kontext,
 end:
 	if ((ret_val == false) && (log_failed_guest_va_translate == true)) {
 		printk(KERN_NOTICE
-		       "kkm_guest_va_to_monitor_va: Thread %llx failed translation faulted guest va %llx monitor va %llx ret_val %d rip %llx rsp %llx\n",
-		       kkm_kontext->id, guest_va, *monitor_va, ret_val,
-		       ga->regs.rip, ga->regs.rsp);
+		       "kkm_guest_va_to_monitor_va: Thread %llx index %llx failed translation faulted guest va %llx monitor va %llx ret_val %d rip %llx rsp %llx cr2 %llx\n",
+		       kkm_kontext->id, kkm_kontext->index, guest_va, *monitor_va, ret_val,
+		       ga->regs.rip, ga->regs.rsp, ga->sregs.cr2);
 	}
 
 	return ret_val;

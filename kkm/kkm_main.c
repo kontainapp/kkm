@@ -326,6 +326,7 @@ int kkm_add_execution_kontext(struct kkm *kkm)
 	kkm_kontext = &kkm->kontext[i];
 
 	kkm_kontext->id = atomic64_inc_return(&kkm_object_id);
+	kkm_kontext->index = i;
 
 	kkm_kontext->used = true;
 	kkm_kontext->first_thread = (kkm->kontext_count == 0) ? true : false;
