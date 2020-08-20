@@ -249,6 +249,8 @@ static long kkm_execution_kontext_ioctl(struct file *file_p,
 			ret_val = kkm_kontext_reinit(kkm_kontext);
 			break;
 		case KKM_GET_EVENTS:
+			/* return success */
+			break;
 		default:
 			printk(KERN_NOTICE
 			       "kkm_execution_kontext_ioctl: unsupported ioctl_type(%x)\n",
