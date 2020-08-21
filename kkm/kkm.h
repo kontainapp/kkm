@@ -38,19 +38,6 @@ struct kkm_kontext_mmap_area {
 };
 
 /*
- * save when KKM_SET_REGS happens
- */
-struct saved_info {
-	bool si_used;
-
-	bool si_syscall_pending;
-	uint64_t si_ret_val_mva;
-	bool si_exception_posted;
-	uint64_t si_exception_saved_rax;
-	uint64_t si_exception_saved_rbx;
-};
-
-/*
  * per vcpu context area
  * used to save some information
  * required to return to native kernel
@@ -137,8 +124,6 @@ struct kkm_kontext {
 	uint64_t prev_trap_addr;
 	uint64_t prev_error_code;
 	uint64_t trap_repeat_counter;
-
-	struct saved_info si;
 };
 
 struct kkm_mem_slot {

@@ -51,6 +51,8 @@
 #define KKM_GET_EVENTS _IOR(KKM_IO, 0x9f, struct kkm_ec_events)
 
 #define KKM_KONTEXT_REUSE _IO(KKM_IO, 0xf5)
+#define KKM_KONTEXT_GET_SAVE_INFO _IOR(KKM_IO, 0xf6, struct kkm_save_info)
+#define KKM_KONTEXT_SET_SAVE_INFO _IOW(KKM_IO, 0xf7, struct kkm_save_info)
 
 // capability check. values for KKM_CHECK_EXTENSION
 #define KKM_CAP_SYNC_REGS (74)
@@ -258,5 +260,25 @@ struct kkm_private_area {
 };
 static_assert(sizeof(struct kkm_private_area) == 8,
 	      "kkm_private_area is known to monitor, size is fixed at 8 bytes");
+
+#define KKM_SAVE_INFO_SZ (64)
+/*
+ * signal handling support
+ * KKM_KONTEXT_GET_SAVE_INFO and KKM_KONTEXT_SET_SAVE_INFO
+ */
+struct kkm_save_info {
+	union {
+		struct {
+			bool syscall_pending;
+			uint64_t ret_val_mva;
+			bool exception_posted;
+			uint64_t exception_saved_rax;
+			uint64_t exception_saved_rbx;
+		};
+		uint8_t data[KKM_SAVE_INFO_SZ];
+	};
+};
+static_assert(sizeof(struct kkm_save_info) == 64,
+	      "kkm_save_info is known to monitor, size is fixed at 64 bytes");
 
 #endif /* __KKM_IOCTL_H__ */

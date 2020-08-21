@@ -194,6 +194,7 @@ static long kkm_execution_kontext_ioctl(struct file *file_p,
 		(struct kkm_kontext *)file_p->private_data;
 	struct kkm_guest_area *ga =
 		(struct kkm_guest_area *)kkm_kontext->guest_area;
+	struct kkm_save_info si;
 
 	if (ioctl_type == KKM_RUN) {
 		/* switch to guest payload */
@@ -247,6 +248,18 @@ static long kkm_execution_kontext_ioctl(struct file *file_p,
 			break;
 		case KKM_KONTEXT_REUSE:
 			ret_val = kkm_kontext_reinit(kkm_kontext);
+			break;
+		case KKM_KONTEXT_GET_SAVE_INFO:
+			kkm_kontext_get_save_info(kkm_kontext, &si);
+			ret_val = kkm_to_user((void *)arg, &si,
+					      sizeof(struct kkm_save_info));
+			break;
+		case KKM_KONTEXT_SET_SAVE_INFO:
+			ret_val = kkm_from_user(&si, (void *)arg,
+						sizeof(struct kkm_save_info));
+			if (ret_val == 0) {
+				kkm_kontext_set_save_info(kkm_kontext, &si);
+			}
 			break;
 		case KKM_GET_EVENTS:
 			/* return success */

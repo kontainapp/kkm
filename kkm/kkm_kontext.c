@@ -100,23 +100,11 @@ int kkm_kontext_init(struct kkm_kontext *kkm_kontext)
 	kkm_kontext->exception_saved_rax = -1;
 	kkm_kontext->exception_saved_rbx = -1;
 
-	kkm_kontext_si_init(kkm_kontext);
-
 error:
 	if (ret_val != 0) {
 		kkm_kontext_cleanup(kkm_kontext);
 	}
 	return ret_val;
-}
-
-void kkm_kontext_si_init(struct kkm_kontext *kkm_kontext)
-{
-	kkm_kontext->si.si_used = false;
-	kkm_kontext->si.si_syscall_pending = false;
-	kkm_kontext->si.si_ret_val_mva = -1;
-	kkm_kontext->si.si_exception_posted = false;
-	kkm_kontext->si.si_exception_saved_rax = -1;
-	kkm_kontext->si.si_exception_saved_rbx = -1;
 }
 
 void kkm_kontext_cleanup(struct kkm_kontext *kkm_kontext)
@@ -143,21 +131,17 @@ int kkm_kontext_reinit(struct kkm_kontext *kkm_kontext)
 	kkm_kontext->exception_saved_rax = -1;
 	kkm_kontext->exception_saved_rbx = -1;
 
-	kkm_kontext_si_init(kkm_kontext);
-
 	return ret_val;
 }
 
-void kkm_kontext_save_info(struct kkm_kontext *kkm_kontext)
+void kkm_kontext_get_save_info(struct kkm_kontext *kkm_kontext,
+			       struct kkm_save_info *si)
 {
-	kkm_kontext->si.si_used = true;
-	kkm_kontext->si.si_syscall_pending = kkm_kontext->syscall_pending;
-	kkm_kontext->si.si_ret_val_mva = kkm_kontext->ret_val_mva;
-	kkm_kontext->si.si_exception_posted = kkm_kontext->exception_posted;
-	kkm_kontext->si.si_exception_saved_rax =
-		kkm_kontext->exception_saved_rax;
-	kkm_kontext->si.si_exception_saved_rbx =
-		kkm_kontext->exception_saved_rbx;
+	si->syscall_pending = kkm_kontext->syscall_pending;
+	si->ret_val_mva = kkm_kontext->ret_val_mva;
+	si->exception_posted = kkm_kontext->exception_posted;
+	si->exception_saved_rax = kkm_kontext->exception_saved_rax;
+	si->exception_saved_rbx = kkm_kontext->exception_saved_rbx;
 
 	kkm_kontext->syscall_pending = false;
 	kkm_kontext->ret_val_mva = -1;
@@ -166,17 +150,14 @@ void kkm_kontext_save_info(struct kkm_kontext *kkm_kontext)
 	kkm_kontext->exception_saved_rbx = -1;
 }
 
-void kkm_kontext_restore_info(struct kkm_kontext *kkm_kontext)
+void kkm_kontext_set_save_info(struct kkm_kontext *kkm_kontext,
+			       struct kkm_save_info *si)
 {
-	kkm_kontext->syscall_pending = kkm_kontext->si.si_syscall_pending;
-	kkm_kontext->ret_val_mva = kkm_kontext->si.si_ret_val_mva;
-	kkm_kontext->exception_posted = kkm_kontext->si.si_exception_posted;
-	kkm_kontext->exception_saved_rax =
-		kkm_kontext->si.si_exception_saved_rax;
-	kkm_kontext->exception_saved_rbx =
-		kkm_kontext->si.si_exception_saved_rbx;
-
-	kkm_kontext_si_init(kkm_kontext);
+	kkm_kontext->syscall_pending = si->syscall_pending;
+	kkm_kontext->ret_val_mva = si->ret_val_mva;
+	kkm_kontext->exception_posted = si->exception_posted;
+	kkm_kontext->exception_saved_rax = si->exception_saved_rax;
+	kkm_kontext->exception_saved_rbx = si->exception_saved_rbx;
 }
 
 /*
@@ -1078,8 +1059,9 @@ end:
 	if ((ret_val == false) && (log_failed_guest_va_translate == true)) {
 		printk(KERN_NOTICE
 		       "kkm_guest_va_to_monitor_va: Thread %llx index %llx failed translation faulted guest va %llx monitor va %llx ret_val %d rip %llx rsp %llx cr2 %llx\n",
-		       kkm_kontext->id, kkm_kontext->index, guest_va, *monitor_va, ret_val,
-		       ga->regs.rip, ga->regs.rsp, ga->sregs.cr2);
+		       kkm_kontext->id, kkm_kontext->index, guest_va,
+		       *monitor_va, ret_val, ga->regs.rip, ga->regs.rsp,
+		       ga->sregs.cr2);
 	}
 
 	return ret_val;

@@ -179,8 +179,10 @@ int kkm_kontext_init(struct kkm_kontext *kkm_kontext);
 void kkm_kontext_si_init(struct kkm_kontext *kkm_kontext);
 void kkm_kontext_cleanup(struct kkm_kontext *kkm_kontext);
 int kkm_kontext_reinit(struct kkm_kontext *kkm_kontext);
-void kkm_kontext_save_info(struct kkm_kontext *kkm_kontext);
-void kkm_kontext_restore_info(struct kkm_kontext *kkm_kontext);
+void kkm_kontext_get_save_info(struct kkm_kontext *kkm_kontext,
+			       struct kkm_save_info *si);
+void kkm_kontext_set_save_info(struct kkm_kontext *kkm_kontext,
+			       struct kkm_save_info *si);
 int kkm_kontext_switch_kernel(struct kkm_kontext *kkm_kontext);
 void kkm_guest_kernel_start_payload(struct kkm_guest_area *ga);
 void kkm_switch_to_host_kernel(struct kkm_guest_area *ga);
