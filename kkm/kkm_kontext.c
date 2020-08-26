@@ -604,6 +604,10 @@ int kkm_process_intr(struct kkm_kontext *kkm_kontext)
 			ret_val = kkm_process_debug(kkm_kontext, ga, kkm_run);
 			break;
 		case X86_TRAP_NMI:
+			printk(KERN_NOTICE
+			       "kkm_process_intr: Thread %llx index %llx NMI rip %llx rsp %llx cr2 %llx\n",
+			       kkm_kontext->id, kkm_kontext->index,
+			       ga->regs.rip, ga->regs.rsp, ga->sregs.cr2);
 			break;
 		case X86_TRAP_BP:
 			ret_val = kkm_process_breakpoint(kkm_kontext, ga,
