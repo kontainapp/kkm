@@ -604,6 +604,15 @@ int kkm_process_intr(struct kkm_kontext *kkm_kontext)
 			ret_val = kkm_process_debug(kkm_kontext, ga, kkm_run);
 			break;
 		case X86_TRAP_NMI:
+			/*
+			 * Some tests are causing nmi to fire when run on L0
+			 * This is due to nmi_watchdog firing for host kernel.
+			 * For now when this message is found disable nmi_watchdog
+			 *     sudo sysctl kernel.nmi_watchdog=0
+			 *
+			 * host kernel occassionally hardhangs, when NMI is forwarded
+			 * This problem needs to be debugged at a latter time.
+			 */
 			printk(KERN_NOTICE
 			       "kkm_process_intr: Thread %llx index %llx NMI rip %llx rsp %llx cr2 %llx\n",
 			       kkm_kontext->id, kkm_kontext->index,
