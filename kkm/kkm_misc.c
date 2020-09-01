@@ -37,6 +37,7 @@ void kkm_idt_invalidate(void *address)
 	load_idt(&kkm_idt);
 }
 
+#if 0
 /*
  * use CR4 to flush tbl.
  * don't use __native_flush_tlb_global
@@ -68,6 +69,7 @@ void kkm_change_address_space(phys_addr_t pgd_pa)
 	/* flush TLB */
 	kkm_flush_tlb_all();
 }
+#endif
 
 /*
  * initialize redzone around guest kernel stack

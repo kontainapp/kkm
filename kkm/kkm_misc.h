@@ -14,8 +14,10 @@
 #define __KKM_MISC_H__
 
 void kkm_idt_invalidate(void *address);
+#if 0
 void kkm_flush_tlb_all(void);
 void kkm_change_address_space(phys_addr_t pgd_pa);
+#endif
 
 void kkm_init_guest_area_redzone(struct kkm_guest_area *ga);
 void kkm_verify_guest_area_redzone(struct kkm_guest_area *ga);
