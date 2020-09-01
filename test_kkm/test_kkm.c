@@ -20,6 +20,7 @@
 #include <unistd.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 #include "kkm_ioctl.h"
 
