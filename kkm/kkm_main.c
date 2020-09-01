@@ -693,8 +693,10 @@ static struct file_operations kkm_chardev_ops = {
 	.llseek = noop_llseek,
 };
 
-static struct miscdevice kkm_device = { MISC_DYNAMIC_MINOR, KKM_DEVICE_NAME,
-					&kkm_chardev_ops };
+static struct miscdevice kkm_device = { .minor = MISC_DYNAMIC_MINOR,
+					.name = KKM_DEVICE_NAME,
+					.fops = &kkm_chardev_ops,
+					.mode = 0666 };
 
 /*
  * called during insmod
