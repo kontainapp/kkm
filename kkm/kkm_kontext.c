@@ -31,6 +31,7 @@
 #include "kkm_offsets.h"
 #include "kkm_intr.h"
 #include "kkm_intr_table.h"
+#include "kkm_statistics.h"
 
 static bool __read_mostly lazy_flush_tlb = true;
 module_param(lazy_flush_tlb, bool, S_IRUGO | S_IWUSR);
@@ -679,9 +680,15 @@ int kkm_process_intr(struct kkm_kontext *kkm_kontext)
 		default:
 			kkm_forward_intr(intr_forward_pointers[ga->intr_no]);
 			ret_val = KKM_KONTEXT_FAULT_PROCESS_DONE;
+
+			/* statistics */
+			kkm_statistics_forwarded_intr_count_inc();
 			break;
 		}
 	}
+
+	/* statistics */
+	kkm_statistics_intr_count_inc();
 
 	return ret_val;
 }
@@ -853,6 +860,9 @@ int kkm_process_general_protection(struct kkm_kontext *kkm_kontext,
 		kkm_setup_hypercall(kkm_kontext, ga, kkm_run, ga->regs.rdx,
 				    ga->regs.rax, FAULT_HYPER_CALL);
 		ga->regs.rip += 1;
+
+		/* statistics */
+		kkm_statistics_system_call_count_inc();
 	}
 
 error:
@@ -944,6 +954,12 @@ error:
 		       kkm_kontext->id, ret_val, kkm_kontext->trap_addr);
 	}
 	mutex_unlock(&kkm_kontext->kkm->pf_lock);
+
+	/* statistics */
+	kkm_statistics_page_fault_count_inc();
+	if (ret_val && ret_val != KKM_KONTEXT_FAULT_PROCESS_DONE) {
+		kkm_statistics_failed_page_fault_count_inc();
+	}
 
 	return ret_val;
 }

@@ -22,6 +22,7 @@
 #include <asm/cpu_entry_area.h>
 #include <asm/desc.h>
 
+#include "kkm_statistics.h"
 #include "kkm.h"
 #include "kkm_run.h"
 #include "kkm_kontainer.h"
@@ -32,6 +33,18 @@
 uint32_t kkm_version = 12;
 
 atomic64_t kkm_object_id;
+
+struct kkm_statistics kkm_stat;
+
+static int kkm_statistics_get(char *s, const struct kernel_param *kp)
+{
+	return kkm_statistics_show(s);
+}
+
+static struct kernel_param_ops kkm_statistics_ops = {
+	.get = kkm_statistics_get,
+};
+module_param_cb(statistics, &kkm_statistics_ops, &kkm_stat, S_IRUGO);
 
 static bool __read_mostly platform_pv = false;
 
@@ -376,6 +389,9 @@ int kkm_add_execution_kontext(struct kkm *kkm)
 
 	kkm->kontext_count++;
 
+	/* statistics */
+	kkm_statistics_kontext_count_inc();
+
 error:
 	mutex_unlock(&kkm->kontext_lock);
 	return ret_val;
@@ -577,6 +593,9 @@ int kkm_create_kontainer(unsigned long arg)
 
 	kkm_reference_count_init(kkm);
 
+	/* statistics */
+	kkm_statistics_kontainer_count_inc();
+
 	return kkm->kontainer_fd;
 
 error:
@@ -746,6 +765,9 @@ static int __init kkm_init(void)
 	}
 
 	atomic64_set(&kkm_object_id, 1ULL);
+
+	/* initialize statistics */
+	kkm_statistics_init();
 
 	printk(KERN_INFO "kkm_init: Registered kkm.\n");
 
