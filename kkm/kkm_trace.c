@@ -43,6 +43,9 @@ void kkm_trace_show(struct kkm_trace *trace)
 	for (index = 0; index < KKM_TRACE_DEPTH; index++) {
 		entry = &trace->entries[(current_index + index) %
 					KKM_TRACE_DEPTH];
+		if (entry->type == KKM_TRACE_INVALID_ENTRY) {
+			continue;
+		}
 		switch (entry->type) {
 		case KKM_TRACE_SET_REGS:
 			printk(KERN_NOTICE
@@ -79,14 +82,15 @@ void kkm_trace_show(struct kkm_trace *trace)
 			break;
 		case KKM_TRACE_PAGE_FAULT:
 			printk(KERN_NOTICE
-			       "kkm_trace_show: PAGE_FAULT cr2 %llx rip %llx rsp %llx\n",
-			       entry->page_fault.cr2, entry->page_fault.rip,
+			       "kkm_trace_show: PAGE_FAULT cr2 %llx error %llx rip %llx rsp %llx\n",
+			       entry->page_fault.cr2, entry->page_fault.error, entry->page_fault.rip,
 			       entry->page_fault.rsp);
 			break;
 		case KKM_TRACE_PAGE_FAULT_DONE:
 			printk(KERN_NOTICE
-			       "kkm_trace_show: PAGE_FAULT_DONE cr2 %llx rip %llx rsp %llx\n",
+			       "kkm_trace_show: PAGE_FAULT_DONE cr2 %llx error %llx rip %llx rsp %llx\n",
 			       entry->page_fault_done.cr2,
+			       entry->page_fault_done.error,
 			       entry->page_fault_done.rip,
 			       entry->page_fault_done.rsp);
 			break;
@@ -153,21 +157,23 @@ void kkm_trace_add_entry_forward_done(struct kkm_trace *trace, uint32_t intr,
 }
 
 void kkm_trace_add_entry_page_fault(struct kkm_trace *trace, uint64_t cr2,
-				    uint64_t rip, uint64_t rsp)
+				    uint64_t error, uint64_t rip, uint64_t rsp)
 {
 	struct kkm_trace_entry *entry = kkm_trace_get_next_entry(trace);
 	entry->type = KKM_TRACE_PAGE_FAULT;
 	entry->page_fault.cr2 = cr2;
+	entry->page_fault.error = error;
 	entry->page_fault.rip = rip;
 	entry->page_fault.rsp = rsp;
 }
 
 void kkm_trace_add_entry_page_fault_done(struct kkm_trace *trace, uint64_t cr2,
-					 uint64_t rip, uint64_t rsp)
+					 uint64_t error, uint64_t rip, uint64_t rsp)
 {
 	struct kkm_trace_entry *entry = kkm_trace_get_next_entry(trace);
 	entry->type = KKM_TRACE_PAGE_FAULT_DONE;
 	entry->page_fault_done.cr2 = cr2;
+	entry->page_fault_done.error = error;
 	entry->page_fault_done.rip = rip;
 	entry->page_fault_done.rsp = rsp;
 }
