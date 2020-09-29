@@ -91,6 +91,23 @@ int kkm_kontext_init(struct kkm_kontext *kkm_kontext)
 	ga->guest_area_beg = (uint64_t)ga;
 	ga->cpu = KKM_INVALID_CPU_ID;
 
+	/*
+	 * alocate page for xsave area
+	 */
+	ret_val = kkm_mm_allocate_page(&kkm_kontext->xsave.page,
+				       &kkm_kontext->xsave.va,
+				       &kkm_kontext->xsave.pa);
+	if (ret_val != 0) {
+		printk(KERN_NOTICE
+		       "kkm_kontext_init: Thread %llx failed to allocate memory for xsave area error(%d)\n",
+		       kkm_kontext->id, ret_val);
+		goto error;
+	}
+	kkm_kontext->kkm_kernel_xsave = kkm_kontext->xsave.va;
+	kkm_kontext->kkm_payload_xsave =
+		kkm_kontext->kkm_kernel_xsave + KKM_XSAVE_ALLOC_SIZE;
+	kkm_kontext->valid_payload_xsave_area = false;
+
 	kkm_kontext->new_thread = true;
 	kkm_kontext->debug_registers_set = false;
 
@@ -110,6 +127,9 @@ error:
 
 void kkm_kontext_cleanup(struct kkm_kontext *kkm_kontext)
 {
+	if (kkm_kontext->xsave.page != NULL) {
+		kkm_mm_free_page(kkm_kontext->xsave.va);
+	}
 	if (kkm_kontext->guest_area_page != NULL) {
 		kkm_mm_free_pages(kkm_kontext->guest_area,
 				  KKM_GUEST_AREA_PAGES);
@@ -317,6 +337,15 @@ begin:
 	savesegment(ss, kkm_kontext->native_kernel_ss);
 
 	/*
+	 * save kernel xstate
+	 * restore payload xstate
+	 */
+	kkm_guest_save_xstate(kkm_kontext->kkm_kernel_xsave);
+	if (kkm_kontext->valid_payload_xsave_area == true) {
+		kkm_guest_restore_xstate(kkm_kontext->kkm_payload_xsave);
+	}
+
+	/*
 	 * save native kernel SYSCALL target address
 	 */
 	rdmsrl(MSR_LSTAR, kkm_kontext->native_kernel_entry_syscall_64);
@@ -339,6 +368,14 @@ begin:
 		kkm_hw_debug_registers_restore(
 			kkm_kontext->native_debug_registers);
 	}
+
+	/*
+	 * save payload xstate
+	 * restore kernel xstate
+	 */
+	kkm_guest_save_xstate(kkm_kontext->kkm_payload_xsave);
+	kkm_kontext->valid_payload_xsave_area = true;
+	kkm_guest_restore_xstate(kkm_kontext->kkm_kernel_xsave);
 
 	/*
 	 * enable interrupts

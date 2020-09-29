@@ -737,6 +737,21 @@ static int __init kkm_init(void)
 		return -EINVAL;
 	}
 
+	if (!cpu_feature_enabled(X86_FEATURE_XSAVES)) {
+		printk(KERN_ERR
+		       "kkm_init: X86_FEATURE_XSAVES not supported.\n");
+		return -EINVAL;
+	}
+
+	if (fpu_kernel_xstate_size > KKM_XSAVE_ALLOC_SIZE) {
+		printk(KERN_ERR
+		       "kkm_init: fpu_kernel_xtate_size too big 0x%x.\n",
+		       fpu_kernel_xstate_size);
+		return -EINVAL;
+	}
+	printk(KERN_INFO "kkm_init: fpu_kernel_xtate_size 0x%x.\n",
+	       fpu_kernel_xstate_size);
+
 	/*
 	 * register /dev/kkm
 	 */

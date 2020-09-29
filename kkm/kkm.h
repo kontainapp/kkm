@@ -29,6 +29,12 @@
  */
 #define KKM_MAX_REPEAT_TRAP (16)
 
+/*
+ * maximum xsave area allocated
+ * one for kernel and one for payload
+ */
+#define KKM_XSAVE_ALLOC_SIZE (2048)
+
 extern struct kkm_platform_calls *kkm_platform;
 
 struct kkm_kontext_mmap_area {
@@ -69,6 +75,14 @@ struct kkm_kontext {
 		guest_area_page0_pa; /* physical address of page 0 of guest private area */
 	phys_addr_t
 		guest_area_page1_pa; /* physical address of page 1 of guest private area */
+
+	/*
+	 * XSAVE page. First 2k for kernel and next 2k for payload
+	 */
+	struct kkm_mmu_page_info xsave;
+	void *kkm_kernel_xsave;
+	void *kkm_payload_xsave;
+	bool valid_payload_xsave_area;
 
 	/*
 	 * saved during switch to guest kernel.
