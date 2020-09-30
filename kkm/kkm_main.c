@@ -29,8 +29,12 @@
 #include "kkm_kontext.h"
 #include "kkm_mm.h"
 #include "kkm_idt_cache.h"
+#include "kkm_fpu.h"
 
 uint32_t kkm_version = 12;
+
+void (*kkm_fpu_save_xstate)(void *) = kkm_fpu_save_xstate_xsaves;
+void (*kkm_fpu_restore_xstate)(void *) = kkm_fpu_restore_xstate_xsaves;
 
 atomic64_t kkm_object_id;
 
@@ -739,17 +743,28 @@ static int __init kkm_init(void)
 
 	if (!cpu_feature_enabled(X86_FEATURE_XSAVES)) {
 		printk(KERN_ERR
-		       "kkm_init: X86_FEATURE_XSAVES not supported.\n");
-		return -EINVAL;
+		       "kkm_init: X86_FEATURE_XSAVES not supported checking X86_FEATURE_XSAVE support.\n");
+		if (!cpu_feature_enabled(X86_FEATURE_XSAVE)) {
+			printk(KERN_ERR
+			       "kkm_init: X86_FEATURE_XSAVE not supported bailing.\n");
+			return -EINVAL;
+		}
+		kkm_fpu_save_xstate = kkm_fpu_save_xstate_xsave;
+		kkm_fpu_restore_xstate = kkm_fpu_restore_xstate_xsave;
+		printk(KERN_INFO "kkm_init: using X86_FEATURE_XSAVE.\n");
+	} else {
+		kkm_fpu_save_xstate = kkm_fpu_save_xstate_xsaves;
+		kkm_fpu_restore_xstate = kkm_fpu_restore_xstate_xsaves;
+		printk(KERN_INFO "kkm_init: using X86_FEATURE_XSAVES.\n");
 	}
 
-	if (fpu_kernel_xstate_size > KKM_XSAVE_ALLOC_SIZE) {
+	if (fpu_kernel_xstate_size > KKM_FPU_XSAVE_ALLOC_SIZE) {
 		printk(KERN_ERR
-		       "kkm_init: fpu_kernel_xtate_size too big 0x%x.\n",
+		       "kkm_init: fpu_kernel_xstate_size too big 0x%x.\n",
 		       fpu_kernel_xstate_size);
 		return -EINVAL;
 	}
-	printk(KERN_INFO "kkm_init: fpu_kernel_xtate_size 0x%x.\n",
+	printk(KERN_INFO "kkm_init: fpu_kernel_xstate_size 0x%x.\n",
 	       fpu_kernel_xstate_size);
 
 	/*

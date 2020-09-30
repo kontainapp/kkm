@@ -240,57 +240,6 @@ kkm_switch_to_gp_asm:
 	.size kkm_switch_to_gp_asm, .-kkm_switch_to_gp_asm
 
 /*
- * %rdi -- xsave area
- * save current processor state to xsave area
- */
-	.align 16
-	.global kkm_guest_save_xstate
-	.type kkm_guest_save_xstate, @function
-kkm_guest_save_xstate:
-	.cfi_startproc
-
-	pushq	%rax
-	pushq	%rdx
-
-	movq	$-1, %rax
-	movq	%rax, %rdx
-	xsaves64	(%rdi)
-
-	popq	%rdx
-	popq	%rax
-
-	retq
-
-	.cfi_endproc
-	.size kkm_guest_save_xstate, .-kkm_guest_save_xstate
-
-/*
- * %rdi -- xsave area
- * restore current processor state from xsave area
- */
-	.align 16
-	.global kkm_guest_restore_xstate
-	.type kkm_guest_restore_xstate, @function
-kkm_guest_restore_xstate:
-	.cfi_startproc
-
-	pushq	%rax
-	pushq	%rdx
-
-	movq	$-1, %rax
-	movq	%rax, %rdx
-
-	xrstors64	(%rdi)
-
-	popq	%rdx
-	popq	%rax
-
-	retq
-
-	.cfi_endproc
-	.size kkm_guest_restore_xstate, .-kkm_guest_restore_xstate
-
-/*
  * keep at the end of this file
  */
 	.align 16

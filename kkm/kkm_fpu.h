@@ -10,12 +10,12 @@
  * permission of Kontain Inc.
  */
 
-#ifndef __KKM_GUEST_ENTRY_H__
-#define __KKM_GUEST_ENTRY_H__
+#ifndef __KKM_FPU_H__
+#define __KKM_FPU_H__
 
-void kkm_switch_to_gk_asm(struct kkm_guest_area *ga, uint64_t stack);
-void kkm_switch_to_hk_asm(uint64_t nativer_kernel_cr3, uint64_t stack);
-void kkm_switch_to_gp_asm(struct kkm_guest_area *ga);
-void kkm_guest_entry_end(void);
+void kkm_fpu_save_xstate_xsaves(void *xstate_buf);
+void kkm_fpu_restore_xstate_xsaves(void *xstate_buf);
+void kkm_fpu_save_xstate_xsave(void *xstate_buf);
+void kkm_fpu_restore_xstate_xsave(void *xstate_buf);
 
-#endif /* __KKM_GUEST_ENTRY_H__ */
+#endif /* __KKM_FPU_H__ */

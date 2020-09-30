@@ -67,7 +67,8 @@ struct kkm_hc_args {
 	uint64_t argument5;
 	uint64_t argument6;
 };
-static_assert(sizeof(struct kkm_hc_args) == 56, "kkm_hc_args is known to monitor, size is fixed at 56 bytes");
+static_assert(sizeof(struct kkm_hc_args) == 56,
+	      "kkm_hc_args is known to monitor, size is fixed at 56 bytes");
 
 #define KKM_KM_HC_ARGS_SIZE (sizeof(struct kkm_hc_args))
 

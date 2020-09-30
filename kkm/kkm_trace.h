@@ -91,6 +91,7 @@ void kkm_trace_add_entry_forward_done(struct kkm_trace *trace, uint32_t intr,
 void kkm_trace_add_entry_page_fault(struct kkm_trace *trace, uint64_t cr2,
 				    uint64_t error, uint64_t rip, uint64_t rsp);
 void kkm_trace_add_entry_page_fault_done(struct kkm_trace *trace, uint64_t cr2,
-					 uint64_t error, uint64_t rip, uint64_t rsp);
+					 uint64_t error, uint64_t rip,
+					 uint64_t rsp);
 
 #endif /* __KKM_TRACE_H__ */

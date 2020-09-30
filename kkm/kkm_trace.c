@@ -39,7 +39,8 @@ void kkm_trace_show(struct kkm_trace *trace)
 	struct kkm_trace_entry *entry;
 
 	current_index = atomic64_read(&trace->index) + 1;
-	printk(KERN_NOTICE "kkm_trace_show: trace index 0x%llx\n", current_index);
+	printk(KERN_NOTICE "kkm_trace_show: trace index 0x%llx\n",
+	       current_index);
 	for (index = 0; index < KKM_TRACE_DEPTH; index++) {
 		entry = &trace->entries[(current_index + index) %
 					KKM_TRACE_DEPTH];
@@ -83,8 +84,8 @@ void kkm_trace_show(struct kkm_trace *trace)
 		case KKM_TRACE_PAGE_FAULT:
 			printk(KERN_NOTICE
 			       "kkm_trace_show: PAGE_FAULT cr2 %llx error %llx rip %llx rsp %llx\n",
-			       entry->page_fault.cr2, entry->page_fault.error, entry->page_fault.rip,
-			       entry->page_fault.rsp);
+			       entry->page_fault.cr2, entry->page_fault.error,
+			       entry->page_fault.rip, entry->page_fault.rsp);
 			break;
 		case KKM_TRACE_PAGE_FAULT_DONE:
 			printk(KERN_NOTICE
@@ -168,7 +169,8 @@ void kkm_trace_add_entry_page_fault(struct kkm_trace *trace, uint64_t cr2,
 }
 
 void kkm_trace_add_entry_page_fault_done(struct kkm_trace *trace, uint64_t cr2,
-					 uint64_t error, uint64_t rip, uint64_t rsp)
+					 uint64_t error, uint64_t rip,
+					 uint64_t rsp)
 {
 	struct kkm_trace_entry *entry = kkm_trace_get_next_entry(trace);
 	entry->type = KKM_TRACE_PAGE_FAULT_DONE;

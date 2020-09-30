@@ -38,12 +38,12 @@ static void kkm_platform_native_write_cr4(uint64_t value)
 
 static void kkm_platform_native_load_idt(const struct desc_ptr *dptr)
 {
-	__asm__ volatile("lidt %0" : : "m" (*dptr));
+	__asm__ volatile("lidt %0" : : "m"(*dptr));
 }
 
 static void kkm_platform_native_store_idt(struct desc_ptr *dptr)
 {
-	__asm__ volatile("sidt %0" : "=m" (*dptr));
+	__asm__ volatile("sidt %0" : "=m"(*dptr));
 }
 
 struct kkm_platform_calls kkm_platfrom_native = {

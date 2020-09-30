@@ -95,9 +95,9 @@ int kkm_kontext_init(struct kkm_kontext *kkm_kontext)
 	 * alocate space for xsave area
 	 */
 	ret_val = kkm_mm_allocate_pages(&kkm_kontext->xsave.page,
-				       &kkm_kontext->xsave.va,
-				       &kkm_kontext->xsave.pa,
-				       KKM_XSAVE_ALLOC_PAGES);
+					&kkm_kontext->xsave.va,
+					&kkm_kontext->xsave.pa,
+					KKM_FPU_XSAVE_ALLOC_PAGES);
 	if (ret_val != 0) {
 		printk(KERN_NOTICE
 		       "kkm_kontext_init: Thread %llx failed to allocate memory for xsave area error(%d)\n",
@@ -106,7 +106,7 @@ int kkm_kontext_init(struct kkm_kontext *kkm_kontext)
 	}
 	kkm_kontext->kkm_kernel_xsave = kkm_kontext->xsave.va;
 	kkm_kontext->kkm_payload_xsave =
-		kkm_kontext->kkm_kernel_xsave + KKM_XSAVE_ALLOC_SIZE;
+		kkm_kontext->kkm_kernel_xsave + KKM_FPU_XSAVE_ALLOC_SIZE;
 	kkm_kontext->valid_payload_xsave_area = false;
 
 	kkm_kontext->new_thread = true;
@@ -341,9 +341,9 @@ begin:
 	 * save kernel xstate
 	 * restore payload xstate
 	 */
-	kkm_guest_save_xstate(kkm_kontext->kkm_kernel_xsave);
+	(*kkm_fpu_save_xstate)(kkm_kontext->kkm_kernel_xsave);
 	if (kkm_kontext->valid_payload_xsave_area == true) {
-		kkm_guest_restore_xstate(kkm_kontext->kkm_payload_xsave);
+		(*kkm_fpu_restore_xstate)(kkm_kontext->kkm_payload_xsave);
 	}
 
 	/*
@@ -374,9 +374,9 @@ begin:
 	 * save payload xstate
 	 * restore kernel xstate
 	 */
-	kkm_guest_save_xstate(kkm_kontext->kkm_payload_xsave);
+	(*kkm_fpu_save_xstate)(kkm_kontext->kkm_payload_xsave);
+	(*kkm_fpu_restore_xstate)(kkm_kontext->kkm_kernel_xsave);
 	kkm_kontext->valid_payload_xsave_area = true;
-	kkm_guest_restore_xstate(kkm_kontext->kkm_kernel_xsave);
 
 	/*
 	 * enable interrupts
