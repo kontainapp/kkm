@@ -33,7 +33,8 @@
  * maximum xsave area allocated
  * one for kernel and one for payload
  */
-#define KKM_XSAVE_ALLOC_SIZE (2048)
+#define KKM_XSAVE_ALLOC_PAGES (2)
+#define KKM_XSAVE_ALLOC_SIZE (PAGE_SIZE)
 
 extern struct kkm_platform_calls *kkm_platform;
 

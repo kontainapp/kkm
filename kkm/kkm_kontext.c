@@ -92,11 +92,12 @@ int kkm_kontext_init(struct kkm_kontext *kkm_kontext)
 	ga->cpu = KKM_INVALID_CPU_ID;
 
 	/*
-	 * alocate page for xsave area
+	 * alocate space for xsave area
 	 */
-	ret_val = kkm_mm_allocate_page(&kkm_kontext->xsave.page,
+	ret_val = kkm_mm_allocate_pages(&kkm_kontext->xsave.page,
 				       &kkm_kontext->xsave.va,
-				       &kkm_kontext->xsave.pa);
+				       &kkm_kontext->xsave.pa,
+				       KKM_XSAVE_ALLOC_PAGES);
 	if (ret_val != 0) {
 		printk(KERN_NOTICE
 		       "kkm_kontext_init: Thread %llx failed to allocate memory for xsave area error(%d)\n",
