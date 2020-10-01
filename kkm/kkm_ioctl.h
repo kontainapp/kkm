@@ -174,9 +174,9 @@ struct kkm_sregs {
 // KKM_GET_FPU & KKM_SET_FPU
 struct kkm_fpu {
 	uint8_t fpr[8][16];
-	uint16_t fcs;
+	uint16_t fcw;
 	uint16_t fsw;
-	uint8_t frwx;
+	uint8_t ftwx;
 	uint8_t pad1;
 	uint16_t last_opcode;
 	uint64_t last_ip;
