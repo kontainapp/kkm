@@ -30,6 +30,7 @@
 #include "kkm_mm.h"
 #include "kkm_idt_cache.h"
 #include "kkm_fpu.h"
+#include "kkm_misc.h"
 
 uint32_t kkm_version = 12;
 
@@ -244,14 +245,18 @@ static long kkm_execution_kontext_ioctl(struct file *file_p,
 			/* return success */
 			break;
 		case KKM_GET_FPU:
-			/* get guest fpu state */
+			/* convert from xstate to ga */
+			kkm_copy_xstate_to_kkm_fpu(kkm_kontext->kkm_payload_xsave, &ga->fpu);
+			/* copy from ga to user space */
 			ret_val = kkm_to_user((void *)arg, &ga->fpu,
 					      sizeof(struct kkm_fpu));
 			break;
 		case KKM_SET_FPU:
-			/* set guest fpu state */
+			/* copy user space to ga */
 			ret_val = kkm_from_user(&ga->fpu, (void *)arg,
 						sizeof(struct kkm_fpu));
+			/* convert from ga to xstate */
+			kkm_copy_kkm_fpu_to_xstate(&ga->fpu, kkm_kontext->kkm_payload_xsave);
 			break;
 		case KKM_SET_CPUID:
 			/* return success */

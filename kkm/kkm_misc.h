@@ -28,4 +28,7 @@ void kkm_show_guest_qwords(struct kkm_guest_area *ga, uint64_t gva,
 			   uint64_t count);
 void kkm_show_debug_registers(struct kkm_guest_area *ga);
 
+void kkm_copy_xstate_to_kkm_fpu(void *fpregs_state, struct kkm_fpu *kkm_fpu);
+void kkm_copy_kkm_fpu_to_xstate(struct kkm_fpu *kkm_fpu, void *fpregs_state);
+
 #endif /* __KKM_MISC_H__ */

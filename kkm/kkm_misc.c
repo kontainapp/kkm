@@ -16,11 +16,13 @@
 #include <asm/tlbflush.h>
 #include <asm/debugreg.h>
 #include <asm/cpu_entry_area.h>
+#include <asm/fpu/types.h>
 
 #include "kkm.h"
 #include "kkm_run.h"
 #include "kkm_kontext.h"
 #include "kkm_misc.h"
+#include "kkm_ioctl.h"
 
 /*
  * dont use
@@ -200,4 +202,42 @@ void kkm_show_debug_registers(struct kkm_guest_area *ga)
 	       "kkm_show_debug_registers: dr4 %llx dr5 %llx dr6 %llx dr7 %llx\n",
 	       ga->debug.registers[4], ga->debug.registers[5],
 	       ga->debug.registers[6], ga->debug.registers[7]);
+}
+
+/*
+ * convert xstate to kvm_fpu
+ */
+void kkm_copy_xstate_to_kkm_fpu(void *fpregs_state, struct kkm_fpu *kvm_fpu)
+{
+	struct xregs_state *xs = (struct xregs_state *)fpregs_state;
+
+	memcpy(kvm_fpu->fpr, xs->i387.st_space, sizeof(xs->i387.st_space));
+	kvm_fpu->fcw = xs->i387.cwd;
+	kvm_fpu->fsw = xs->i387.swd;
+	kvm_fpu->ftwx = (uint8_t)xs->i387.twd;
+	kvm_fpu->pad1 = 0;
+	kvm_fpu->last_opcode = xs->i387.fop;
+	kvm_fpu->last_ip = xs->i387.rip;
+	kvm_fpu->last_dp = xs->i387.rdp;
+	memcpy(kvm_fpu->xmm, xs->i387.xmm_space, sizeof(xs->i387.xmm_space));
+	kvm_fpu->mxcsr = xs->i387.mxcsr;
+	kvm_fpu->pad2 = 0;
+}
+
+/*
+ * convert kvm_fpu to xstate
+ */
+void kkm_copy_kkm_fpu_to_xstate(struct kkm_fpu *kvm_fpu, void *fpregs_state)
+{
+	struct xregs_state *xs = (struct xregs_state *)fpregs_state;
+
+	memcpy(xs->i387.st_space, kvm_fpu->fpr, sizeof(xs->i387.st_space));
+	xs->i387.cwd = kvm_fpu->fcw;
+	xs->i387.swd = kvm_fpu->fsw;
+	xs->i387.twd = kvm_fpu->ftwx;
+	xs->i387.fop = kvm_fpu->last_opcode;
+	xs->i387.rip = kvm_fpu->last_ip;
+	xs->i387.rdp = kvm_fpu->last_dp;
+	memcpy(xs->i387.xmm_space, kvm_fpu->xmm, sizeof(xs->i387.xmm_space));
+	xs->i387.mxcsr = kvm_fpu->mxcsr;
 }
