@@ -283,6 +283,14 @@ static long kkm_execution_kontext_ioctl(struct file *file_p,
 				kkm_kontext_set_save_info(kkm_kontext, &si);
 			}
 			break;
+		case KKM_KONTEXT_GET_XSTATE:
+			ret_val = kkm_to_user((void *)arg, kkm_kontext->kkm_payload_xsave,
+					      sizeof(struct kkm_xstate));
+			break;
+		case KKM_KONTEXT_SET_XSTATE:
+			ret_val = kkm_from_user(kkm_kontext->kkm_payload_xsave, (void *)arg,
+						sizeof(struct kkm_xstate));
+			break;
 		case KKM_GET_EVENTS:
 			/* return success */
 			break;

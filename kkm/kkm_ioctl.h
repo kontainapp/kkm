@@ -53,6 +53,8 @@
 #define KKM_KONTEXT_REUSE _IO(KKM_IO, 0xf5)
 #define KKM_KONTEXT_GET_SAVE_INFO _IOR(KKM_IO, 0xf6, struct kkm_save_info)
 #define KKM_KONTEXT_SET_SAVE_INFO _IOW(KKM_IO, 0xf7, struct kkm_save_info)
+#define KKM_KONTEXT_GET_XSTATE _IOR(KKM_IO, 0xf8, struct kkm_xstate)
+#define KKM_KONTEXT_SET_XSTATE _IOW(KKM_IO, 0xf9, struct kkm_xstate)
 
 // capability check. values for KKM_CHECK_EXTENSION
 #define KKM_CAP_SYNC_REGS (74)
@@ -280,5 +282,15 @@ struct kkm_save_info {
 };
 static_assert(sizeof(struct kkm_save_info) == 64,
 	      "kkm_save_info is known to monitor, size is fixed at 64 bytes");
+
+/*
+ * signal handling support
+ * KKM_KONTEXT_GET_XSTATE and KKM_KONTEXT_SET_XSTATE
+ */
+struct kkm_xstate {
+	uint8_t data[PAGE_SIZE];
+};
+static_assert(sizeof(struct kkm_xstate) == 4096,
+	      "kkm_xstate is known to monitor, size is fixed at 4096 bytes");
 
 #endif /* __KKM_IOCTL_H__ */
