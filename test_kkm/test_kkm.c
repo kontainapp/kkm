@@ -17,6 +17,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <sys/ioctl.h>
+#include <sys/user.h>
 #include <unistd.h>
 #include <stdint.h>
 #include <stdlib.h>
