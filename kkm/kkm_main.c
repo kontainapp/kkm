@@ -200,6 +200,22 @@ static long kkm_from_user(void *dest, void *src, size_t size)
 }
 
 /*
+ * fetch msrs from user land.
+ * We cannot set msr's as we share cpu with host os
+ */
+static long kkm_set_msrs(void *arg)
+{
+	struct kkm_msrs msrs;
+	long ret_val = 0;
+
+	ret_val = kkm_from_user(&msrs, arg, sizeof(struct kkm_msrs));
+	if (ret_val == 0) {
+		ret_val = msrs.nmsrs;
+	}
+	return ret_val;
+}
+
+/*
  * ioctls on execution context anon fd
  * all the copies go directly to/from guest private area
  */
@@ -242,11 +258,13 @@ static long kkm_execution_kontext_ioctl(struct file *file_p,
 						sizeof(struct kkm_sregs));
 			break;
 		case KKM_SET_MSRS:
-			/* return success */
+			/* set msrs */
+			ret_val = kkm_set_msrs((void *)arg);
 			break;
 		case KKM_GET_FPU:
 			/* convert from xstate to ga */
-			kkm_copy_xstate_to_kkm_fpu(kkm_kontext->kkm_payload_xsave, &ga->fpu);
+			kkm_copy_xstate_to_kkm_fpu(
+				kkm_kontext->kkm_payload_xsave, &ga->fpu);
 			/* copy from ga to user space */
 			ret_val = kkm_to_user((void *)arg, &ga->fpu,
 					      sizeof(struct kkm_fpu));
@@ -256,7 +274,8 @@ static long kkm_execution_kontext_ioctl(struct file *file_p,
 			ret_val = kkm_from_user(&ga->fpu, (void *)arg,
 						sizeof(struct kkm_fpu));
 			/* convert from ga to xstate */
-			kkm_copy_kkm_fpu_to_xstate(&ga->fpu, kkm_kontext->kkm_payload_xsave);
+			kkm_copy_kkm_fpu_to_xstate(
+				&ga->fpu, kkm_kontext->kkm_payload_xsave);
 			break;
 		case KKM_SET_CPUID:
 			/* return success */
@@ -284,11 +303,13 @@ static long kkm_execution_kontext_ioctl(struct file *file_p,
 			}
 			break;
 		case KKM_KONTEXT_GET_XSTATE:
-			ret_val = kkm_to_user((void *)arg, kkm_kontext->kkm_payload_xsave,
+			ret_val = kkm_to_user((void *)arg,
+					      kkm_kontext->kkm_payload_xsave,
 					      sizeof(struct kkm_xstate));
 			break;
 		case KKM_KONTEXT_SET_XSTATE:
-			ret_val = kkm_from_user(kkm_kontext->kkm_payload_xsave, (void *)arg,
+			ret_val = kkm_from_user(kkm_kontext->kkm_payload_xsave,
+						(void *)arg,
 						sizeof(struct kkm_xstate));
 			break;
 		case KKM_GET_EVENTS:
