@@ -22,9 +22,9 @@
 #define OFF_GAB (8 * 1) /* guest_area_beg */
 #define OFF_NK_STACK (8 * 2) /* native_kernel_stack */
 #define OFF_GK_CR3 (8 * 3) /* guest_kernel_cr3 */
-#define OFF_GK_CR4 (8 * 4) /* guest_kernel_cr3 */
+#define OFF_GK_CR4 (8 * 4) /* guest_kernel_cr4 */
 #define OFF_GP_CR3 (8 * 5) /* guest_payload_cr3 */
-#define OFF_GSV (8 * 6) /* guest_stack_variable_address */
+#define OFF_CPU (8 * 6) /* cpu */
 #define OFF_GP_CS (8 * 7) /* guest_payload_cs */
 #define OFF_GP_SS (8 * 8) /* guest_payload_ss */
 
