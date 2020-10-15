@@ -175,7 +175,7 @@ struct kkm {
 	 */
 	struct mutex kontext_lock;
 	uint32_t kontext_count;
-	struct kkm_kontext kontext[KKM_MAX_CONTEXTS];
+	struct kkm_kontext *kontext[KKM_MAX_CONTEXTS];
 
 	/*
 	 * page fault lock

@@ -84,6 +84,14 @@ struct kkm_platform_calls *kkm_platform = NULL;
 
 void kkm_destroy_app(struct kkm *kkm)
 {
+	int i = 0;
+
+	for (i = 0; i < KKM_MAX_CONTEXTS; i++) {
+		if (kkm->kontext[i] != NULL) {
+			kfree(kkm->kontext[i]);
+			kkm->kontext[i] = NULL;
+		}
+	}
 	kfree(kkm);
 }
 
@@ -384,12 +392,24 @@ int kkm_add_execution_kontext(struct kkm *kkm)
 	}
 
 	for (i = 0; i < KKM_MAX_CONTEXTS; i++) {
-		if (kkm->kontext[i].used == false) {
+		if (kkm->kontext[i] == NULL) {
+			kkm->kontext[i] =
+				kzalloc(sizeof(struct kkm_kontext), GFP_KERNEL);
+			if (kkm->kontext[i] == NULL) {
+				printk(KERN_NOTICE
+				       "kkm_add_execution_kontext: could not "
+				       "allocate memory for kontext\n");
+				ret_val = -ENOMEM;
+				goto error;
+			}
+			break;
+		}
+		if (kkm->kontext[i]->used == false) {
 			break;
 		}
 	}
 
-	kkm_kontext = &kkm->kontext[i];
+	kkm_kontext = kkm->kontext[i];
 
 	kkm_kontext->id = atomic64_inc_return(&kkm_object_id);
 	kkm_kontext->index = i;
@@ -415,13 +435,18 @@ int kkm_add_execution_kontext(struct kkm *kkm)
 		kkma->offset = i;
 		kkma->page = alloc_page(GFP_KERNEL | __GFP_ZERO);
 		if (kkma->page == NULL) {
+			printk(KERN_NOTICE
+			       "kkm_add_execution_kontext: could not "
+			       "allocate memory for kontext map page\n");
 			ret_val = -ENOMEM;
 			goto error;
 		}
 		kkma->kvaddr = (unsigned long)page_address(kkma->page);
 	}
 
-	kkm_kontext_init(kkm_kontext);
+	if (kkm_kontext_init(kkm_kontext) != 0) {
+		goto error;
+	}
 
 	kkm_reference_count_up(kkm);
 
@@ -640,9 +665,6 @@ error:
 	return ret_val;
 }
 
-/*
- * ane call per guest
- */
 int kkm_check_extension(unsigned long arg)
 {
 	switch (arg) {
