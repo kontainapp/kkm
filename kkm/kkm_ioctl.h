@@ -247,7 +247,7 @@ struct kkm_memory_region {
 	uint64_t userspace_addr;
 };
 
-#define KKM_MAX_CONTEXTS (64)
+#define KKM_MAX_CONTEXTS (288)
 #define KKM_MAX_MEMORY_SLOTS (64)
 
 enum fault_reason {
