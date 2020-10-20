@@ -271,7 +271,7 @@ int kkm_kontext_switch_kernel(struct kkm_kontext *kkm_kontext)
 
 begin:
 	if (signal_pending(current) != 0) {
-		kkm_run->exit_reason = KKM_EXIT_UNKNOWN;
+		kkm_run->exit_reason = KKM_EXIT_INTR;
 		ret_val = -EINTR;
 		goto error;
 	}
