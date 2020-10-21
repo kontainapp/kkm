@@ -202,6 +202,7 @@ int kkm_kontext_switch_kernel(struct kkm_kontext *kkm_kontext)
 
 	kkm_run = (struct kkm_run *)kkm_kontext->mmap_area[0].kvaddr;
 	if (kkm_run->immediate_exit == 1) {
+		ret_val = -EINTR;
 		goto error;
 	}
 
