@@ -183,6 +183,56 @@ void kkm_kontext_set_save_info(struct kkm_kontext *kkm_kontext,
 }
 
 /*
+ * copy system call result back to payload
+ */
+int kkm_kontext_handle_syscall_response(struct kkm_kontext *kontext,
+					struct kkm_guest_area *ga)
+{
+	int ret_val = 0;
+	uint64_t syscall_ret_value = 0;
+	uint64_t hcargs_indirect_ptr_mva = 0;
+	uint64_t gva = 0;
+	uint64_t mva = 0;
+
+	if (kontext->syscall_pending == true) {
+		if (kkm_guest_va_to_monitor_va(kontext, ga->sregs.gs.base,
+					       &hcargs_indirect_ptr_mva,
+					       NULL) == false) {
+			ret_val = -EFAULT;
+			goto error;
+		}
+
+		if (copy_from_user(&gva, (void *)hcargs_indirect_ptr_mva,
+				   sizeof(uint64_t))) {
+			ret_val = -EFAULT;
+			goto error;
+		}
+
+		if (kkm_guest_va_to_monitor_va(kontext, gva, &mva, NULL) ==
+		    false) {
+			ret_val = -EFAULT;
+			goto error;
+		}
+
+		/*
+		 * copy system call return value from monitor
+		 */
+		if (copy_from_user(&syscall_ret_value,
+				   &((struct kkm_hc_args *)mva)->ret_val,
+				   sizeof(uint64_t))) {
+			ret_val = -EFAULT;
+			goto error;
+		}
+		ga->regs.rax = syscall_ret_value;
+		kontext->syscall_pending = false;
+		kontext->ret_val_mva = -1;
+	}
+
+error:
+	return ret_val;
+}
+
+/*
  * running in native kernel address space
  */
 int kkm_kontext_switch_kernel(struct kkm_kontext *kkm_kontext)
@@ -191,12 +241,8 @@ int kkm_kontext_switch_kernel(struct kkm_kontext *kkm_kontext)
 	int ret_val = 0;
 	struct kkm_guest_area *ga = NULL;
 	int cpu = -1;
-	uint64_t syscall_ret_value = 0;
 	struct kkm_run *kkm_run = NULL;
 	struct kkm_private_area *pa = NULL;
-	uint64_t hcargs_indirect_ptr_mva = 0;
-	uint64_t gva = 0;
-	uint64_t mva = 0;
 
 	ga = (struct kkm_guest_area *)kkm_kontext->guest_area;
 
@@ -221,40 +267,10 @@ int kkm_kontext_switch_kernel(struct kkm_kontext *kkm_kontext)
 		}
 	}
 
-	if (kkm_kontext->syscall_pending == true) {
-		if (kkm_guest_va_to_monitor_va(kkm_kontext, ga->sregs.gs.base,
-					       &hcargs_indirect_ptr_mva,
-					       NULL) == false) {
-			ret_val = -EFAULT;
-			goto error;
-		}
-
-		if (copy_from_user(&gva, (void *)hcargs_indirect_ptr_mva,
-				   sizeof(uint64_t))) {
-			ret_val = -EFAULT;
-			goto error;
-		}
-
-		if (kkm_guest_va_to_monitor_va(kkm_kontext, gva, &mva, NULL) ==
-		    false) {
-			ret_val = -EFAULT;
-			goto error;
-		}
-
-		/*
-		 * copy system call return value from monitor
-		 */
-		if (copy_from_user(&syscall_ret_value,
-				   &((struct kkm_hc_args *)mva)->ret_val,
-				   sizeof(uint64_t))) {
-			ret_val = -EFAULT;
-			goto error;
-		}
-		ga->regs.rax = syscall_ret_value;
+	if ((ret_val = kkm_kontext_handle_syscall_response(kkm_kontext, ga)) !=
+	    0) {
+		goto error;
 	}
-
-	kkm_kontext->syscall_pending = false;
-	kkm_kontext->ret_val_mva = -1;
 
 	if (kkm_kontext->exception_posted == true) {
 		ga->regs.rax = kkm_kontext->exception_saved_rax;
