@@ -226,6 +226,7 @@ int kkm_kontext_handle_syscall_response(struct kkm_kontext *kontext,
 		ga->regs.rax = syscall_ret_value;
 		kontext->syscall_pending = false;
 		kontext->ret_val_mva = -1;
+		ga->regs.rsp += sizeof(struct kkm_hc_args);
 	}
 
 error:
@@ -1028,7 +1029,8 @@ int kkm_process_syscall(struct kkm_kontext *kkm_kontext,
 	uint64_t mva = 0;
 	uint64_t hcargs_indirect_ptr_mva = 0;
 
-	gva = ga->regs.rsp - sizeof(struct kkm_hc_args);
+	ga->regs.rsp -= sizeof(struct kkm_hc_args);
+	gva = ga->regs.rsp;
 
 	kkm_setup_hypercall(kkm_kontext, ga, kkm_run, ga->regs.rax, gva,
 			    FAULT_SYSCALL);
