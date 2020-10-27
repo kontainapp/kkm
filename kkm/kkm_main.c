@@ -319,6 +319,9 @@ static long kkm_execution_kontext_ioctl(struct file *file_p,
 			ret_val = kkm_from_user(kkm_kontext->kkm_payload_xsave,
 						(void *)arg,
 						sizeof(struct kkm_xstate));
+			if (ret_val == 0) {
+				kkm_kontext->valid_payload_xsave_area = true;
+			}
 			break;
 		case KKM_GET_EVENTS:
 			/* return success */
