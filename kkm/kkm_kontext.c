@@ -190,35 +190,16 @@ int kkm_kontext_handle_syscall_response(struct kkm_kontext *kontext,
 {
 	int ret_val = 0;
 	uint64_t syscall_ret_value = 0;
-	uint64_t hcargs_indirect_ptr_mva = 0;
-	uint64_t gva = 0;
-	uint64_t mva = 0;
+	struct kkm_hc_args *hc = NULL;
 
 	if (kontext->syscall_pending == true) {
-		if (kkm_guest_va_to_monitor_va(kontext, ga->sregs.gs.base,
-					       &hcargs_indirect_ptr_mva,
-					       NULL) == false) {
-			ret_val = -EFAULT;
-			goto error;
-		}
-
-		if (copy_from_user(&gva, (void *)hcargs_indirect_ptr_mva,
-				   sizeof(uint64_t))) {
-			ret_val = -EFAULT;
-			goto error;
-		}
-
-		if (kkm_guest_va_to_monitor_va(kontext, gva, &mva, NULL) ==
-		    false) {
-			ret_val = -EFAULT;
-			goto error;
-		}
+		hc = (struct kkm_hc_args *)kontext->ret_val_mva;
 
 		/*
 		 * copy system call return value from monitor
 		 */
 		if (copy_from_user(&syscall_ret_value,
-				   &((struct kkm_hc_args *)mva)->ret_val,
+				   &hc->ret_val,
 				   sizeof(uint64_t))) {
 			ret_val = -EFAULT;
 			goto error;
