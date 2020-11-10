@@ -283,12 +283,26 @@ struct kkm_save_info {
 static_assert(sizeof(struct kkm_save_info) == 64,
 	      "kkm_save_info is known to monitor, size is fixed at 64 bytes");
 
+typedef enum {
+	KKM_NONE = 0,
+	KKM_XSAVE = 1,
+	KKM_XSAVES = 2,
+} kkm_xstate_format_t;
+static_assert(sizeof(kkm_xstate_format_t) == 4,
+	      "kkm_xstate_format_t size is fixed at 4 bytes");
+
+/*
+ * PAGE_SIZE - save format type - crc
+ */
+#define KKM_XSTATE_DATA_SIZE (4088)
 /*
  * signal handling support
  * KKM_KONTEXT_GET_XSTATE and KKM_KONTEXT_SET_XSTATE
  */
 struct kkm_xstate {
-	uint8_t data[PAGE_SIZE];
+	uint8_t data[KKM_XSTATE_DATA_SIZE];
+	kkm_xstate_format_t format;
+	uint32_t crc32;
 };
 static_assert(sizeof(struct kkm_xstate) == 4096,
 	      "kkm_xstate is known to monitor, size is fixed at 4096 bytes");

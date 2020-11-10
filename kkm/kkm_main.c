@@ -19,6 +19,7 @@
 #include <linux/anon_inodes.h>
 #include <linux/uaccess.h>
 #include <linux/mm.h>
+#include <linux/crc32.h>
 #include <asm/cpu_entry_area.h>
 #include <asm/desc.h>
 
@@ -34,6 +35,7 @@
 
 uint32_t kkm_version = 12;
 
+kkm_xstate_format_t kkm_xs_format = KKM_XSAVES;
 void (*kkm_fpu_save_xstate)(void *) = kkm_fpu_save_xstate_xsaves;
 void (*kkm_fpu_restore_xstate)(void *) = kkm_fpu_restore_xstate_xsaves;
 
@@ -237,6 +239,8 @@ static long kkm_execution_kontext_ioctl(struct file *file_p,
 	struct kkm_guest_area *ga =
 		(struct kkm_guest_area *)kkm_kontext->guest_area;
 	struct kkm_save_info si;
+	struct kkm_xstate *xs = NULL;
+	uint32_t crc32 = 0;
 
 	if (ioctl_type == KKM_RUN) {
 		/* switch to guest payload */
@@ -311,15 +315,38 @@ static long kkm_execution_kontext_ioctl(struct file *file_p,
 			}
 			break;
 		case KKM_KONTEXT_GET_XSTATE:
+			xs = (struct kkm_xstate *)kkm_kontext->kkm_payload_xsave;
+			xs->format = kkm_xs_format;
+			xs->crc32 = crc32(0, xs, KKM_XSTATE_DATA_SIZE);
 			ret_val = kkm_to_user((void *)arg,
 					      kkm_kontext->kkm_payload_xsave,
 					      sizeof(struct kkm_xstate));
+			xs->format = KKM_NONE;
+			xs->crc32 = 0;
 			break;
 		case KKM_KONTEXT_SET_XSTATE:
+			xs = (struct kkm_xstate *)kkm_kontext->kkm_payload_xsave;
 			ret_val = kkm_from_user(kkm_kontext->kkm_payload_xsave,
 						(void *)arg,
 						sizeof(struct kkm_xstate));
 			if (ret_val == 0) {
+				if (xs->format != kkm_xs_format) {
+					printk(KERN_NOTICE
+					       "XSTATE saved format mismatch expecting %x found %x",
+					       xs->format, kkm_xs_format);
+					ret_val = EINVAL;
+					break;
+				}
+				crc32 = crc32(0, xs, KKM_XSTATE_DATA_SIZE);
+				if (xs->crc32 != crc32) {
+					printk(KERN_NOTICE
+					       "crc mismatch expecting %x found %x",
+					       xs->crc32, crc32);
+					ret_val = EINVAL;
+					break;
+				}
+				xs->format = KKM_NONE;
+				xs->crc32 = 0;
 				kkm_kontext->valid_payload_xsave_area = true;
 			}
 			break;
@@ -376,16 +403,21 @@ struct file_operations kkm_execution_kontext_fops = {
 /*
  * create execution context one per vcpu
  */
-int kkm_add_execution_kontext(struct kkm *kkm)
+int kkm_add_execution_kontext(struct kkm *kkm, unsigned long arg)
 {
 	int ret_val = 0;
 	int i = 0;
 	struct kkm_kontext *kkm_kontext = NULL;
 	char buffer[32];
 	struct kkm_kontext_mmap_area *kkma = NULL;
+	uint32_t vcpu_id = arg;
 
 	mutex_lock(&kkm->kontext_lock);
 	if (kkm->mm != current->mm) {
+		ret_val = -EINVAL;
+		goto error;
+	}
+	if (vcpu_id >= KKM_MAX_CONTEXTS) {
 		ret_val = -EINVAL;
 		goto error;
 	}
@@ -415,7 +447,7 @@ int kkm_add_execution_kontext(struct kkm *kkm)
 	kkm_kontext = kkm->kontext[i];
 
 	kkm_kontext->id = atomic64_inc_return(&kkm_object_id);
-	kkm_kontext->index = i;
+	kkm_kontext->index = vcpu_id;
 
 	kkm_kontext->used = true;
 	kkm_kontext->first_thread = (kkm->kontext_count == 0) ? true : false;
@@ -584,7 +616,7 @@ static long kkm_kontainer_ioctl(struct file *file_p, unsigned int ioctl_type,
 	switch (ioctl_type) {
 	case KKM_ADD_EXECUTION_CONTEXT:
 		/* add one execution context */
-		ret_val = kkm_add_execution_kontext(kkm);
+		ret_val = kkm_add_execution_kontext(kkm, arg);
 		break;
 	case KKM_MEMORY:
 		/* modify memory state */
@@ -808,16 +840,18 @@ static int __init kkm_init(void)
 			       "kkm_init: X86_FEATURE_XSAVE not supported bailing.\n");
 			return -EINVAL;
 		}
+		kkm_xs_format = KKM_XSAVE;
 		kkm_fpu_save_xstate = kkm_fpu_save_xstate_xsave;
 		kkm_fpu_restore_xstate = kkm_fpu_restore_xstate_xsave;
 		printk(KERN_INFO "kkm_init: using X86_FEATURE_XSAVE.\n");
 	} else {
+		kkm_xs_format = KKM_XSAVES;
 		kkm_fpu_save_xstate = kkm_fpu_save_xstate_xsaves;
 		kkm_fpu_restore_xstate = kkm_fpu_restore_xstate_xsaves;
 		printk(KERN_INFO "kkm_init: using X86_FEATURE_XSAVES.\n");
 	}
 
-	if (fpu_kernel_xstate_size > KKM_FPU_XSAVE_ALLOC_SIZE) {
+	if (fpu_kernel_xstate_size > KKM_XSTATE_DATA_SIZE) {
 		printk(KERN_ERR
 		       "kkm_init: fpu_kernel_xstate_size too big 0x%x.\n",
 		       fpu_kernel_xstate_size);
