@@ -292,15 +292,19 @@ static_assert(sizeof(kkm_xstate_format_t) == 4,
 	      "kkm_xstate_format_t size is fixed at 4 bytes");
 
 /*
- * PAGE_SIZE - save format type - crc
+ * PAGE_SIZE - xstate valid - save format type - crc
  */
-#define KKM_XSTATE_DATA_SIZE (4088)
+#define KKM_XSTATE_DATA_SIZE (4084)
 /*
  * signal handling support
  * KKM_KONTEXT_GET_XSTATE and KKM_KONTEXT_SET_XSTATE
  */
 struct kkm_xstate {
 	uint8_t data[KKM_XSTATE_DATA_SIZE];
+	union {
+		bool valid;
+		uint32_t padding;
+	};
 	kkm_xstate_format_t format;
 	uint32_t crc32;
 };

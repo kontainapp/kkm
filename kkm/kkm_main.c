@@ -316,11 +316,13 @@ static long kkm_execution_kontext_ioctl(struct file *file_p,
 			break;
 		case KKM_KONTEXT_GET_XSTATE:
 			xs = (struct kkm_xstate *)kkm_kontext->kkm_payload_xsave;
+			xs->valid = kkm_kontext->valid_payload_xsave_area;
 			xs->format = kkm_xs_format;
 			xs->crc32 = crc32(0, xs, KKM_XSTATE_DATA_SIZE);
 			ret_val = kkm_to_user((void *)arg,
 					      kkm_kontext->kkm_payload_xsave,
 					      sizeof(struct kkm_xstate));
+			xs->padding = 0;
 			xs->format = KKM_NONE;
 			xs->crc32 = 0;
 			break;
@@ -330,6 +332,8 @@ static long kkm_execution_kontext_ioctl(struct file *file_p,
 						(void *)arg,
 						sizeof(struct kkm_xstate));
 			if (ret_val == 0) {
+				kkm_kontext->valid_payload_xsave_area =
+					xs->valid;
 				if (xs->format != kkm_xs_format) {
 					printk(KERN_NOTICE
 					       "XSTATE saved format mismatch expecting %x found %x",
@@ -345,9 +349,9 @@ static long kkm_execution_kontext_ioctl(struct file *file_p,
 					ret_val = EINVAL;
 					break;
 				}
+				xs->padding = 0;
 				xs->format = KKM_NONE;
 				xs->crc32 = 0;
-				kkm_kontext->valid_payload_xsave_area = true;
 			}
 			break;
 		case KKM_GET_EVENTS:
