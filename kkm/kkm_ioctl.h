@@ -276,6 +276,8 @@ struct kkm_save_info {
 			bool exception_posted;
 			uint64_t exception_saved_rax;
 			uint64_t exception_saved_rbx;
+			uint32_t hypercall_data;
+			enum fault_reason reason;
 		};
 		uint8_t data[KKM_SAVE_INFO_SZ];
 	};
