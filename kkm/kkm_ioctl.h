@@ -274,6 +274,8 @@ struct kkm_save_info {
 			bool syscall_pending;
 			uint64_t ret_val_mva;
 			bool exception_posted;
+			bool first_thread;
+			bool new_thread;
 			uint64_t exception_saved_rax;
 			uint64_t exception_saved_rbx;
 			uint32_t hypercall_data;

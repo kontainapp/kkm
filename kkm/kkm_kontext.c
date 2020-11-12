@@ -161,7 +161,6 @@ void kkm_kontext_get_save_info(struct kkm_kontext *kkm_kontext,
 {
 	struct kkm_private_area *pa = NULL;
 
-
 	si->syscall_pending = kkm_kontext->syscall_pending;
 	si->ret_val_mva = kkm_kontext->ret_val_mva;
 	si->exception_posted = kkm_kontext->exception_posted;
@@ -171,6 +170,9 @@ void kkm_kontext_get_save_info(struct kkm_kontext *kkm_kontext,
 	pa = (struct kkm_private_area *)kkm_kontext->mmap_area[1].kvaddr;
 	si->hypercall_data = pa->data;
 	si->reason = pa->reason;
+
+	si->first_thread = kkm_kontext->first_thread;
+	si->new_thread = kkm_kontext->new_thread;
 
 	kkm_kontext->syscall_pending = false;
 	kkm_kontext->ret_val_mva = -1;
@@ -193,6 +195,9 @@ void kkm_kontext_set_save_info(struct kkm_kontext *kkm_kontext,
 	pa = (struct kkm_private_area *)kkm_kontext->mmap_area[1].kvaddr;
 	pa->data = si->hypercall_data;
 	pa->reason = si->reason;
+
+	kkm_kontext->first_thread = si->first_thread;
+	kkm_kontext->new_thread = si->new_thread;
 }
 
 /*
@@ -211,8 +216,7 @@ int kkm_kontext_handle_syscall_response(struct kkm_kontext *kontext,
 		/*
 		 * copy system call return value from monitor
 		 */
-		if (copy_from_user(&syscall_ret_value,
-				   &hc->ret_val,
+		if (copy_from_user(&syscall_ret_value, &hc->ret_val,
 				   sizeof(uint64_t))) {
 			ret_val = -EFAULT;
 			goto error;
