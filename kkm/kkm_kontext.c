@@ -129,7 +129,10 @@ error:
 void kkm_kontext_cleanup(struct kkm_kontext *kkm_kontext)
 {
 	if (kkm_kontext->xsave.page != NULL) {
-		kkm_mm_free_page(kkm_kontext->xsave.va);
+		kkm_mm_free_pages(kkm_kontext->xsave.va,
+				  KKM_FPU_XSAVE_ALLOC_PAGES);
+		kkm_kontext->xsave.page = NULL;
+		kkm_kontext->xsave.va = NULL;
 	}
 	if (kkm_kontext->guest_area_page != NULL) {
 		kkm_mm_free_pages(kkm_kontext->guest_area,
