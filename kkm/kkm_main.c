@@ -823,6 +823,7 @@ static struct miscdevice kkm_device = { .minor = MISC_DYNAMIC_MINOR,
 static int __init kkm_init(void)
 {
 	int ret_val = 0;
+	struct module *mod = THIS_MODULE;
 
 	kkm_platform = &kkm_platfrom_native;
 
@@ -872,6 +873,10 @@ static int __init kkm_init(void)
 		printk(KERN_ERR "kkm_init: Cannot register kkm.\n");
 		return ret_val;
 	}
+
+	kkm_chardev_ops.owner = mod;
+	kkm_kontainer_ops.owner = mod;
+	kkm_execution_kontext_fops.owner = mod;
 
 	/*
 	 * intialize mmu, allocate kkm private area data structures
