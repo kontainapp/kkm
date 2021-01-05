@@ -299,6 +299,12 @@ static long kkm_execution_kontext_ioctl(struct file *file_p,
 			/* enable save/restore of hw debug registers */
 			kkm_kontext->debug_registers_set = true;
 			break;
+		case KKM_GET_XCRS:
+		case KKM_SET_XCRS:
+			/* for compatibility only
+			 * currently no implementation, return success
+			 */
+			break;
 		case KKM_KONTEXT_REUSE:
 			ret_val = kkm_kontext_reinit(kkm_kontext);
 			break;

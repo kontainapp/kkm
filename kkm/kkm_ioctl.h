@@ -50,6 +50,12 @@
 #define KKM_SET_DEBUG _IOW(KKM_IO, 0x9b, struct kkm_debug)
 #define KKM_GET_EVENTS _IOR(KKM_IO, 0x9f, struct kkm_ec_events)
 
+#define KKM_GET_XSAVE _IOR(KKM_IO, 0xa4, struct kkm_xsave)
+#define KKM_SET_XSAVE _IOW(KKM_IO, 0xa5, struct kkm_xsave)
+
+#define KKM_GET_XCRS _IOR(KKM_IO, 0xa6, struct kkm_xcrs)
+#define KKM_SET_XCRS _IOW(KKM_IO, 0xa7, struct kkm_xcrs)
+
 #define KKM_KONTEXT_REUSE _IO(KKM_IO, 0xf5)
 #define KKM_KONTEXT_GET_SAVE_INFO _IOR(KKM_IO, 0xf6, struct kkm_save_info)
 #define KKM_KONTEXT_SET_SAVE_INFO _IOW(KKM_IO, 0xf7, struct kkm_save_info)
@@ -262,6 +268,39 @@ struct kkm_private_area {
 };
 static_assert(sizeof(struct kkm_private_area) == 8,
 	      "kkm_private_area is known to monitor, size is fixed at 8 bytes");
+
+/*
+ * XSAVE get and set
+ * KKM_GET_XSAVE and KKM_SET_XSAVE
+ */
+struct kkm_xsave {
+	uint8_t regions[4096];
+};
+static_assert(sizeof(struct kkm_xsave) == 4096,
+	      "kkm_xsave is known to monitor, size is fixed at 4096 bytes");
+
+/*
+ * XCR get and set
+ * KKM_GET_XCRS and KKM_SET_XCRS
+ */
+#define KKM_MAX_XCRS (16)
+
+struct kkm_xcr {
+	uint32_t xcr;
+	uint32_t padding;
+	uint64_t value;
+};
+static_assert(sizeof(struct kkm_xcr) == 16,
+	      "kkm_xcr is known to monitor, size is fixed at 16 bytes");
+
+struct kkm_xcrs {
+	uint32_t nr_xcrs;
+	uint32_t flags;
+	struct kkm_xcr xcrs[KKM_MAX_XCRS];
+	uint64_t padding[16];
+};
+static_assert(sizeof(struct kkm_xcrs) == 392,
+	      "kkm_xcrs is known to monitor, size is fixed at 392 bytes");
 
 #define KKM_SAVE_INFO_SZ (64)
 /*
