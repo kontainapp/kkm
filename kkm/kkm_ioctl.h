@@ -20,6 +20,7 @@
 
 /* device base name */
 #define KKM_DEVICE_NAME "kkm"
+#define KKM_DEVICE_IDENTITY (0x6B6B6D)
 
 /* base ioctl type */
 #define KKM_IO (0xAE)
@@ -61,6 +62,8 @@
 #define KKM_KONTEXT_SET_SAVE_INFO _IOW(KKM_IO, 0xf7, struct kkm_save_info)
 #define KKM_KONTEXT_GET_XSTATE _IOR(KKM_IO, 0xf8, struct kkm_xstate)
 #define KKM_KONTEXT_SET_XSTATE _IOW(KKM_IO, 0xf9, struct kkm_xstate)
+
+#define KKM_GET_IDENTITY _IO(KKM_IO, 0xff)
 
 // capability check. values for KKM_CHECK_EXTENSION
 #define KKM_CAP_SYNC_REGS (74)

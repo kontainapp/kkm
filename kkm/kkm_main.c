@@ -801,6 +801,9 @@ static long kkm_device_ioctl(struct file *file_p, unsigned int ioctl_type,
 	case KKM_GET_SUPPORTED_CONTEXT_INFO:
 		ret_val = kkm_get_native_cpuid(arg);
 		break;
+	case KKM_GET_IDENTITY:
+		ret_val = KKM_DEVICE_IDENTITY;
+		break;
 	default:
 		printk(KERN_NOTICE
 		       "kkm_device_ioctl: unsupported ioctl_type(%x)\n",
