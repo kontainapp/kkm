@@ -31,6 +31,7 @@ typedef struct {
 	char device_name[MAX_DEVICE_NAME_LEN];
 	int root_device_fd;
 	uint32_t driver_version;
+	int driver_identity;
 	int kontain_device_fd;
 	int context_map_size;
 	int context_device_fd;
@@ -59,6 +60,19 @@ int init(kkm_t *kkm)
 	}
 	kkm->driver_version = ret_val;
 	printf("driver version : %d\n", kkm->driver_version);
+
+	ret_val = ioctl(kkm->root_device_fd, KKM_GET_IDENTITY, NULL);
+	if (ret_val < 0) {
+		perror("ioctl:");
+		goto error;
+	}
+	if (KKM_DEVICE_IDENTITY != ret_val) {
+		printf("ioctl: KKM_DEVICE_IDENTITY expecting (%d) found(%x)\n",
+		       KKM_DEVICE_IDENTITY, ret_val);
+		goto error;
+	}
+	kkm->driver_identity = ret_val;
+	printf("driver identity : %x\n", kkm->driver_identity);
 	return 0;
 
 error:
