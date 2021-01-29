@@ -13,6 +13,14 @@
 #ifndef __KKM_H__
 #define __KKM_H__
 
+#include <linux/refcount.h>
+#include <linux/uaccess.h>
+
+#ifndef static_assert
+#define static_assert(expr, ...) __static_assert(expr, ##__VA_ARGS__, #expr)
+#define __static_assert(expr, msg, ...) _Static_assert(expr, msg)
+#endif
+
 #define KKM_REDZONE_CHECK_ENABLE (0)
 
 #include "kkm_externs.h"
