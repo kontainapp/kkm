@@ -14,9 +14,17 @@ KERNEL_VERSION := $(shell uname -r)
 KDIR ?= /lib/modules/${KERNEL_VERSION}/build
 
 default:
+	@echo "Building KKM module"
 	$(MAKE) -C $(KDIR) M=$(CURRENT_DIR)
 	objdump -d kkm.ko > kkm.dis
 	objdump -S kkm.ko > kkm.s.dis
+
+modules_install: default
+	@echo "Installing KKM module"
+	$(MAKE) -C $(KDIR) M=$(CURRENT_DIR) modules_install
+
+install: modules_install
+
 
 clean:
 	$(MAKE) -C $(KDIR) M=$(CURRENT_DIR) clean
