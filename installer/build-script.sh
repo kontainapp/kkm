@@ -36,6 +36,9 @@ make -C kkm
 echo "Installing kkm.ko"
 sudo make -C kkm modules_install
 
+# some of the installs have incorrect /boot links, run depmod for running kernel
+sudo depmod -a `uname -r`
+
 # files required for kkm module in /etc/
 echo "Installing /etc file for kkm"
 sudo cp installer/etc/modprobe.d/kkm.conf /etc/modprobe.d/kkm.conf
