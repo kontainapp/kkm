@@ -9,7 +9,11 @@
 #  Kontain Inc.
 
 TOP := $(shell git rev-parse --show-toplevel)
-CURRENT_DIR := ${TOP}/kkm
+ifeq ($(TOP),)
+	CURRENT_DIR := $(shell pwd)
+else
+	CURRENT_DIR := ${TOP}/kkm
+endif
 KERNEL_VERSION := $(shell uname -r)
 KDIR ?= /lib/modules/${KERNEL_VERSION}/build
 
