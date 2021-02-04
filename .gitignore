@@ -9,3 +9,4 @@ kkm/kkm.mod.c
 kkm/kkm.s.dis
 kkm/modules.order
 test_kkm/test_kkm
+kkm/kkm.run
