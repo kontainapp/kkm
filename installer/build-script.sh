@@ -44,4 +44,7 @@ echo "Installing /etc file for kkm"
 sudo cp installer/etc/modprobe.d/kkm.conf /etc/modprobe.d/kkm.conf
 sudo cp installer/etc/modules-load.d/kkm.conf /etc/modules-load.d/kkm.conf
 
+echo "Doing modprobe kkm"
+modprobe kkm
+
 echo "done"
