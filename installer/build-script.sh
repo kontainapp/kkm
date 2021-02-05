@@ -15,17 +15,18 @@ if [ $MAJOR_VERSION -lt 5 ]; then
 	exit 1
 fi
 
-# if we have dnf or apt we can use it to install other wise bailout.
-if [ -f /usr/bin/dnf ]; then
-	PACKAGE_LIST="kmod patch bash tar git-core bzip2 xz findutils gzip m4 perl-interpreter perl-Carp perl-devel perl-generators make diffutils gawk gcc binutils redhat-rpm-config hmaccalc bison flex net-tools hostname bc elfutils-devel dwarves python3-devel rsync xmlto asciidoc python3-sphinx sparse zlib-devel binutils-devel newt-devel bison flex xz-devel gettext ncurses-devel pciutils-devel zlib-devel binutils-devel clang llvm numactl-devel libcap-devel libcap-ng-devel rsync rpm-build elfutils kabi-dw openssl openssl-devel nss-tools xmlto asciidoc"
-	sudo dnf install -y ${PACKAGE_LIST}
-elif [ -f /usr/bin/apt ]; then
+source /etc/os-release
+echo "Installing needed packages for $NAME"
+if [ "$NAME" == "Ubuntu" ]; then
    PACKAGE_LIST="make gcc"
-   sudo apt update -y -q
-	sudo apt install -y -q -o Dpkg::Progress-Fancy=0 ${PACKAGE_LIST}
-else
-	echo "Cannot find 'dnf' nor 'apt'. Exiting."
-	exit 1
+   sudo apt update -y -qq -o=Dpkg::Use-Pty=0
+	sudo apt install -y -qq -o=Dpkg::Use-Pty=0 -o Dpkg::Progress-Fancy=0 ${PACKAGE_LIST}
+elif [ "$NAME" == "Fedora" ] ; then
+	PACKAGE_LIST="kmod patch bash tar git-core bzip2 xz findutils gzip m4 perl-interpreter perl-Carp perl-devel perl-generators make diffutils gawk gcc binutils redhat-rpm-config hmaccalc bison flex net-tools hostname bc elfutils-devel dwarves python3-devel rsync xmlto asciidoc python3-sphinx sparse zlib-devel binutils-devel newt-devel bison flex xz-devel gettext ncurses-devel pciutils-devel zlib-devel binutils-devel clang llvm numactl-devel libcap-devel libcap-ng-devel rsync rpm-build elfutils kabi-dw openssl openssl-devel nss-tools xmlto asciidoc"
+	sudo dnf install -y -q ${PACKAGE_LIST}
+ else
+   echo "Unsupported linux: $NAME. Cannot install neccessary packages."
+   exit 1
 fi
 
 # script is running in root directory of extracted files

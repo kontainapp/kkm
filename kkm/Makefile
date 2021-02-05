@@ -31,6 +31,9 @@ INSTALL_ONLY := ../installer/install-script.sh
 # Location (relative to kkm.run packahe root, i.e. CWD/..) of script to build and install KKM
 INSTALLER := ./installer/build-script.sh
 
+# make sure we use bash in makefile rules
+SHELL=/bin/bash
+
 build: ## Just build, no package and no install. Mainly used from kkm.run
 	@echo "Building KKM module"
 	$(MAKE) -C $(KDIR) M=$(CURDIR)
@@ -64,6 +67,8 @@ clean: ## Clean stuff produced by build
 #
 # This target ("help") scans Makefile for '##' in targets and prints a summary
 # Note - used awk to print (instead of echo) so escaping/coloring is platform independed
+CYAN := \033[36m
+NOCOLOR := \033[0m
 help:  ## Prints help on 'make' targets
 	@awk 'BEGIN {FS = ":.*##"; printf "\nUsage:\n make $(CYAN)<target>$(NOCOLOR)\n" } \
 	/^[.a-zA-Z0-9_ -]+[ \t]*:.*?##/ { printf " $(CYAN)%-15s$(NOCOLOR) %s\n", $$1, $$2 } \
