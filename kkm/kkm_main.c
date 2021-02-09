@@ -846,6 +846,11 @@ static int __init kkm_init(void)
 		return -EINVAL;
 	}
 
+	if (!cpu_feature_enabled(X86_FEATURE_INVPCID)) {
+		printk(KERN_ERR "kkm_init: X86_FEATURE_INVPCID not supported.\n");
+		return -EINVAL;
+	}
+
 	if (!cpu_feature_enabled(X86_FEATURE_XSAVES)) {
 		printk(KERN_ERR
 		       "kkm_init: X86_FEATURE_XSAVES not supported checking X86_FEATURE_XSAVE support.\n");
