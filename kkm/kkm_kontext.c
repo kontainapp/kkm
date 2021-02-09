@@ -913,14 +913,17 @@ int kkm_process_general_protection(struct kkm_kontext *kkm_kontext,
 		goto error;
 	}
 
-	if (ga->instruction_decode[0] == KKM_OUT_OPCODE) {
-		kkm_setup_hypercall(kkm_kontext, ga, kkm_run, ga->regs.rdx,
-				    ga->regs.rax, FAULT_HYPER_CALL);
-		ga->regs.rip += 1;
-
-		/* statistics */
-		kkm_statistics_system_call_count_inc();
+	if (ga->instruction_decode[0] != KKM_OUT_OPCODE) {
+		ret_val = -EFAULT;
+		goto error;
 	}
+
+	kkm_setup_hypercall(kkm_kontext, ga, kkm_run, ga->regs.rdx,
+			    ga->regs.rax, FAULT_HYPER_CALL);
+	ga->regs.rip += 1;
+
+	/* statistics */
+	kkm_statistics_system_call_count_inc();
 
 error:
 	return ret_val;
