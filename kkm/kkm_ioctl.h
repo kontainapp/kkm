@@ -358,4 +358,9 @@ struct kkm_xstate {
 static_assert(sizeof(struct kkm_xstate) == 4096,
 	      "kkm_xstate is known to monitor, size is fixed at 4096 bytes");
 
+/*
+ * KKM_CPU_SUPPORTED
+ */
+enum kkm_cpu_supproted { CPU_SUPPORTED = 0, CPU_NOT_SUPPORTED };
+
 #endif /* __KKM_IOCTL_H__ */

@@ -60,7 +60,9 @@ int init(kkm_t *kkm)
 		goto error;
 	}
 	kkm->cpu_supported = ret_val;
-	printf("cpu supported : %d\n", kkm->cpu_supported);
+	printf("cpu supported : %s\n", (kkm->cpu_supported == CPU_SUPPORTED) ?
+						     "Supported" :
+						     "Not Supported");
 
 	ret_val = ioctl(kkm->root_device_fd, KKM_GET_VERSION, NULL);
 	if (ret_val < 0) {
