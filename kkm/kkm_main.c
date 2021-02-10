@@ -34,6 +34,7 @@
 #include "kkm_misc.h"
 
 uint32_t kkm_version = 12;
+bool kkm_cpu_supported = false;
 
 kkm_xstate_format_t kkm_xs_format = KKM_XSAVES;
 void (*kkm_fpu_save_xstate)(void *) = kkm_fpu_save_xstate_xsaves;
@@ -785,6 +786,13 @@ static long kkm_device_ioctl(struct file *file_p, unsigned int ioctl_type,
 {
 	long ret_val = 0;
 
+	if ((kkm_cpu_supported == false) && (ioctl_type != KKM_CPU_SUPPORTED)) {
+		printk(KERN_NOTICE
+		       "kkm_device_ioctl: unsupported proceessor. only KKM_CPU_SUPPORTED ioctl is allowed\n");
+		ret_val = -EOPNOTSUPP;
+		goto error;
+	}
+
 	switch (ioctl_type) {
 	case KKM_GET_VERSION:
 		ret_val = kkm_version;
@@ -801,6 +809,9 @@ static long kkm_device_ioctl(struct file *file_p, unsigned int ioctl_type,
 	case KKM_GET_SUPPORTED_CONTEXT_INFO:
 		ret_val = kkm_get_native_cpuid(arg);
 		break;
+	case KKM_CPU_SUPPORTED:
+		ret_val = (kkm_cpu_supported == true) ? 0 : 1;
+		break;
 	case KKM_GET_IDENTITY:
 		ret_val = KKM_DEVICE_IDENTITY;
 		break;
@@ -812,6 +823,7 @@ static long kkm_device_ioctl(struct file *file_p, unsigned int ioctl_type,
 		break;
 	}
 
+error:
 	return ret_val;
 }
 
@@ -825,30 +837,23 @@ static struct miscdevice kkm_device = { .minor = MISC_DYNAMIC_MINOR,
 					.fops = &kkm_chardev_ops,
 					.mode = 0666 };
 
-/*
- * called during insmod
- * allocate required global data structures
- */
-static int __init kkm_init(void)
+static void kkm_check_cpu_support(void)
 {
-	int ret_val = 0;
-	struct module *mod = THIS_MODULE;
-
-	kkm_platform = &kkm_platfrom_native;
+	kkm_cpu_supported = false;
 
 	if (!IS_ENABLED(CONFIG_PAGE_TABLE_ISOLATION)) {
 		printk(KERN_ERR "kkm_init: X86_FEATURE_PTI not supported.\n");
-		return -EINVAL;
+		return;
 	}
 
 	if (!cpu_feature_enabled(X86_FEATURE_PCID)) {
 		printk(KERN_ERR "kkm_init: X86_FEATURE_PCID not supported.\n");
-		return -EINVAL;
+		return;
 	}
 
 	if (!cpu_feature_enabled(X86_FEATURE_INVPCID)) {
 		printk(KERN_ERR "kkm_init: X86_FEATURE_INVPCID not supported.\n");
-		return -EINVAL;
+		return;
 	}
 
 	if (!cpu_feature_enabled(X86_FEATURE_XSAVES)) {
@@ -857,7 +862,7 @@ static int __init kkm_init(void)
 		if (!cpu_feature_enabled(X86_FEATURE_XSAVE)) {
 			printk(KERN_ERR
 			       "kkm_init: X86_FEATURE_XSAVE not supported bailing.\n");
-			return -EINVAL;
+			return;
 		}
 		kkm_xs_format = KKM_XSAVE;
 		kkm_fpu_save_xstate = kkm_fpu_save_xstate_xsave;
@@ -874,10 +879,26 @@ static int __init kkm_init(void)
 		printk(KERN_ERR
 		       "kkm_init: fpu_kernel_xstate_size too big 0x%x.\n",
 		       fpu_kernel_xstate_size);
-		return -EINVAL;
+		return;
 	}
 	printk(KERN_INFO "kkm_init: fpu_kernel_xstate_size 0x%x.\n",
 	       fpu_kernel_xstate_size);
+
+	kkm_cpu_supported = true;
+}
+
+/*
+ * called during insmod
+ * allocate required global data structures
+ */
+static int __init kkm_init(void)
+{
+	int ret_val = 0;
+	struct module *mod = THIS_MODULE;
+
+	kkm_platform = &kkm_platfrom_native;
+
+	kkm_check_cpu_support();
 
 	/*
 	 * register /dev/kkm

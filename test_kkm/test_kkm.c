@@ -30,6 +30,7 @@
 typedef struct {
 	char device_name[MAX_DEVICE_NAME_LEN];
 	int root_device_fd;
+	bool cpu_supported;
 	uint32_t driver_version;
 	int driver_identity;
 	int kontain_device_fd;
@@ -53,7 +54,15 @@ int init(kkm_t *kkm)
 		goto error;
 	}
 
-	int ret_val = ioctl(kkm->root_device_fd, KKM_GET_VERSION, NULL);
+	int ret_val = ioctl(kkm->root_device_fd, KKM_CPU_SUPPORTED, NULL);
+	if (ret_val < 0) {
+		perror("ioctl:");
+		goto error;
+	}
+	kkm->cpu_supported = ret_val;
+	printf("cpu supported : %d\n", kkm->cpu_supported);
+
+	ret_val = ioctl(kkm->root_device_fd, KKM_GET_VERSION, NULL);
 	if (ret_val < 0) {
 		perror("ioctl:");
 		goto error;
@@ -73,6 +82,7 @@ int init(kkm_t *kkm)
 	}
 	kkm->driver_identity = ret_val;
 	printf("driver identity : %x\n", kkm->driver_identity);
+
 	return 0;
 
 error:

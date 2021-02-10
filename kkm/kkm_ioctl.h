@@ -63,6 +63,7 @@
 #define KKM_KONTEXT_GET_XSTATE _IOR(KKM_IO, 0xf8, struct kkm_xstate)
 #define KKM_KONTEXT_SET_XSTATE _IOW(KKM_IO, 0xf9, struct kkm_xstate)
 
+#define KKM_CPU_SUPPORTED _IO(KKM_IO, 0xfe)
 #define KKM_GET_IDENTITY _IO(KKM_IO, 0xff)
 
 // capability check. values for KKM_CHECK_EXTENSION
