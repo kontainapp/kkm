@@ -1,13 +1,15 @@
+// SPDX-License-Identifier: GPL-2.0
 /*
- * Copyright © 2020-2020 Kontain Inc. All rights reserved.
+ * Kontain Kernel Module
  *
- * Kontain Inc CONFIDENTIAL
+ * This module enables Kontain unikernel in absence of
+ * hardware support for virtualization
  *
- * This file includes unpublished proprietary source code of Kontain Inc. The
- * copyright notice above does not evidence any actual or intended publication
- * of such source code. Disclosure of this source code or any related
- * proprietary information is strictly prohibited without the express written
- * permission of Kontain Inc.
+ * Copyright (C) 2020-2021 Kontain Inc.
+ *
+ * Authors:
+ *  Srinivasa Vetsa <svetsa@kontain.app>
+ *
  */
 
 #ifndef __KKM_KONTAINER_H__
