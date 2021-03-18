@@ -56,6 +56,17 @@ static struct kernel_param_ops kkm_statistics_ops = {
 };
 module_param_cb(statistics, &kkm_statistics_ops, &kkm_stat, S_IRUGO);
 
+static int kkm_clear_statistics(const char *s, const struct kernel_param *kp)
+{
+	kkm_statistics_init();
+	return 0;
+}
+
+static struct kernel_param_ops kkm_clear_statistics_ops = {
+	.set = kkm_clear_statistics,
+};
+module_param_cb(clear_statistics, &kkm_clear_statistics_ops, &kkm_stat, S_IWUSR);
+
 static bool __read_mostly platform_pv = false;
 
 static int kkm_platform_pv_ops_set(const char *s, const struct kernel_param *kp)

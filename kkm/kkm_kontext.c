@@ -939,6 +939,9 @@ int kkm_process_page_fault(struct kkm_kontext *kkm_kontext,
 	uint64_t monitor_fault_address = 0;
 	bool priv_area = false;
 	struct kkm *kkm = kkm_kontext->kkm;
+	uint64_t start_time = 0, end_time = 0;
+
+	start_time = ktime_get_ns();
 
 	kkm_kontext->trap_addr = ga->sregs.cr2;
 	kkm_kontext->error_code = ga->trap_info.error;
@@ -1017,11 +1020,14 @@ error:
 	}
 	mutex_unlock(&kkm_kontext->kkm->pf_lock);
 
+	end_time = ktime_get_ns();
+
 	/* statistics */
 	kkm_statistics_page_fault_count_inc();
 	if (ret_val && ret_val != KKM_KONTEXT_FAULT_PROCESS_DONE) {
 		kkm_statistics_failed_page_fault_count_inc();
 	}
+	kkm_statistics_page_fault_time_ns_add(end_time - start_time);
 
 	return ret_val;
 }
