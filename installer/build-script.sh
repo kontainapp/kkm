@@ -26,7 +26,7 @@ elif [ -f /usr/bin/apt ]; then
 	PACKAGE_LIST=" make gcc "
 	INSTALLER_CMD="/usr/bin/apt update; /usr/bin/apt install -y ${PACKAGE_LIST}"
 else
-	echo "Cannot find dnf or apt-get exiting"
+	echo "Cannot find dnf or apt exiting"
 	exit 1
 fi
 
