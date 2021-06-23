@@ -1,5 +1,5 @@
 #!/usr/bin/sh
-# Copyright © 2020-2019 Kontain Inc. All rights reserved.
+# Copyright © 2020-2021 Kontain Inc. All rights reserved.
 #
 # Kontain Inc CONFIDENTIAL
 #
@@ -9,13 +9,43 @@
 #  information is strictly prohibited without the express written permission of
 #  Kontain Inc.
 
-MAJOR_VERSION=`uname -r | cut -d'.' -f1-1`
-MINOR_VERSION=`uname -r | cut -d'.' -f2-2`
+force_install=false
+for arg in "$@"
+do
+	shift
+	case "$arg" in
+		"--force-install") force_install="true";;
+		*);;
+	esac
+done
+
+MAJOR_VERSION=$(uname -r | cut -d'.' -f1-1)
+#MINOR_VERSION=$(uname -r | cut -d'.' -f2-2)
 
 # support only kernel 5+
-if [ $MAJOR_VERSION -lt 5 ]; then
+if [ "$MAJOR_VERSION" -lt 5 ]; then
 	echo "KKM is only supported above 5.x kernel"
 	exit 1
+fi
+
+# check if necessary features are available
+check_script="installer/kkm-ok.bash"
+if [ ! -x "$check_script" ]; then
+	echo "Cannot find $check_script bailing out"
+	exit 1
+fi
+
+eval $check_script
+if [ $? -ne 0 ]; then
+	echo "KKM required kernel/cpu features are not available on this instance."
+	if [ "$force_install" == "true" ]; then
+		echo "Force install flag provided continuing with installation."
+		echo "KKM may not work on this instance."
+	else
+		echo "Stopping installation."
+		echo "Provide --force-install option to install on this instance."
+		exit 1
+	fi
 fi
 
 # if we have dnf or apt we can use it to install other wise bailout.
