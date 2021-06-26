@@ -409,6 +409,11 @@ begin:
 		if (ga->intr_no == LOCAL_TIMER_VECTOR) {
 			schedule();
 		}
+#if IS_ENABLED(CONFIG_HYPERV)
+		if (ga->intr_no == HYPERV_STIMER0_VECTOR) {
+			schedule();
+		}
+#endif
 		if (ga->intr_no == X86_TRAP_PF &&
 		    kkm_kontext->prev_trap_no == X86_TRAP_PF &&
 		    kkm_kontext->prev_trap_addr == kkm_kontext->trap_addr &&
