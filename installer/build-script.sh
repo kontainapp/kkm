@@ -54,7 +54,7 @@ if [ -f /usr/bin/dnf ]; then
 	INSTALLER_CMD="/usr/bin/dnf install -y ${PACKAGE_LIST}"
 elif [ -f /usr/bin/apt ]; then
 	PACKAGE_LIST=" make gcc dkms build-essential "
-	INSTALLER_CMD="/usr/bin/apt update; /usr/bin/apt install -y ${PACKAGE_LIST}"
+	INSTALLER_CMD="/usr/bin/apt-get -q -y update; /usr/bin/apt-get -q -y install -y ${PACKAGE_LIST}"
 else
 	echo "Cannot find dnf or apt exiting"
 	exit 1
