@@ -42,7 +42,7 @@ fi
 eval $check_script
 if [ $? -ne 0 ]; then
 	echo "KKM required kernel/cpu features are not available on this instance."
-	if [ "$force_install" == "true" ]; then
+	if [ "$force_install" = "true" ]; then
 		echo "Force install flag provided continuing with installation."
 		echo "KKM may not work on this instance."
 	else
