@@ -65,7 +65,8 @@ static int kkm_clear_statistics(const char *s, const struct kernel_param *kp)
 static struct kernel_param_ops kkm_clear_statistics_ops = {
 	.set = kkm_clear_statistics,
 };
-module_param_cb(clear_statistics, &kkm_clear_statistics_ops, &kkm_stat, S_IWUSR);
+module_param_cb(clear_statistics, &kkm_clear_statistics_ops, &kkm_stat,
+		S_IWUSR);
 
 static bool __read_mostly platform_pv = false;
 
@@ -799,9 +800,11 @@ static long kkm_device_ioctl(struct file *file_p, unsigned int ioctl_type,
 {
 	long ret_val = 0;
 
-	if ((kkm_cpu_supported == false) && (ioctl_type != KKM_CPU_SUPPORTED)) {
+	if ((kkm_cpu_supported == false) && (ioctl_type != KKM_CPU_SUPPORTED) &&
+	    (ioctl_type != KKM_GET_IDENTITY)) {
 		printk(KERN_NOTICE
-		       "kkm_device_ioctl: unsupported proceessor. only KKM_CPU_SUPPORTED ioctl is allowed\n");
+		       "kkm_device_ioctl: Unsupported processor."
+		       " Only KKM_CPU_SUPPORTED and KKM_GET_IDENTITY ioctl's are allowed.\n");
 		ret_val = -EOPNOTSUPP;
 		goto error;
 	}
@@ -823,7 +826,7 @@ static long kkm_device_ioctl(struct file *file_p, unsigned int ioctl_type,
 		ret_val = kkm_get_native_cpuid(arg);
 		break;
 	case KKM_CPU_SUPPORTED:
-		ret_val = (kkm_cpu_supported == true) ? 0 : 1;
+		ret_val = (kkm_cpu_supported == true) ? CPU_SUPPORTED : CPU_NOT_SUPPORTED;
 		break;
 	case KKM_GET_IDENTITY:
 		ret_val = KKM_DEVICE_IDENTITY;
@@ -865,7 +868,8 @@ static void kkm_check_cpu_support(void)
 	}
 
 	if (!cpu_feature_enabled(X86_FEATURE_INVPCID)) {
-		printk(KERN_ERR "kkm_init: X86_FEATURE_INVPCID not supported.\n");
+		printk(KERN_ERR
+		       "kkm_init: X86_FEATURE_INVPCID not supported.\n");
 		return;
 	}
 

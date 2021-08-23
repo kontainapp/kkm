@@ -363,6 +363,6 @@ static_assert(sizeof(struct kkm_xstate) == 4096,
 /*
  * KKM_CPU_SUPPORTED
  */
-enum kkm_cpu_supproted { CPU_SUPPORTED = 0, CPU_NOT_SUPPORTED };
+enum kkm_cpu_supported { CPU_SUPPORTED = 0, CPU_NOT_SUPPORTED };
 
 #endif /* __KKM_IOCTL_H__ */
