@@ -1,9 +1,9 @@
 # kkm
 kontain kernel module
 
-KKM is a software virtualization driver intended to support the Kontain Runtime in enviroments where
-hardware based virtualzation (KVM) isn't availble, for example in cloud provders like AWS. KKM is not
-a general purpose virtual machine driver, it only supports the factities required by the Kontain Runtime.
+KKM is a software virtualization driver intended to support the Kontain Runtime in environments where
+hardware based virtualization (KVM) isn't available, for example in cloud providers like AWS. KKM is not
+a general purpose virtual machine driver, it only supports the facilities required by the Kontain Runtime.
 
 Currently, KKM supports only X86_64 processors with certain features enabled. To see whether a system supports
 KKM, run:
@@ -24,7 +24,7 @@ cd kkm
 
 ```
 
-The script will fail if the local system is incapable of runnign KKM.
+The script will fail if the local system is incapable of running KKM.
 
 # License
 Check licenses directory and individual file for applicable licenses.
