@@ -13,11 +13,18 @@ $ curl -s https://raw.githubusercontent.com/kontainapp/kkm/master/installer/kkm-
 
 # Installation
 
-To install KKM in Fedora or Ubuntu systems, run:
+Typically, KKM is installed as part of a larger install of the Kontain Runtime.
+
+To build from source and install KKM standalone on a local Fedora or Ubuntu system, run:
 
 ```
-$ curl -s https://raw.githubusercontent.com/kontainapp/kkm/master/installer/build_script.sh | bash
+$ git clone https://github.com/kontainapp/kkm.git
+cd kkm
+./installer/build-script.sh
+
 ```
+
+The script will fail if the local system is incapable of runnign KKM.
 
 # License
 Check licenses directory and individual file for applicable licenses.
