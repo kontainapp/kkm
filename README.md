@@ -8,7 +8,7 @@ a general purpose virtual machine driver, it only supports the facilities requir
 Currently, KKM supports only X86_64 processors with certain features enabled. To see whether a system supports
 KKM, run:
 ```
-$ curl -s https://raw.githubusercontent.com/kontainapp/kkm/master/installer/kkm-ok.sh | bash
+$ curl -s https://raw.githubusercontent.com/kontainapp/kkm/master/installer/kkm-ok.bash | bash
 ```
 
 # Installation
