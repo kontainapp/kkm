@@ -19,8 +19,8 @@ To build from source and install KKM standalone on a local Fedora or Ubuntu syst
 
 ```bash
 $ git clone https://github.com/kontainapp/kkm.git
-cd kkm
-./installer/build-script.sh
+$ cd kkm
+$ ./installer/build-script.sh
 
 ```
 
