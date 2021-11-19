@@ -30,6 +30,8 @@
 #include "kkm_mmu.h"
 #include "kkm_platform.h"
 
+extern bool kkm_cpu_full_tlb_flush;
+
 #define KKM_CONTEXT_MAP_PAGE_COUNT (3)
 #define KKM_CONTEXT_MAP_SIZE (KKM_CONTEXT_MAP_PAGE_COUNT * 4096)
 

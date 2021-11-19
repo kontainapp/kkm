@@ -98,6 +98,21 @@ kkm_switch_to_hk_asm:
 	 */
 	movq	%rdi, %cr3
 
+	andq	$0xFF, %rdi
+	cmpq	$0, %rdi
+	jne	skip_tlb_flush_1
+
+	/*
+	 * invalidate tlb
+	 * toggle CR4_PGE bit and then restore
+	 */
+	movq	%cr4, %rax
+	movq	%rax, %rbx
+	xorq	$0x80, %rax
+	movq	%rax, %cr4
+	movq	%rbx, %cr4
+
+skip_tlb_flush_1:
 	/*
 	 * switch stacks
 	 *	old - guest kernel stack
@@ -220,6 +235,21 @@ kkm_switch_to_gp_asm:
 	movq	OFF_GP_CR3(%rdi), %rax
 	movq	%rax, %cr3
 
+	andq	$0xFF, %rax
+	cmpq	$0, %rax
+	jne	skip_tlb_flush_2
+
+	/*
+	 * invalidate tlb
+	 * toggle CR4_PGE bit and then restore
+	 */
+	movq	%cr4, %rax
+	movq	%rax, %rbx
+	xorq	$0x80, %rax
+	movq	%rax, %cr4
+	movq	%rbx, %cr4
+
+skip_tlb_flush_2:
 	/*
 	 * rbx, rax, rdi were used as scratch registers.
 	 * pop to set correct conext

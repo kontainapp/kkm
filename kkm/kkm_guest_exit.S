@@ -2658,6 +2658,25 @@ kkm_intr_entry_asm_common:
 	movq	%rdi, %cr3
 
 	/*
+	 * if pcid is 0 the flush full tlb
+	 */
+	andq	$0xFF, %rdi
+	cmpq    $0, %rdi
+	jne	skip_tlb_flush_3
+
+	/*
+	 * invlidate TLB
+	 * toggle CR4_PGE bit and then restore
+	 */
+	movq	%cr4, %rdi
+	pushq	%rdi
+	xorq	$0x80, %rdi
+	movq	%rdi, %cr4
+	popq	%rdi
+	movq	%rdi, %cr4
+
+skip_tlb_flush_3:
+	/*
 	 * %rsp is currently in guest area
 	 * masking off bottom 12 bits points to ga in kx area
 	 */
