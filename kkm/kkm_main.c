@@ -37,6 +37,7 @@
 
 uint32_t kkm_version = 12;
 bool kkm_cpu_supported = false;
+bool kkm_cpu_full_tlb_flush = false;
 
 kkm_xstate_format_t kkm_xs_format = KKM_XSAVES;
 void (*kkm_fpu_save_xstate)(void *) = kkm_fpu_save_xstate_xsaves;
@@ -826,7 +827,8 @@ static long kkm_device_ioctl(struct file *file_p, unsigned int ioctl_type,
 		ret_val = kkm_get_native_cpuid(arg);
 		break;
 	case KKM_CPU_SUPPORTED:
-		ret_val = (kkm_cpu_supported == true) ? CPU_SUPPORTED : CPU_NOT_SUPPORTED;
+		ret_val = (kkm_cpu_supported == true) ? CPU_SUPPORTED :
+							      CPU_NOT_SUPPORTED;
 		break;
 	case KKM_GET_IDENTITY:
 		ret_val = KKM_DEVICE_IDENTITY;
@@ -863,18 +865,19 @@ static void kkm_check_cpu_support(void)
 	}
 
 	if (!cpu_feature_enabled(X86_FEATURE_PCID)) {
-		printk(KERN_ERR "kkm_init: X86_FEATURE_PCID not supported.\n");
-		return;
+		kkm_cpu_full_tlb_flush = true;
+		printk(KERN_INFO
+		       "kkm_init: X86_FEATURE_PCID not supported, using full tlb flush.\n");
 	}
 
 	if (!cpu_feature_enabled(X86_FEATURE_INVPCID)) {
-		printk(KERN_ERR
-		       "kkm_init: X86_FEATURE_INVPCID not supported.\n");
-		return;
+		kkm_cpu_full_tlb_flush = true;
+		printk(KERN_INFO
+		       "kkm_init: X86_FEATURE_INVPCID not supported, using full tlb flush.\n");
 	}
 
 	if (!cpu_feature_enabled(X86_FEATURE_XSAVES)) {
-		printk(KERN_ERR
+		printk(KERN_INFO
 		       "kkm_init: X86_FEATURE_XSAVES not supported checking X86_FEATURE_XSAVE support.\n");
 		if (!cpu_feature_enabled(X86_FEATURE_XSAVE)) {
 			printk(KERN_ERR

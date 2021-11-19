@@ -59,6 +59,7 @@ int kkm_kontext_init(struct kkm_kontext *kkm_kontext)
 {
 	int ret_val = 0;
 	struct kkm_guest_area *ga = NULL;
+	struct kkm *kkm = kkm_kontext->kkm;
 
 	/*
 	 * allocate guest private area
@@ -68,7 +69,8 @@ int kkm_kontext_init(struct kkm_kontext *kkm_kontext)
 					KKM_GUEST_AREA_PAGES);
 	if (ret_val != 0) {
 		printk(KERN_NOTICE
-		       "kkm_kontext_init: Thread %llx failed to allocate memory for stack0 error(%d)\n",
+		       "kkm_kontext_init: Thread %llx failed to allocate "
+		       "memory for stack0 error(%d)\n",
 		       kkm_kontext->id, ret_val);
 		goto error;
 	}
@@ -91,6 +93,14 @@ int kkm_kontext_init(struct kkm_kontext *kkm_kontext)
 	 */
 	ga->kkm_kontext = kkm_kontext;
 	ga->guest_area_beg = (uint64_t)ga;
+
+	ga->guest_kernel_cr3 = kkm->gk_pml4.pa & ~PCID_MASK;
+	ga->guest_payload_cr3 = kkm->gp_pml4.pa & ~PCID_MASK;
+	if (kkm_cpu_full_tlb_flush == false) {
+		ga->guest_kernel_cr3 |= GUEST_KERNEL_PCID;
+		ga->guest_payload_cr3 |= GUEST_PAYLOAD_PCID;
+	}
+
 	ga->cpu = KKM_INVALID_CPU_ID;
 
 	/*
@@ -102,7 +112,8 @@ int kkm_kontext_init(struct kkm_kontext *kkm_kontext)
 					KKM_FPU_XSAVE_ALLOC_PAGES);
 	if (ret_val != 0) {
 		printk(KERN_NOTICE
-		       "kkm_kontext_init: Thread %llx failed to allocate memory for xsave area error(%d)\n",
+		       "kkm_kontext_init: Thread %llx failed to allocate "
+		       "memory for xsave area error(%d)\n",
 		       kkm_kontext->id, ret_val);
 		goto error;
 	}
@@ -320,27 +331,23 @@ begin:
 	cpu = get_cpu();
 	per_cpu(current_kontext, cpu) = kkm_kontext;
 
-	if ((lazy_flush_tlb == false) || (cpu != ga->cpu) ||
-	    (kkm->id != kkm_idt_get_id(cpu))) {
-		/*
-		 * invalidate older TLB entries
-		 */
-		kkm_mmu_flush_tlb();
-
-		ga->cpu = cpu;
-		kkm_idt_set_id(cpu, kkm->id);
+	if (kkm_cpu_full_tlb_flush == false) {
+		if ((lazy_flush_tlb == false) || (cpu != ga->cpu) ||
+		    (kkm->id != kkm_idt_get_id(cpu))) {
+			/*
+			 * invalidate older TLB entries
+			 */
+			kkm_mmu_flush_tlb();
+		}
 	}
+	ga->cpu = cpu;
+	kkm_idt_set_id(cpu, kkm->id);
 
 	/*
 	 * save native kernel address space(cr3 and cr4)
 	 */
 	kkm_kontext->native_kernel_cr3 = kkm_platform->kkm_read_cr3();
 	kkm_kontext->native_kernel_cr4 = kkm_platform->kkm_read_cr4();
-
-	ga->guest_kernel_cr3 =
-		(kkm->gk_pml4.pa & ~PCID_MASK) | GUEST_KERNEL_PCID;
-	ga->guest_payload_cr3 =
-		(kkm->gp_pml4.pa & ~PCID_MASK) | GUEST_PAYLOAD_PCID;
 
 	ga->guest_kernel_cr4 = kkm_kontext->native_kernel_cr4;
 
@@ -420,14 +427,19 @@ begin:
 		    kkm_kontext->prev_error_code == kkm_kontext->error_code) {
 			kkm_kontext->trap_repeat_counter++;
 			printk(KERN_NOTICE
-			       "kkm_kontext_switch_kernel: Thread %llx repeat page fault at the same address %llx error code %llx count %llx\n",
+			       "kkm_kontext_switch_kernel: Thread %llx "
+			       "repeat page fault at the same address %llx "
+			       "error code %llx count %llx\n",
 			       kkm_kontext->id, kkm_kontext->trap_addr,
 			       kkm_kontext->error_code,
 			       kkm_kontext->trap_repeat_counter);
 			if (kkm_kontext->trap_repeat_counter >
 			    KKM_MAX_REPEAT_TRAP) {
 				printk(KERN_NOTICE
-				       "kkm_kontext_switch_kernel: Thread %llx bailing out after allowed repeat page faults at the same address %llx error code %llx\n",
+				       "kkm_kontext_switch_kernel: Thread %llx "
+				       "bailing out after allowed repeat page "
+				       "faults at the same address %llx "
+				       "error code %llx\n",
 				       kkm_kontext->id, kkm_kontext->trap_addr,
 				       kkm_kontext->error_code);
 				ret_val = -EFAULT;
@@ -680,7 +692,8 @@ int kkm_process_intr(struct kkm_kontext *kkm_kontext)
 			 * This problem needs to be debugged at a latter time.
 			 */
 			printk(KERN_NOTICE
-			       "kkm_process_intr: Thread %llx index %llx NMI rip %llx rsp %llx cr2 %llx\n",
+			       "kkm_process_intr: Thread %llx index %llx "
+			       "NMI rip %llx rsp %llx cr2 %llx\n",
 			       kkm_kontext->id, kkm_kontext->index,
 			       ga->regs.rip, ga->regs.rsp, ga->sregs.cr2);
 			break;
@@ -750,7 +763,8 @@ int kkm_process_intr(struct kkm_kontext *kkm_kontext)
 
 			/* statistics */
 			kkm_statistics_forwarded_intr_count_inc();
-			kkm_statistics_forwarded_intr_time_ns(end_intr_time - start_intr_time);
+			kkm_statistics_forwarded_intr_time_ns(end_intr_time -
+							      start_intr_time);
 			break;
 		}
 	}
@@ -1001,9 +1015,11 @@ int kkm_process_page_fault(struct kkm_kontext *kkm_kontext,
 
 		/*
 		 * invalidate this address from TLB
-		 * this is required as we are no longer flusing TLB on re-entry
+		 * when full TLB flush is not done on re-entry to guest
 		 */
-		kkm_mmu_flush_tlb_one_page(ga->sregs.cr2);
+		if (kkm_cpu_full_tlb_flush == false) {
+			kkm_mmu_flush_tlb_one_page(ga->sregs.cr2);
+		}
 
 		ret_val = KKM_KONTEXT_FAULT_PROCESS_DONE;
 
@@ -1165,7 +1181,9 @@ bool kkm_guest_va_to_monitor_va(struct kkm_kontext *kkm_kontext,
 end:
 	if ((ret_val == false) && (log_failed_guest_va_translations == true)) {
 		printk(KERN_NOTICE
-		       "kkm_guest_va_to_monitor_va: Thread %llx index %llx failed translation faulted guest va %llx monitor va %llx ret_val %d rip %llx rsp %llx cr2 %llx\n",
+		       "kkm_guest_va_to_monitor_va: Thread %llx index %llx "
+		       "failed translation faulted guest va %llx "
+		       " monitor va %llx ret_val %d rip %llx rsp %llx cr2 %llx\n",
 		       kkm_kontext->id, kkm_kontext->index, guest_va,
 		       *monitor_va, ret_val, ga->regs.rip, ga->regs.rsp,
 		       ga->sregs.cr2);
