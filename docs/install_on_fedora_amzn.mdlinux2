@@ -1,0 +1,12 @@
+# Installing KKM using kkm.run consistently on Amazon Linux 2 and Fedora
+First run yum update without updating the kernel level and also downloading the kernel headers for currently installed kernel rather than a recent kernel.
+This prevents inconsistency errors with header locations when building KKM on target system.
+
+```shell
+yum install -y "kernel-devel-uname-r == $(uname -r)"
+# update without updating kernel (IMPORTANT FOR KKM)
+yum -y --exclude=kernel* update
+
+# check if it needs rebooting while yum not running
+(test ! -f /var/run/yum.pid && needs-restarting -r) || (reboot)
+```
