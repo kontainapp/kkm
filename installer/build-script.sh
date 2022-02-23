@@ -67,35 +67,31 @@ else
 	exit 1
 fi
 
-# make sure kitchen sink is available on fedora
-sudo -u root /usr/bin/bash << INSTALL_END
-
+# make sure kitchen sink is available
 ${INSTALLER_CMD}
-
-INSTALL_END
 
 # script is running in root directory of extracted files
 
 # setup kkm
 
 # remove
-sudo dkms remove -q -m kkm -v 0.9 --all
-sudo rm -fr /usr/src/kkm-0.9
+dkms remove -q -m kkm -v 0.9 --all
+rm -fr /usr/src/kkm-0.9
 rm -f /var/lib/dkms/kkm
 
 umask 022
-sudo cp installer/etc/modprobe.d/kkm.conf /etc/modprobe.d/kkm.conf
-sudo cp installer/etc/modules-load.d/kkm.conf /etc/modules-load.d/kkm.conf
+cp installer/etc/modprobe.d/kkm.conf /etc/modprobe.d/kkm.conf
+cp installer/etc/modules-load.d/kkm.conf /etc/modules-load.d/kkm.conf
 
 # add
-sudo mkdir -p /usr/src/kkm-0.9
-sudo cp -r kkm /usr/src/kkm-0.9
-sudo cp -r licenses /usr/src/kkm-0.9
-sudo cp installer/dkms.conf /usr/src/kkm-0.9
-sudo dkms add -c /usr/src/kkm-0.9/dkms.conf -m kkm -v 0.9
-sudo dkms build -m kkm -v 0.9
-sudo dkms install -m kkm -v 0.9
+mkdir -p /usr/src/kkm-0.9
+cp -r kkm /usr/src/kkm-0.9
+cp -r licenses /usr/src/kkm-0.9
+cp installer/dkms.conf /usr/src/kkm-0.9
+dkms add -c /usr/src/kkm-0.9/dkms.conf -m kkm -v 0.9
+dkms build -m kkm -v 0.9
+dkms install -m kkm -v 0.9
 
-sudo modprobe kkm
+modprobe kkm
 
 echo "done"
