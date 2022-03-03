@@ -68,7 +68,9 @@ else
 fi
 
 # make sure kitchen sink is available
+/usr/bin/bash -x << EOF
 ${INSTALLER_CMD}
+EOF
 
 # script is running in root directory of extracted files
 
