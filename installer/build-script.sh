@@ -13,6 +13,7 @@
 #
 #
 
+set -x
 force_install=false
 for arg in "$@"
 do
