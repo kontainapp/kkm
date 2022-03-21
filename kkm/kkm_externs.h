@@ -42,7 +42,7 @@
  * monitor mapping area for guest physical memory
  */
 #define KKM_KM_USER_MEM_BASE                                                   \
-	(0x100000000000ULL) /* keep in sync with KM_USER_MEM_BASE */
+	(0x000000000000ULL) /* keep in sync with KM_USER_MEM_BASE */
 
 #define KKM_KM_GUEST_PRIVATE_MEM_START_VA (512 * KKM_GIB)
 
