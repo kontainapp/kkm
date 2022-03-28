@@ -110,6 +110,7 @@ void kkm_destroy_app(struct kkm *kkm)
 			kkm->kontext[i] = NULL;
 		}
 	}
+	kkm_kontainer_cleanup(kkm);
 	kfree(kkm);
 }
 
@@ -151,11 +152,11 @@ static int kkm_execution_kontext_release(struct inode *inode_p,
 	kkm_kontext->used = false;
 	kkm_kontext->first_thread = false;
 
-	kkm_reference_count_down(kkm_kontext->kkm);
-
 	mutex_lock(&kkm->kontext_lock);
 	kkm->kontext_count--;
 	mutex_unlock(&kkm->kontext_lock);
+
+	kkm_reference_count_down(kkm);
 
 	return 0;
 }
@@ -622,8 +623,6 @@ error:
 static int kkm_kontainer_release(struct inode *inode_p, struct file *file_p)
 {
 	struct kkm *kkm = file_p->private_data;
-
-	kkm_kontainer_cleanup(kkm);
 
 	kkm_reference_count_down(kkm);
 
