@@ -359,7 +359,7 @@ static long kkm_execution_kontext_ioctl(struct file *file_p,
 					xs->valid;
 				if (xs->format != kkm_xs_format) {
 					printk(KERN_NOTICE
-					       "XSTATE saved format mismatch expecting %x found %x",
+					       "kkm_execution_kontext_ioctl: XSTATE saved format mismatch expecting %x found %x",
 					       xs->format, kkm_xs_format);
 					ret_val = EINVAL;
 					break;
@@ -367,7 +367,7 @@ static long kkm_execution_kontext_ioctl(struct file *file_p,
 				crc32 = crc32(0, xs, KKM_XSTATE_DATA_SIZE);
 				if (xs->crc32 != crc32) {
 					printk(KERN_NOTICE
-					       "crc mismatch expecting %x found %x",
+					       "kkm_execution_kontext_ioctl: crc mismatch expecting %x found %x",
 					       xs->crc32, crc32);
 					ret_val = EINVAL;
 					break;
