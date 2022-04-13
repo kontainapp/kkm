@@ -16,7 +16,7 @@
 missing_count=0
 feature_str=$(lscpu | grep Flags | cut -d':' -f 2-)
 read -ra feature_arr <<< "$feature_str"
-for feature in pti pcid invpcid xsave
+for feature in pti xsave
 do
 	feature_found=false
 	for cpu_feature in "${feature_arr[@]}"
