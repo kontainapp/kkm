@@ -308,12 +308,18 @@ begin:
 		goto error;
 	}
 	ret_val = 0;
-	cpu = -1;
+
+	/*
+	 * disable interrupts
+	 */
+	local_irq_disable();
+
+	cpu = get_cpu();
 
 	/*
 	 * setup physical cpu kontain area to this kontext guest area
 	 */
-	kkm_mmu_set_guest_area(kkm_kontext->guest_area_page0_pa,
+	kkm_mmu_set_guest_area(cpu, kkm_kontext->guest_area_page0_pa,
 			       kkm_kontext->guest_area_page1_pa,
 			       (phys_addr_t)NULL, (phys_addr_t)NULL);
 
@@ -323,12 +329,6 @@ begin:
 	 */
 	kkm_idt_get_desc(&ga->native_idt_desc, &ga->guest_idt_desc);
 
-	/*
-	 * disable interrupts
-	 */
-	local_irq_disable();
-
-	cpu = get_cpu();
 	per_cpu(current_kontext, cpu) = kkm_kontext;
 
 	if (kkm_cpu_full_tlb_flush == false) {
@@ -410,6 +410,8 @@ begin:
 	 * enable interrupts
 	 */
 	local_irq_enable();
+
+	put_cpu();
 
 	ret_val = kkm_process_intr(kkm_kontext);
 	if (ret_val == KKM_KONTEXT_FAULT_PROCESS_DONE) {

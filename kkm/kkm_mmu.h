@@ -200,12 +200,12 @@ int kkm_create_pml4(struct kkm_mmu_pml4e *kmu, uint64_t address);
 void kkm_cleanup_pml4(struct kkm_mmu_pml4e *kmu);
 
 uint64_t kkm_mmu_get_pgd_entry(void);
-int kkm_mmu_get_per_cpu_start_index(void);
+int kkm_mmu_get_per_cpu_start_index(int cpu_index);
 void kkm_mmu_insert_page(void *pt_va, int index, phys_addr_t pa,
 			 uint64_t flags);
-void kkm_mmu_set_guest_area(phys_addr_t pa0, phys_addr_t pa1, phys_addr_t pa2,
+void kkm_mmu_set_guest_area(int cpu_index, phys_addr_t pa0, phys_addr_t pa1, phys_addr_t pa2,
 			    phys_addr_t pa3);
-void *kkm_mmu_get_cur_cpu_guest_va(void);
+void *kkm_mmu_get_cur_cpu_guest_va(int cpu_index);
 
 void *kkm_mmu_get_idt_va(void);
 void kkm_mmu_set_kx_global_info(phys_addr_t idt_pa, phys_addr_t text_page0_pa,
