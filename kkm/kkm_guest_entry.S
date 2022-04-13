@@ -224,7 +224,7 @@ kkm_switch_to_gp_asm:
 	pushq	OFF_RAX(%rdi)	# user %rax
 	pushq	OFF_RBX(%rdi)	# user %rbx
 
-	movq	OFF_CR2(%rdi), %rax
+	movq	$0, %rax
 	movq	%rax, %cr2
 
 	/*
