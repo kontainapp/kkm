@@ -148,11 +148,10 @@ uint64_t kkm_mmu_get_pgd_entry(void)
  * return current cpu private area first page table index
  * next KKM_PER_CPU_GA_PAGE_COUNT belong to this physical cpu
  */
-int kkm_mmu_get_per_cpu_start_index(void)
+int kkm_mmu_get_per_cpu_start_index(int cpu_index)
 {
-	int cpu = get_cpu();
 	int page_index =
-		KKM_CPU_GA_INDEX_START + cpu * KKM_PER_CPU_GA_PAGE_COUNT;
+		KKM_CPU_GA_INDEX_START + cpu_index * KKM_PER_CPU_GA_PAGE_COUNT;
 	return page_index;
 }
 
@@ -176,10 +175,10 @@ void kkm_mmu_insert_page(void *pt_va, int index, phys_addr_t pa, uint64_t flags)
 /*
  * set this physicl cpu private area page table entries
  */
-void kkm_mmu_set_guest_area(phys_addr_t pa0, phys_addr_t pa1, phys_addr_t pa2,
+void kkm_mmu_set_guest_area(int cpu_index, phys_addr_t pa0, phys_addr_t pa1, phys_addr_t pa2,
 			    phys_addr_t pa3)
 {
-	int page_index = kkm_mmu_get_per_cpu_start_index();
+	int page_index = kkm_mmu_get_per_cpu_start_index(cpu_index);
 	uint64_t flags = _PAGE_NX | _PAGE_RW | _PAGE_PRESENT;
 
 	kkm_mmu_insert_page(kkm_mmu_kx.pt.va, page_index, pa0, flags);
@@ -191,9 +190,9 @@ void kkm_mmu_set_guest_area(phys_addr_t pa0, phys_addr_t pa1, phys_addr_t pa2,
 /*
  * return start virtual address of this physical cpu guest private address
  */
-void *kkm_mmu_get_cur_cpu_guest_va(void)
+void *kkm_mmu_get_cur_cpu_guest_va(int cpu_index)
 {
-	int page_index = kkm_mmu_get_per_cpu_start_index();
+	int page_index = kkm_mmu_get_per_cpu_start_index(cpu_index);
 	uint64_t va = KKM_PRIVATE_START_VA + page_index * PAGE_SIZE;
 
 	return (void *)va;
