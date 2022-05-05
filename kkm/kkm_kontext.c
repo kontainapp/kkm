@@ -241,6 +241,7 @@ int kkm_kontext_handle_syscall_response(struct kkm_kontext *kontext,
 		kontext->syscall_pending = false;
 		kontext->ret_val_mva = -1;
 		ga->regs.rsp += sizeof(struct kkm_hc_args);
+		ga->regs.rsp += KKM_ABI_REDZONE;
 	}
 
 error:
@@ -278,6 +279,7 @@ int kkm_kontext_switch_kernel(struct kkm_kontext *kkm_kontext)
 				     .kvaddr;
 			if (pa->reason == FAULT_SYSCALL) {
 				ga->regs.rsp += sizeof(struct kkm_hc_args);
+				ga->regs.rsp += KKM_ABI_REDZONE;
 			}
 		}
 	}
@@ -1068,6 +1070,7 @@ int kkm_process_syscall(struct kkm_kontext *kkm_kontext,
 	uint64_t mva = 0;
 	uint64_t hcargs_indirect_ptr_mva = 0;
 
+	ga->regs.rsp -= KKM_ABI_REDZONE;
 	ga->regs.rsp -= sizeof(struct kkm_hc_args);
 	gva = ga->regs.rsp;
 
