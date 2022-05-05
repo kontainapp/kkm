@@ -14,6 +14,12 @@
 
 #ifndef __KKM_EXTERNS_H__
 #define __KKM_EXTERNS_H__
+
+/*
+ * stack redzone according to system V ABI
+ */
+#define KKM_ABI_REDZONE (128)
+
 /*
  * folowing is copied from km_mem.h
  * need to be kept in sync with monitor
