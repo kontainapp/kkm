@@ -22,7 +22,7 @@ KERNEL_VERSION := $(shell uname -r)
 KDIR ?= /lib/modules/${KERNEL_VERSION}/build
 
 ifneq (${VALGRIND},)
-KKM_EXTRA_FLAGS := ccflags-y="KM_GPA_AT_16T=1"
+KKM_EXTRA_FLAGS := ccflags-y="-DKM_GPA_AT_16T=1"
 else
 KKM_EXTRA_FLAGS :=
 endif
