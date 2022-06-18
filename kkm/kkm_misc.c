@@ -175,7 +175,7 @@ void kkm_show_guest_qwords(struct kkm_guest_area *ga, uint64_t gva,
 		       byte_count);
 		goto error;
 	}
-	if (copy_from_user(buffer_addr, (void *)mva, byte_count)) {
+	if ((kkm_from_user(buffer_addr, (void *)mva, byte_count)) != 0) {
 		printk(KERN_NOTICE
 		       "kkm_show_guest_data: copy from user failed\n");
 		goto error;
@@ -242,4 +242,22 @@ void kkm_copy_kkm_fpu_to_xstate(struct kkm_fpu *kvm_fpu, void *fpregs_state)
 	xs->i387.rdp = kvm_fpu->last_dp;
 	memcpy(xs->i387.xmm_space, kvm_fpu->xmm, sizeof(xs->i387.xmm_space));
 	xs->i387.mxcsr = kvm_fpu->mxcsr;
+}
+
+long kkm_to_user(void *dest, void *src, size_t size)
+{
+	long ret_val = 0;
+	if (copy_to_user(dest, src, size)) {
+		ret_val = -EFAULT;
+	}
+	return ret_val;
+}
+
+long kkm_from_user(void *dest, void *src, size_t size)
+{
+	long ret_val = 0;
+	if (copy_from_user(dest, src, size)) {
+		ret_val = -EFAULT;
+	}
+	return ret_val;
 }

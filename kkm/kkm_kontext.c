@@ -232,8 +232,8 @@ int kkm_kontext_handle_syscall_response(struct kkm_kontext *kontext,
 		/*
 		 * copy system call return value from monitor
 		 */
-		if (copy_from_user(&syscall_ret_value, &hc->ret_val,
-				   sizeof(uint64_t))) {
+		if ((ret_val = kkm_from_user(&syscall_ret_value, &hc->ret_val,
+					     sizeof(uint64_t))) != 0) {
 			ret_val = -EFAULT;
 			goto error;
 		}
@@ -825,8 +825,9 @@ int kkm_process_common_without_error(struct kkm_kontext *kkm_kontext,
 		ret_val = -EFAULT;
 		goto error;
 	}
-	if (copy_to_user((void *)mva, &args,
-			 sizeof(struct kkm_intr_stack_no_error_code))) {
+	if ((ret_val = kkm_to_user(
+		     (void *)mva, &args,
+		     sizeof(struct kkm_intr_stack_no_error_code))) != 0) {
 		ret_val = -EFAULT;
 		goto error;
 	}
@@ -875,8 +876,9 @@ int kkm_process_common_with_error(struct kkm_kontext *kkm_kontext,
 		ret_val = -EFAULT;
 		goto error;
 	}
-	if (copy_to_user((void *)mva, &args,
-			 sizeof(struct kkm_intr_stack_with_error_code))) {
+	if ((ret_val = kkm_to_user(
+		     (void *)mva, &args,
+		     sizeof(struct kkm_intr_stack_with_error_code))) != 0) {
 		ret_val = -EFAULT;
 		goto error;
 	}
@@ -936,8 +938,9 @@ int kkm_process_general_protection(struct kkm_kontext *kkm_kontext,
 	/*
 	 * fetch offending instruction byte
 	 */
-	if (copy_from_user(ga->instruction_decode,
-			   (void *)monitor_fault_address, sizeof(uint8_t))) {
+	if ((ret_val = kkm_from_user(ga->instruction_decode,
+				     (void *)monitor_fault_address,
+				     sizeof(uint8_t))) != 0) {
 		ret_val = -EFAULT;
 		goto error;
 	}
@@ -990,17 +993,18 @@ int kkm_process_page_fault(struct kkm_kontext *kkm_kontext,
 		 * copy 1 bytes from monitor virtual address
 		 * this will trigger native kernel page fault
 		 */
-		if (copy_from_user(ga->instruction_decode,
-				   (void *)monitor_fault_address,
-				   sizeof(uint8_t))) {
+		if ((ret_val = kkm_from_user(ga->instruction_decode,
+					     (void *)monitor_fault_address,
+					     sizeof(uint8_t))) != 0) {
 			ret_val = -EFAULT;
 			goto error;
 		}
 
 		if ((error_code & X86_PF_WRITE) == X86_PF_WRITE) {
-			if (copy_to_user((void *)monitor_fault_address,
-					 ga->instruction_decode,
-					 sizeof(uint8_t))) {
+			if ((ret_val =
+				     kkm_to_user((void *)monitor_fault_address,
+						 ga->instruction_decode,
+						 sizeof(uint8_t))) != 0) {
 				ret_val = -EFAULT;
 				goto error;
 			}
@@ -1089,7 +1093,8 @@ int kkm_process_syscall(struct kkm_kontext *kkm_kontext,
 		ret_val = -EFAULT;
 		goto error;
 	}
-	if (copy_to_user((void *)mva, &args, sizeof(struct kkm_hc_args))) {
+	if ((ret_val = kkm_to_user((void *)mva, &args,
+				   sizeof(struct kkm_hc_args))) != 0) {
 		ret_val = -EFAULT;
 		goto error;
 	}
@@ -1101,8 +1106,8 @@ int kkm_process_syscall(struct kkm_kontext *kkm_kontext,
 		goto error;
 	}
 
-	if (copy_to_user((void *)hcargs_indirect_ptr_mva, &gva,
-			 sizeof(uint64_t))) {
+	if ((ret_val = kkm_to_user((void *)hcargs_indirect_ptr_mva, &gva,
+				   sizeof(uint64_t))) != 0) {
 		ret_val = -EFAULT;
 		goto error;
 	}

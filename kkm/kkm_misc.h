@@ -33,4 +33,7 @@ void kkm_show_debug_registers(struct kkm_guest_area *ga);
 void kkm_copy_xstate_to_kkm_fpu(void *fpregs_state, struct kkm_fpu *kkm_fpu);
 void kkm_copy_kkm_fpu_to_xstate(struct kkm_fpu *kkm_fpu, void *fpregs_state);
 
+long kkm_to_user(void *dest, void *src, size_t size);
+long kkm_from_user(void *dest, void *src, size_t size);
+
 #endif /* __KKM_MISC_H__ */
