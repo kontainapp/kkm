@@ -156,7 +156,11 @@
  *     virtual address for stack growing down
  */
 /* bytes offset into pml4 table for 16TB(monitor guest mapping) */
+#ifndef KM_GPA_AT_16T
 #define KKM_PGD_MONITOR_PAYLOAD_ENTRY (0)
+#else
+#define KKM_PGD_MONITOR_PAYLOAD_ENTRY (32)
+#endif
 #define KKM_PGD_MONITOR_PAYLOAD_ENTRY_OFFSET (KKM_PGD_MONITOR_PAYLOAD_ENTRY * 8)
 /* byte offset into pml4 payload virtual address for code */
 #define KKM_PGD_GUEST_PAYLOAD_BOTTOM_ENTRY (0)
