@@ -21,10 +21,10 @@ endif
 KERNEL_VERSION := $(shell uname -r)
 KDIR ?= /lib/modules/${KERNEL_VERSION}/build
 
-ifneq (${VALGRIND},)
-KKM_EXTRA_FLAGS := ccflags-y="-DKM_GPA_AT_16T=1"
+ifeq (valgrind, $(filter valgrind,$(MAKECMDGOALS)))
+	KKM_EXTRA_FLAGS := ccflags-y="-DKM_GPA_AT_16T=1"
 else
-KKM_EXTRA_FLAGS :=
+	KKM_EXTRA_FLAGS :=
 endif
 
 default:
@@ -32,6 +32,8 @@ default:
 	$(MAKE) -C $(KDIR) M=$(CURRENT_DIR) $(KKM_EXTRA_FLAGS)
 	objdump -d kkm.ko > kkm.dis
 	objdump -S kkm.ko > kkm.s.dis
+
+valgrind: default
 
 modules_install: default
 	@echo "Installing KKM module"
