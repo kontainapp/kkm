@@ -897,17 +897,6 @@ static void kkm_check_cpu_support(void)
 		printk(KERN_INFO "kkm_init: using X86_FEATURE_XSAVES.\n");
 	}
 
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(5, 16, 0))
-	if (fpu_kernel_xstate_size > KKM_XSTATE_DATA_SIZE) {
-		printk(KERN_ERR
-		       "kkm_init: fpu_kernel_xstate_size too big 0x%x.\n",
-		       fpu_kernel_xstate_size);
-		return;
-	}
-	printk(KERN_INFO "kkm_init: fpu_kernel_xstate_size 0x%x.\n",
-	       fpu_kernel_xstate_size);
-#endif
-
 	kkm_cpu_supported = true;
 }
 
