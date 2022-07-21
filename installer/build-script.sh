@@ -54,14 +54,19 @@ fi
 
 # if we have dnf or apt or yum we can use it to install other wise bailout.
 if [ -f /usr/bin/dnf ]; then
-	PACKAGE_LIST=" kmod patch bash tar git-core bzip2 xz findutils gzip m4 perl-interpreter perl-Carp perl-devel perl-generators make diffutils gawk gcc binutils redhat-rpm-config hmaccalc bison flex net-tools hostname bc elfutils-devel dwarves python3-devel rsync xmlto asciidoc python3-sphinx sparse zlib-devel binutils-devel newt-devel bison flex xz-devel gettext ncurses-devel pciutils-devel zlib-devel binutils-devel clang llvm numactl-devel libcap-devel libcap-ng-devel rsync rpm-build elfutils kabi-dw openssl openssl-devel nss-tools xmlto asciidoc dkms "
+	PACKAGE_LIST=" kernel-headers kmod patch bash tar git-core bzip2 xz findutils gzip m4 perl-interpreter \
+        perl-Carp perl-devel perl-generators make diffutils gawk gcc binutils redhat-rpm-config hmaccalc \
+        bison flex net-tools hostname bc elfutils-devel dwarves python3-devel rsync xmlto asciidoc \
+        python3-sphinx sparse zlib-devel binutils-devel newt-devel bison flex xz-devel gettext ncurses-devel \
+        pciutils-devel zlib-devel binutils-devel clang llvm numactl-devel libcap-devel libcap-ng-devel rsync \
+        rpm-build elfutils kabi-dw openssl openssl-devel nss-tools xmlto asciidoc dkms "
 	INSTALLER_CMD="/usr/bin/dnf install -y ${PACKAGE_LIST}"
 elif [ -f /usr/bin/apt ]; then
-	PACKAGE_LIST=" make gcc dkms build-essential "
+	PACKAGE_LIST=" make gcc dkms build-essential linux-headers-$(uname -r)"
 	INSTALLER_CMD="/usr/bin/apt-get -q -y update; /usr/bin/apt-get -q -y install -y ${PACKAGE_LIST}"
 elif [ -f /usr/bin/yum ]; then
-	PACKAGE_LIST=" make gcc dkms build-essential "
-	INSTALLER_CMD="/usr/bin/yum -q -y update; /usr/bin/yum -q -y install -y ${PACKAGE_LIST}"
+	PACKAGE_LIST=" make gcc dkms build-essential kernel-devel-$(uname -r) kernel-headers-$(uname -r)"
+	INSTALLER_CMD="/usr/bin/yum -q -y --exclude=kernel* update; /usr/bin/yum -q -y install ${PACKAGE_LIST}"
 else
 	echo "Cannot find dnf or apt exiting"
 	exit 1
@@ -71,6 +76,15 @@ fi
 /usr/bin/bash -x << EOF
 ${INSTALLER_CMD}
 EOF
+
+# dkms may not be available as rpm - in that case install it here
+if [ ! command -v dkms &> /dev/null ]
+then
+    echo "DKMS not available as rpm - installing "
+    sudo yum makecache
+    sudo yum -y install dkms.noarch
+fi
+
 
 # script is running in root directory of extracted files
 
