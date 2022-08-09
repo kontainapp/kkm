@@ -83,7 +83,7 @@ if [ ! command -v dkms &> /dev/null ]; then
         /usr/bin/dnf install -y dkms.noarch
     elif [ -f /usr/bin/apt ]; then
         /usr/bin/apt-get -q -y install -y dkms.noarch
-    else [ -f /usr/bin/yum ]; then
+    else [ -f /usr/bin/yum ]
         sudo yum makecache
         sudo yum -y install dkms.noarch
     fi
