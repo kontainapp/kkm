@@ -39,8 +39,7 @@ if [ ! -x "$check_script" ]; then
 	exit 1
 fi
 
-eval $check_script
-if [ $? -ne 0 ]; then
+if ! eval $check_script; then
 	echo "KKM required kernel/cpu features are not available on this instance."
 	if [ "$force_install" = "true" ]; then
 		echo "Force install flag provided continuing with installation."
@@ -68,7 +67,7 @@ elif [ -f /usr/bin/yum ]; then
 	PACKAGE_LIST=" make gcc build-essential kernel-devel-$(uname -r) kernel-headers-$(uname -r) dkms"
 	INSTALLER_CMD="/usr/bin/yum -q -y --exclude=kernel* update; /usr/bin/yum -q -y install ${PACKAGE_LIST}"
 else
-	echo "Cannot find dnf or apt exiting"
+	echo "Cannot find dnf or apt, exiting"
 	exit 1
 fi
 
@@ -77,15 +76,18 @@ fi
 ${INSTALLER_CMD}
 EOF
 
-# If we still missing dkms install it 
-if [ ! command -v dkms &> /dev/null ]; then
+# If we still missing dkms install it
+if ! command -v dkms > /dev/null; then
     if [ -f /usr/bin/dnf ]; then
         /usr/bin/dnf install -y dkms.noarch
     elif [ -f /usr/bin/apt ]; then
         /usr/bin/apt-get -q -y install -y dkms.noarch
-    else [ -f /usr/bin/yum ]; then
+    elif [ -f /usr/bin/yum ]; then
         sudo yum makecache
         sudo yum -y install dkms.noarch
+    else
+        echo "Cannot find dkms, exiting"
+        exit 1
     fi
 fi
 
@@ -96,7 +98,7 @@ fi
 # remove
 dkms remove -q -m kkm -v 0.9 --all
 rm -fr /usr/src/kkm-0.9
-rm -f /var/lib/dkms/kkm
+rm -fr /var/lib/dkms/kkm
 
 umask 022
 cp installer/etc/modprobe.d/kkm.conf /etc/modprobe.d/kkm.conf
