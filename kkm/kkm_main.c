@@ -32,7 +32,7 @@
 #include "kkm_kontainer.h"
 #include "kkm_kontext.h"
 #include "kkm_mm.h"
-#include "kkm_idt_cache.h"
+#include "kkm_idt.h"
 #include "kkm_fpu.h"
 #include "kkm_misc.h"
 
@@ -363,7 +363,8 @@ static long kkm_execution_kontext_ioctl(struct file *file_p,
 					       "kkm_execution_kontext_ioctl: XSTATE saved format mismatch expecting %x found %x",
 					       xs->format, kkm_xs_format);
 					ret_val = -EINVAL;
-				        kkm_kontext->valid_payload_xsave_area = false;
+					kkm_kontext->valid_payload_xsave_area =
+						false;
 					break;
 				}
 				crc32 = crc32(0, xs, KKM_XSTATE_DATA_SIZE);
@@ -372,7 +373,8 @@ static long kkm_execution_kontext_ioctl(struct file *file_p,
 					       "kkm_execution_kontext_ioctl: crc mismatch expecting %x found %x",
 					       xs->crc32, crc32);
 					ret_val = -EINVAL;
-				        kkm_kontext->valid_payload_xsave_area = false;
+					kkm_kontext->valid_payload_xsave_area =
+						false;
 					break;
 				}
 				xs->padding = 0;
@@ -936,11 +938,11 @@ static int __init kkm_init(void)
 	}
 
 	/*
-	 * initialize idt cache
+	 * initialize idt
 	 */
-	ret_val = kkm_idt_cache_init();
+	ret_val = kkm_idt_init();
 	if (ret_val != 0) {
-		printk(KERN_ERR "kkm_init: Cannot initialize idt cache.\n");
+		printk(KERN_ERR "kkm_init: Cannot initialize idt.\n");
 		return ret_val;
 	}
 
@@ -962,7 +964,7 @@ module_init(kkm_init);
  */
 static void __exit kkm_exit(void)
 {
-	kkm_idt_cache_cleanup();
+	kkm_idt_cleanup();
 	kkm_mmu_cleanup();
 	misc_deregister(&kkm_device);
 	printk(KERN_INFO "kkm_exit: De-Registered kkm.\n");
