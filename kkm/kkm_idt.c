@@ -61,7 +61,7 @@ struct kkm_desc_entry {
 	uint64_t last_id;
 };
 
-struct kkm_idt_cache {
+struct kkm_idt {
 	int n_entries;
 
 	struct kkm_idt_entry idt_entry;
@@ -69,7 +69,7 @@ struct kkm_idt_cache {
 	struct kkm_desc_entry desc_entries[NR_CPUS];
 };
 
-struct kkm_idt_cache kkm_idt_cache;
+struct kkm_idt kkm_idt;
 
 int kkm_idt_descr_init(void)
 {
@@ -93,7 +93,7 @@ int kkm_idt_descr_init(void)
 		goto error;
 	}
 
-	idt_entry = &kkm_idt_cache.idt_entry;
+	idt_entry = &kkm_idt.idt_entry;
 
 	/*
 	 * allocate KKM_IDT_ALLOCATION_PAGES pages
@@ -219,20 +219,19 @@ error:
 	return ret_val;
 }
 
-int kkm_idt_cache_init(void)
+int kkm_idt_init(void)
 {
 	int ret_val = 0;
 	int i = 0;
 
-	memset(&kkm_idt_cache, 0, sizeof(kkm_idt_cache));
-	kkm_idt_cache.n_entries = NR_CPUS;
+	memset(&kkm_idt, 0, sizeof(kkm_idt));
+	kkm_idt.n_entries = NR_CPUS;
 	for (i = 0; i < NR_CPUS; i++) {
-		kkm_idt_cache.desc_entries[i].last_id = KKM_INVALID_ID;
+		kkm_idt.desc_entries[i].last_id = KKM_INVALID_ID;
 	}
 
 	if ((ret_val = kkm_idt_descr_init()) != 0) {
-		printk(KERN_NOTICE
-		       "kkm_idt_cache_init: failed to initialize idt\n");
+		printk(KERN_NOTICE "kkm_idt_init: failed to initialize idt\n");
 		goto error;
 	}
 
@@ -240,11 +239,11 @@ error:
 	return ret_val;
 }
 
-void kkm_idt_cache_cleanup(void)
+void kkm_idt_cleanup(void)
 {
 	struct kkm_idt_entry *idt_entry;
 
-	idt_entry = &kkm_idt_cache.idt_entry;
+	idt_entry = &kkm_idt.idt_entry;
 	kkm_mm_free_pages(idt_entry->idt.va, KKM_IDT_ALLOCATION_PAGES);
 	idt_entry->idt.page = NULL;
 	idt_entry->idt.va = NULL;
@@ -254,7 +253,7 @@ int kkm_idt_get_desc(struct desc_ptr *native_desc, struct desc_ptr *guest_desc)
 {
 	struct kkm_idt_entry *idt_entry;
 
-	idt_entry = &kkm_idt_cache.idt_entry;
+	idt_entry = &kkm_idt.idt_entry;
 
 	native_desc->size = idt_entry->native_idt_desc.size;
 	native_desc->address = idt_entry->native_idt_desc.address;
@@ -267,10 +266,10 @@ int kkm_idt_get_desc(struct desc_ptr *native_desc, struct desc_ptr *guest_desc)
 
 void kkm_idt_set_id(int cpu, uint64_t id)
 {
-	kkm_idt_cache.desc_entries[cpu].last_id = id;
+	kkm_idt.desc_entries[cpu].last_id = id;
 }
 
 uint64_t kkm_idt_get_id(int cpu)
 {
-	return kkm_idt_cache.desc_entries[cpu].last_id;
+	return kkm_idt.desc_entries[cpu].last_id;
 }

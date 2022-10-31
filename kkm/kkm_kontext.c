@@ -28,7 +28,7 @@
 #include "kkm_misc.h"
 #include "kkm_guest_entry.h"
 #include "kkm_guest_exit.h"
-#include "kkm_idt_cache.h"
+#include "kkm_idt.h"
 #include "kkm_ioctl.h"
 #include "kkm_offsets.h"
 #include "kkm_intr.h"
@@ -327,7 +327,7 @@ begin:
 
 	/* do all kernel interaction before changing address space */
 	/*
-	 * fetch native and guest idt from cache
+	 * fetch native and guest idt
 	 */
 	kkm_idt_get_desc(&ga->native_idt_desc, &ga->guest_idt_desc);
 
