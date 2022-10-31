@@ -2765,6 +2765,7 @@ skip_tlb_flush_3:
 	movq	(%rbx), %rax
 	pushq	%rax
 	retq
+	int3
 
 	.size kkm_intr_entry_asm, .-kkm_intr_entry_asm
 
