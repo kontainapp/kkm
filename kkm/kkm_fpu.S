@@ -41,6 +41,7 @@ kkm_fpu_save_xstate_xsaves:
 	popq	%rax
 
 	retq
+	int3
 
 	.cfi_endproc
 	.size kkm_fpu_save_xstate_xsaves, .-kkm_fpu_save_xstate_xsaves
@@ -67,6 +68,7 @@ kkm_fpu_restore_xstate_xsaves:
 	popq	%rax
 
 	retq
+	int3
 
 	.cfi_endproc
 	.size kkm_fpu_restore_xstate_xsaves, .-kkm_fpu_restore_xstate_xsaves
@@ -93,6 +95,7 @@ kkm_fpu_save_xstate_xsave:
 	popq	%rax
 
 	retq
+	int3
 
 	.cfi_endproc
 	.size kkm_fpu_save_xstate_xsave, .-kkm_fpu_save_xstate_xsave
@@ -119,6 +122,7 @@ kkm_fpu_restore_xstate_xsave:
 	popq	%rax
 
 	retq
+	int3
 
 	.cfi_endproc
 	.size kkm_fpu_restore_xstate_xsave, .-kkm_fpu_restore_xstate_xsave

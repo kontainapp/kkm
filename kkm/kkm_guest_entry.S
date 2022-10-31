@@ -74,6 +74,7 @@ kkm_restore_label:
 	popq	%rbx
 	popq	%rbp
 	retq
+	int3
 
 	.cfi_endproc
 	.size kkm_switch_to_gk_asm, .-kkm_switch_to_gk_asm
@@ -121,6 +122,8 @@ skip_tlb_flush_1:
 	movq	%rsi, %rsp
 	jmp	kkm_restore_label
 
+	retq
+	int3
 	/* NOTREACHED */
 
 	.cfi_endproc
@@ -281,6 +284,7 @@ kkm_guest_entry_end:
 	.cfi_startproc
 
 	retq
+	int3
 
 	.cfi_endproc
 	.size kkm_guest_entry_end, .-kkm_guest_entry_end
