@@ -597,8 +597,8 @@ int kkm_set_kontainer_memory(struct kkm *kkm, unsigned long arg)
 		kkm->mem_slot_count++;
 	}
 
-	kkm_mmu_sync((uint64_t)kkm->mm->pgd, kkm->gk_pml4.va, kkm->gp_pml4.va,
-		     &kkm->kkm_guest_pml4e);
+	kkm_mmu_sync((uint64_t)kkm->mm->pgd, kkm->gk_pgd.va, kkm->gp_pgd.va,
+		     &kkm->kkm_guest_pml4e, kkm->low_p4d.va, kkm->low_p4d.pa);
 error:
 	mutex_unlock(&kkm->mem_lock);
 	if (ret_val != 0) {
@@ -711,7 +711,8 @@ int kkm_create_kontainer(unsigned long arg)
 	 * setup pml4 for guest kernel and guest payload
 	 */
 	ret_val = kkm_mmu_copy_kernel_pgd((uint64_t)kkm->mm->pgd,
-					  kkm->gk_pml4.va, kkm->gp_pml4.va);
+					  kkm->gk_pgd.va, kkm->gp_pgd.va,
+					  kkm->gk_p4d.va, kkm->gp_p4d.va);
 	if (ret_val != 0) {
 		printk(KERN_NOTICE
 		       "kkm_create_kontainer: Copy kernel pgd entry failed error(%d)\n",

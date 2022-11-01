@@ -94,8 +94,8 @@ int kkm_kontext_init(struct kkm_kontext *kkm_kontext)
 	ga->kkm_kontext = kkm_kontext;
 	ga->guest_area_beg = (uint64_t)ga;
 
-	ga->guest_kernel_cr3 = kkm->gk_pml4.pa & ~PCID_MASK;
-	ga->guest_payload_cr3 = kkm->gp_pml4.pa & ~PCID_MASK;
+	ga->guest_kernel_cr3 = kkm->gk_pgd.pa & ~PCID_MASK;
+	ga->guest_payload_cr3 = kkm->gp_pgd.pa & ~PCID_MASK;
 	if (kkm_cpu_full_tlb_flush == false) {
 		ga->guest_kernel_cr3 |= GUEST_KERNEL_PCID;
 		ga->guest_payload_cr3 |= GUEST_PAYLOAD_PCID;
@@ -1011,10 +1011,10 @@ int kkm_process_page_fault(struct kkm_kontext *kkm_kontext,
 		 * we need to update page tables correctly
 		 */
 		if (priv_area == true) {
-			kkm_kontext_mmu_update_priv_area(ga->sregs.cr2,
-							 monitor_fault_address,
-							 (uint64_t)kkm->mm->pgd,
-							 &kkm->kkm_guest_pml4e);
+			kkm_mmu_update_priv_area(ga->sregs.cr2,
+						 monitor_fault_address,
+						 (uint64_t)kkm->mm->pgd,
+						 &kkm->kkm_guest_pml4e);
 		}
 
 		/*
