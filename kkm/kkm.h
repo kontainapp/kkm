@@ -196,14 +196,30 @@ struct kkm {
 	struct mutex pf_lock;
 
 	/*
-	 * guest kernel pml4 page
+	 * guest kernel pgd page
 	 */
-	struct kkm_mmu_page_info gk_pml4;
+	struct kkm_mmu_page_info gk_pgd;
 
 	/*
-	 * guest payload pml4 page
+	 * guest payload pgd page
 	 */
-	struct kkm_mmu_page_info gp_pml4;
+	struct kkm_mmu_page_info gp_pgd;
+
+	/*
+	 * guest kernel p4d page
+	 */
+	struct kkm_mmu_page_info gk_p4d;
+
+	/*
+	 * guest payload p4d page
+	 */
+	struct kkm_mmu_page_info gp_p4d;
+
+	/*
+	 * page for low address
+	 * same table is used for kernel and payload p4d for low addresses
+	 */
+	struct kkm_mmu_page_info low_p4d;
 
 	/*
 	 * guest private area page table hierarchy

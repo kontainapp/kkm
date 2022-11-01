@@ -58,8 +58,11 @@
 /* use unused kernel virtual address for kkm fixed mapping */
 #define KKM_PRIVATE_START_VA (0xFFFFFE8000000000ULL)
 
+/* index in PGD for KX P4D when 5 level page tables are used */
+#define KKM_KX_PGD_P4D_INDEX (511)
+
 /* pml4 table entry offset for KKM_PRIVATE_START_VA */
-#define KKM_PGD_INDEX (509)
+#define KKM_KX_PGD_INDEX (509)
 
 /* page table indices start */
 
@@ -155,6 +158,7 @@
  *     virtual address 0 for code growing up
  *     virtual address for stack growing down
  */
+#define KKM_PGD_LOW_P4D_ENTRY (0)
 /* bytes offset into pml4 table for 16TB(monitor guest mapping) */
 #ifndef KM_GPA_AT_16T
 #define KKM_PGD_MONITOR_PAYLOAD_ENTRY (0)
@@ -203,12 +207,8 @@ void kkm_mmu_flush_tlb_one_page(uint64_t addr);
 int kkm_create_pml4(struct kkm_mmu_pml4e *kmu, uint64_t address);
 void kkm_cleanup_pml4(struct kkm_mmu_pml4e *kmu);
 
-uint64_t kkm_mmu_get_pgd_entry(void);
-int kkm_mmu_get_per_cpu_start_index(int cpu_index);
-void kkm_mmu_insert_page(void *pt_va, int index, phys_addr_t pa,
-			 uint64_t flags);
-void kkm_mmu_set_guest_area(int cpu_index, phys_addr_t pa0, phys_addr_t pa1, phys_addr_t pa2,
-			    phys_addr_t pa3);
+void kkm_mmu_set_guest_area(int cpu_index, phys_addr_t pa0, phys_addr_t pa1,
+			    phys_addr_t pa2, phys_addr_t pa3);
 void *kkm_mmu_get_cur_cpu_guest_va(int cpu_index);
 
 void *kkm_mmu_get_idt_va(void);
@@ -217,13 +217,14 @@ void kkm_mmu_set_kx_global_info(phys_addr_t idt_pa, phys_addr_t text_page0_pa,
 				phys_addr_t kx_global_pa);
 
 int kkm_mmu_copy_kernel_pgd(uint64_t current_pgd_base, void *guest_kernel_va,
-			    void *guest_payload_va);
+			    void *guest_payload_va, void *kernel_p4d_va,
+			    void *payload_p4d_va);
 int kkm_mmu_sync(uint64_t current_pgd_base, void *guest_kernel_va,
-		 void *guest_payload_va, struct kkm_mmu_pml4e *guest);
-bool kkm_kontext_mmu_update_priv_area(uint64_t guest_fault_address,
-				      uint64_t monitor_fault_address,
-				      uint64_t current_pgd_base,
-				      struct kkm_mmu_pml4e *guest);
-bool kkm_kontext_mmu_get_table_va(uint64_t *table_va, int index);
+		 void *guest_payload_va, struct kkm_mmu_pml4e *guest,
+		 void *low_p4d_va, phys_addr_t low_p4d_pa);
+bool kkm_mmu_update_priv_area(uint64_t guest_fault_address,
+			      uint64_t monitor_fault_address,
+			      uint64_t current_pgd_base,
+			      struct kkm_mmu_pml4e *guest);
 
 #endif /* __KKM_MMU_H__ */
