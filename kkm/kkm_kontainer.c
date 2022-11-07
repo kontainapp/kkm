@@ -167,6 +167,13 @@ void kkm_kontainer_cleanup_p4d_pages(struct kkm *kkm)
  */
 void kkm_kontainer_cleanup(struct kkm *kkm)
 {
+	if (kkm->low_p4d.page != NULL) {
+		kkm_mm_free_pages(kkm->low_p4d.va,
+				  KKM_KONTAINER_LOW_PAGE_COUNT);
+		kkm->low_p4d.page = NULL;
+		kkm->low_p4d.va = 0;
+		kkm->low_p4d.pa = 0;
+	}
 	kkm_cleanup_pml4(&kkm->kkm_guest_pml4e);
 	kkm_kontainer_cleanup_pgd_pages(kkm);
 	kkm_kontainer_cleanup_p4d_pages(kkm);
