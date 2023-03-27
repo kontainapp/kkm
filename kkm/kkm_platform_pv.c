@@ -12,6 +12,7 @@
  *
  */
 
+#include <linux/types.h>
 #include <asm/paravirt.h>
 #include "kkm_platform.h"
 
