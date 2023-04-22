@@ -658,7 +658,7 @@ void kkm_hw_debug_registers_restore(uint64_t *registers)
 #define KKM_HYPERCALL_IO_PORT_BASE (0x8000)
 #define KKM_HYPERCALL_IO_SIZE (4)
 #define KKM_HYPERCALL_IO_COUNT (1)
-#define KKM_EXCEPTION_IO_PORT (0x81FD)
+#define KKM_EXCEPTION_IO_PORT (0x83FD)
 
 int kkm_process_intr(struct kkm_kontext *kkm_kontext)
 {
