@@ -259,6 +259,7 @@ int kkm_kontext_switch_kernel(struct kkm_kontext *kkm_kontext)
 	int cpu = -1;
 	struct kkm_run *kkm_run = NULL;
 	struct kkm_private_area *pa = NULL;
+	uint64_t start_payload_time = 0, end_payload_time = 0;
 
 	ga = (struct kkm_guest_area *)kkm_kontext->guest_area;
 
@@ -310,6 +311,8 @@ begin:
 		goto error;
 	}
 	ret_val = 0;
+
+	kkm_statistics_payload_entry_count_inc();
 
 	/*
 	 * disable interrupts
@@ -388,11 +391,17 @@ begin:
 
 	ga->intr_no = -1;
 
+	start_payload_time = ktime_get_ns();
+
 	/*
 	 * switch to guest kernel
 	 * this code will switch stacks
 	 */
 	kkm_switch_to_gk_asm(ga, (uint64_t)ga->redzone_bottom);
+
+	end_payload_time = ktime_get_ns();
+	kkm_statistics_payload_gk_time_ns(end_payload_time -
+					  start_payload_time);
 
 	/* code is from intr/fault return path */
 	if (kkm_kontext->debug_registers_set == true) {
@@ -556,6 +565,7 @@ void kkm_guest_kernel_start_payload(struct kkm_guest_area *ga)
 	 */
 	kkm_platform->kkm_load_idt(&ga->guest_idt_desc);
 
+	kkm_kontext->payload_entry_time = ktime_get_ns();
 	/*
 	 * start payload
 	 * call function in kx area
@@ -576,6 +586,10 @@ void kkm_switch_to_host_kernel(struct kkm_guest_area *ga)
 	struct kkm_kontext *kkm_kontext = NULL;
 
 	kkm_kontext = ga->kkm_kontext;
+
+	kkm_kontext->payload_exit_time = ktime_get_ns();
+	kkm_statistics_payload_time_ns(kkm_kontext->payload_exit_time -
+				       kkm_kontext->payload_entry_time);
 
 	/*
 	 * adjust registers from trap info
@@ -630,6 +644,10 @@ void kkm_switch_to_host_kernel(struct kkm_guest_area *ga)
 
 void kkm_hw_debug_registers_save(uint64_t *registers)
 {
+	uint64_t start_save_time = 0, end_save_time = 0;
+
+	start_save_time = ktime_get_ns();
+
 	get_debugreg(registers[0], 0);
 	get_debugreg(registers[1], 1);
 	get_debugreg(registers[2], 2);
@@ -638,16 +656,29 @@ void kkm_hw_debug_registers_save(uint64_t *registers)
 	get_debugreg(registers[7], 7);
 
 	registers[6] &= 0x1E00FULL;
+
+	end_save_time = ktime_get_ns();
+	kkm_statistics_debug_save_time_ns(end_save_time - start_save_time);
+	kkm_statistics_debug_count_inc();
 }
 
 void kkm_hw_debug_registers_restore(uint64_t *registers)
 {
+	uint64_t start_restore_time = 0, end_restore_time = 0;
+
+	start_restore_time = ktime_get_ns();
+
 	set_debugreg(registers[0], 0);
 	set_debugreg(registers[1], 1);
 	set_debugreg(registers[2], 2);
 	set_debugreg(registers[3], 3);
 	set_debugreg(registers[6], 6);
 	set_debugreg(registers[7], 7);
+
+	end_restore_time = ktime_get_ns();
+	kkm_statistics_debug_restore_time_ns(end_restore_time -
+					     start_restore_time);
+	kkm_statistics_debug_count_inc();
 }
 
 /*

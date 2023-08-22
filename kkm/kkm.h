@@ -154,6 +154,9 @@ struct kkm_kontext {
 	uint64_t prev_trap_addr;
 	uint64_t prev_error_code;
 	uint64_t trap_repeat_counter;
+
+	uint64_t payload_entry_time;
+	uint64_t payload_exit_time;
 };
 
 struct kkm_mem_slot {
