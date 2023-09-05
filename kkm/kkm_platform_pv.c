@@ -12,6 +12,7 @@
  *
  */
 
+typedef unsigned char u8;
 #include <linux/types.h>
 #include <asm/paravirt.h>
 #include "kkm_platform.h"
