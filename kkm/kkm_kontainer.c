@@ -83,6 +83,7 @@ int kkm_kontainer_allocate_p4d_pages(struct kkm *kkm)
 
 int kkm_kontainer_init(struct kkm *kkm)
 {
+	int i = 0;
 	int ret_val = 0;
 
 	ret_val = kkm_kontainer_allocate_pgd_pages(kkm);
@@ -126,7 +127,9 @@ int kkm_kontainer_init(struct kkm *kkm)
 		goto error;
 	}
 
-	mutex_init(&kkm->pf_lock);
+	for (i = 0; i < KKM_PF_HASH_BUCKETS; i++) {
+		mutex_init(&kkm->pf_lock[i]);
+	}
 	mutex_init(&kkm->mem_lock);
 	mutex_init(&kkm->kontext_lock);
 

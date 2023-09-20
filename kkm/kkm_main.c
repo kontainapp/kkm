@@ -26,8 +26,8 @@
 #include <asm/desc.h>
 #include <linux/version.h>
 
-#include "kkm_statistics.h"
 #include "kkm.h"
+#include "kkm_statistics.h"
 #include "kkm_run.h"
 #include "kkm_kontainer.h"
 #include "kkm_kontext.h"
@@ -833,7 +833,7 @@ static long kkm_device_ioctl(struct file *file_p, unsigned int ioctl_type,
 		break;
 	case KKM_CPU_SUPPORTED:
 		ret_val = (kkm_cpu_supported == true) ? CPU_SUPPORTED :
-							      CPU_NOT_SUPPORTED;
+							CPU_NOT_SUPPORTED;
 		break;
 	case KKM_GET_IDENTITY:
 		ret_val = KKM_DEVICE_IDENTITY;
@@ -953,6 +953,8 @@ static int __init kkm_init(void)
 	kkm_statistics_init();
 
 	printk(KERN_INFO "kkm_init: Registered kkm.\n");
+	printk(KERN_INFO "kkm_init: %llx %llx %llx\n", KKM_PF_HASH_BITS,
+	       KKM_PF_HASH_BUCKETS, KKM_PF_HASH_MASK);
 
 	return 0;
 }

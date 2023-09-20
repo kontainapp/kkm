@@ -32,6 +32,14 @@
 
 extern bool kkm_cpu_full_tlb_flush;
 
+/*
+ */
+#define KKM_PF_HASH_BITS (4ULL)
+#define KKM_PF_HASH_BUCKETS (1ULL << KKM_PF_HASH_BITS)
+#define KKM_PF_HASH_MASK (KKM_PF_HASH_BUCKETS - 1)
+#define KKM_PF_HASH_INDEX(addr)                                                \
+	(((uint64_t)addr >> PAGE_SHIFT) & KKM_PF_HASH_MASK)
+
 #define KKM_CONTEXT_MAP_PAGE_COUNT (3)
 #define KKM_CONTEXT_MAP_SIZE (KKM_CONTEXT_MAP_PAGE_COUNT * 4096)
 
@@ -193,7 +201,7 @@ struct kkm {
 	 * page fault lock
 	 * process only one page fault per mm
 	 */
-	struct mutex pf_lock;
+	struct mutex pf_lock[KKM_PF_HASH_BUCKETS];
 
 	/*
 	 * guest kernel pgd page
