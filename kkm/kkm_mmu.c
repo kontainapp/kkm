@@ -97,7 +97,9 @@ int kkm_mmu_init(void)
 
 void kkm_mmu_cleanup(void)
 {
-	kkm_mmu_flush_tlb();
+	if (kkm_cpu_full_tlb_flush == false) {
+		kkm_mmu_flush_tlb();
+	}
 	kkm_cleanup_pml4(&kkm_mmu_kx);
 }
 
