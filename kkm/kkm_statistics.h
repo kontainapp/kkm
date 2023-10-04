@@ -21,7 +21,8 @@ struct kkm_statistics {
 	atomic64_t intr_count;
 	atomic64_t forwarded_intr_count;
 	atomic64_t forwarded_intr_time_ns;
-	atomic64_t page_fault_count;
+	atomic64_t read_page_fault_count;
+	atomic64_t write_page_fault_count;
 	atomic64_t failed_page_fault_count;
 	atomic64_t page_fault_time_ns;
 	atomic64_t system_call_count;
@@ -36,7 +37,8 @@ static inline void kkm_statistics_init(void)
 	atomic64_set(&kkm_stat.intr_count, 0);
 	atomic64_set(&kkm_stat.forwarded_intr_count, 0);
 	atomic64_set(&kkm_stat.forwarded_intr_time_ns, 0);
-	atomic64_set(&kkm_stat.page_fault_count, 0);
+	atomic64_set(&kkm_stat.read_page_fault_count, 0);
+	atomic64_set(&kkm_stat.write_page_fault_count, 0);
 	atomic64_set(&kkm_stat.failed_page_fault_count, 0);
 	atomic64_set(&kkm_stat.page_fault_time_ns, 0);
 	atomic64_set(&kkm_stat.system_call_count, 0);
@@ -50,7 +52,8 @@ static inline int kkm_statistics_show(char *s)
 		       "interrupts\t: %lld\n"
 		       "forwarded intr\t: %lld\n"
 		       "forwarded intr time ns\t: %lld\n"
-		       "page faults\t: %lld\n"
+		       "read page faults\t: %lld\n"
+		       "write page faults\t: %lld\n"
 		       "failed page faults\t: %lld\n"
 		       "page fault time ns\t: %lld\n"
 		       "system calls\t: %lld\n",
@@ -59,7 +62,8 @@ static inline int kkm_statistics_show(char *s)
 		       atomic64_read(&kkm_stat.intr_count),
 		       atomic64_read(&kkm_stat.forwarded_intr_count),
 		       atomic64_read(&kkm_stat.forwarded_intr_time_ns),
-		       atomic64_read(&kkm_stat.page_fault_count),
+		       atomic64_read(&kkm_stat.read_page_fault_count),
+		       atomic64_read(&kkm_stat.write_page_fault_count),
 		       atomic64_read(&kkm_stat.failed_page_fault_count),
 		       atomic64_read(&kkm_stat.page_fault_time_ns),
 		       atomic64_read(&kkm_stat.system_call_count));
@@ -90,9 +94,14 @@ static inline void kkm_statistics_forwarded_intr_time_ns(uint64_t ns)
 	atomic64_add(ns, &kkm_stat.forwarded_intr_time_ns);
 }
 
-static inline void kkm_statistics_page_fault_count_inc(void)
+static inline void kkm_statistics_read_page_fault_count_inc(void)
 {
-	atomic64_inc(&kkm_stat.page_fault_count);
+	atomic64_inc(&kkm_stat.read_page_fault_count);
+}
+
+static inline void kkm_statistics_write_page_fault_count_inc(void)
+{
+	atomic64_inc(&kkm_stat.write_page_fault_count);
 }
 
 static inline void kkm_statistics_failed_page_fault_count_inc(void)

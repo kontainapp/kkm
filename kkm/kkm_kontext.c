@@ -1052,7 +1052,11 @@ error:
 	end_time = ktime_get_ns();
 
 	/* statistics */
-	kkm_statistics_page_fault_count_inc();
+	if ((error_code & X86_PF_WRITE) == X86_PF_WRITE) {
+		kkm_statistics_write_page_fault_count_inc();
+	} else {
+		kkm_statistics_read_page_fault_count_inc();
+	}
 	if (ret_val && ret_val != KKM_KONTEXT_FAULT_PROCESS_DONE) {
 		kkm_statistics_failed_page_fault_count_inc();
 	}
