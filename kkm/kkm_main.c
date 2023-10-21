@@ -209,24 +209,6 @@ static long kkm_run(struct kkm_kontext *kkm_kontext)
 	return ret_val;
 }
 
-static long kkm_to_user(void *dest, void *src, size_t size)
-{
-	long ret_val = 0;
-	if (copy_to_user(dest, src, size)) {
-		ret_val = -EFAULT;
-	}
-	return ret_val;
-}
-
-static long kkm_from_user(void *dest, void *src, size_t size)
-{
-	long ret_val = 0;
-	if (copy_from_user(dest, src, size)) {
-		ret_val = -EFAULT;
-	}
-	return ret_val;
-}
-
 /*
  * fetch msrs from user land.
  * We cannot set msr's as we share cpu with host os
@@ -536,9 +518,9 @@ int kkm_set_kontainer_memory(struct kkm *kkm, unsigned long arg)
 	int ret_val = 0;
 	int i = 0;
 
-	if (copy_from_user(&mr, (void *)arg,
-			   sizeof(struct kkm_memory_region))) {
-		return -EFAULT;
+	if ((ret_val = kkm_from_user(&mr, (void *)arg,
+				     sizeof(struct kkm_memory_region))) != 0) {
+		return ret_val;
 	}
 
 	if (mr.slot > KKM_MAX_MEMORY_SLOTS) {
@@ -614,7 +596,8 @@ int kkm_set_id_map_addr(struct kkm *kkm, unsigned long arg)
 	uint64_t addr;
 	int ret_val = 0;
 
-	if (copy_from_user(&addr, (void *)arg, sizeof(uint64_t))) {
+	if ((ret_val = kkm_from_user(&addr, (void *)arg, sizeof(uint64_t))) !=
+	    0) {
 		ret_val = -EFAULT;
 		goto error;
 	}
@@ -756,7 +739,8 @@ static int kkm_get_native_cpuid(unsigned long arg)
 	int i = 0;
 	int ec_entries_size = 0;
 
-	if (copy_from_user(&kcpuid, (void *)arg, sizeof(struct kkm_cpuid))) {
+	if ((ret_val = kkm_from_user(&kcpuid, (void *)arg,
+				     sizeof(struct kkm_cpuid))) != 0) {
 		ret_val = -EFAULT;
 		goto error;
 	}
@@ -782,19 +766,24 @@ static int kkm_get_native_cpuid(unsigned long arg)
 		ec[i].function = cpuid_functions[i];
 	}
 
-	if (copy_to_user(&(((struct kkm_cpuid *)arg)->entries[0]), ec,
-			 ec_entries_size)) {
+	if ((ret_val = kkm_to_user(&(((struct kkm_cpuid *)arg)->entries[0]), ec,
+				   ec_entries_size)) != 0) {
 		ret_val = -EFAULT;
+		goto error;
 	}
 
 	kcpuid.reserved = 0;
-	if (copy_to_user((void *)arg, &kcpuid, sizeof(struct kkm_cpuid))) {
+	if ((ret_val = kkm_to_user((void *)arg, &kcpuid,
+				   sizeof(struct kkm_cpuid))) != 0) {
 		ret_val = -EFAULT;
+		goto error;
 	}
 
-	kfree(ec);
 
 error:
+	if (ec != NULL) {
+		kfree(ec);
+	}
 	return ret_val;
 }
 
