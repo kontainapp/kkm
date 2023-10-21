@@ -2661,7 +2661,7 @@ kkm_intr_entry_asm_common:
 	 * if pcid is 0 the flush full tlb
 	 */
 	andq	$0xFF, %rdi
-	cmpq    $0, %rdi
+	cmpq	$0, %rdi
 	jne	skip_tlb_flush_3
 
 	/*
