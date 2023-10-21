@@ -273,3 +273,12 @@ uint64_t kkm_idt_get_id(int cpu)
 {
 	return kkm_idt.desc_entries[cpu].last_id;
 }
+
+uint64_t kkm_idt_get_function_address(struct desc_ptr *desc, int vector)
+{
+	struct gate_struct *gs =
+		(struct gate_struct *)desc->address + (vector & 0xff);
+
+	return ((uint64_t)gs->offset_high << 32) |
+	       ((uint64_t)gs->offset_middle << 16) | gs->offset_low;
+}

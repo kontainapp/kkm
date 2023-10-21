@@ -13,11 +13,38 @@
  */
 
 #include <linux/linkage.h>
+#include <asm/nospec-branch.h>
 #include <asm/percpu.h>
 #include <asm/asm-offsets.h>
+#include <asm/segment.h>
 #include "kkm_offsets.h"
 
 	.text
+	.align 16
+
+	.global kkm_call_intr_handler
+	.type kkm_call_intr_handler, @function
+kkm_call_intr_handler:
+	.cfi_startproc
+
+	pushq	%rbp
+	movq	%rsp, %rbp
+	andq	$-16, %rsp
+	pushq	$__KERNEL_DS
+	pushq	%rbp
+	pushf
+	pushq	$__KERNEL_CS
+
+	call	*%rdi
+
+	movq	%rbp, %rsp
+	popq	%rbp
+	retq
+	int3
+
+	.cfi_endproc
+	.size kkm_call_intr_handler, .-kkm_call_intr_handler
+
 /*
  * %rdi -- intr call pointer
  */

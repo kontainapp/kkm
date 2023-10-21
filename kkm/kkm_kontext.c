@@ -761,7 +761,21 @@ int kkm_process_intr(struct kkm_kontext *kkm_kontext)
 			break;
 		default:
 			start_intr_time = ktime_get_ns();
-			kkm_forward_intr(intr_forward_pointers[ga->intr_no]);
+			if (ga->intr_no == LOCAL_TIMER_VECTOR) {
+				uint64_t function_address =
+					kkm_idt_get_function_address(
+						&ga->native_idt_desc,
+						LOCAL_TIMER_VECTOR);
+				printk(KERN_ERR
+				       "kkm_process_intr: function_address %llx",
+				       function_address);
+				local_irq_disable();
+				kkm_call_intr_handler(function_address);
+				local_irq_enable();
+			} else {
+				kkm_forward_intr(
+					intr_forward_pointers[ga->intr_no]);
+			}
 			end_intr_time = ktime_get_ns();
 			ret_val = KKM_KONTEXT_FAULT_PROCESS_DONE;
 

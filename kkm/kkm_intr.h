@@ -15,6 +15,7 @@
 #ifndef __KKM_INTR_H__
 #define __KKM_INTR_H__
 
+void kkm_call_intr_handler(uint64_t function_address);
 void kkm_forward_intr(uint64_t intr_no);
 
 void kkm_forward_intr_0(void);
