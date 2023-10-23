@@ -766,9 +766,6 @@ int kkm_process_intr(struct kkm_kontext *kkm_kontext)
 					kkm_idt_get_function_address(
 						&ga->native_idt_desc,
 						LOCAL_TIMER_VECTOR);
-				printk(KERN_ERR
-				       "kkm_process_intr: function_address %llx",
-				       function_address);
 				local_irq_disable();
 				kkm_call_intr_handler(function_address);
 				local_irq_enable();
