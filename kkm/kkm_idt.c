@@ -25,6 +25,7 @@
 #include "kkm_guest_entry.h"
 #include "kkm_guest_exit.h"
 #include "kkm_intr_table.h"
+#include "kkm_always.h"
 
 /*
  * There is one idt system wide.
@@ -51,6 +52,19 @@ struct kkm_idt_entry {
 	 * kx idt descriptor
 	 */
 	struct desc_ptr guest_idt_desc;
+
+	/*
+	 * always idt and related memory
+	 */
+	struct kkm_mmu_page_info always_idt;
+	struct kkm_mmu_page_info always_idt_native_ptrs;
+	struct kkm_mmu_page_info always_idt_cpu_flags;
+	struct kkm_mmu_page_info always_idt_unused;
+
+	/*
+	 * always idt desc
+	 */
+	struct desc_ptr always_idt_desc;
 };
 
 /*
@@ -67,6 +81,11 @@ struct kkm_idt {
 	struct kkm_idt_entry idt_entry;
 
 	struct kkm_desc_entry desc_entries[NR_CPUS];
+
+	/*
+	 * save idt from each cpu
+	 */
+	struct desc_ptr kkm_saved_idt_desc[NR_CPUS];
 };
 
 struct kkm_idt kkm_idt;
@@ -122,6 +141,24 @@ int kkm_idt_descr_init(void)
 	idt_entry->kx_global.va = idt_entry->idt_text_page1.va + PAGE_SIZE;
 	idt_entry->kx_global.pa = virt_to_phys(idt_entry->kx_global.va);
 
+	idt_entry->always_idt.va = idt_entry->kx_global.va + PAGE_SIZE;
+	idt_entry->always_idt.pa = virt_to_phys(idt_entry->always_idt.va);
+
+	idt_entry->always_idt_native_ptrs.va =
+		idt_entry->always_idt.va + PAGE_SIZE;
+	idt_entry->always_idt_native_ptrs.pa =
+		virt_to_phys(idt_entry->always_idt_native_ptrs.va);
+
+	idt_entry->always_idt_cpu_flags.va =
+		idt_entry->always_idt_native_ptrs.va + PAGE_SIZE;
+	idt_entry->always_idt_cpu_flags.pa =
+		virt_to_phys(idt_entry->always_idt_cpu_flags.va);
+
+	idt_entry->always_idt_unused.va =
+		idt_entry->always_idt_cpu_flags.va + PAGE_SIZE;
+	idt_entry->always_idt_unused.pa =
+		virt_to_phys(idt_entry->always_idt_unused.va);
+
 	/*
 	 * insert idt page, idt text and kx global in kx area
 	 * idt in kx area is readonly
@@ -141,6 +178,10 @@ int kkm_idt_descr_init(void)
 		       "kkm_idt_descr_init: idt size expecting 0xfff found 0x%x\n",
 		       idt_entry->native_idt_desc.size);
 	}
+
+	printk(KERN_INFO "addr %px size %d\n",
+	       (void *)idt_entry->native_idt_desc.address,
+	       idt_entry->native_idt_desc.size);
 
 	/*
 	 * replace non standard handlers
@@ -192,6 +233,10 @@ int kkm_idt_descr_init(void)
 	 */
 	idt_entry->guest_idt_desc.address = (unsigned long)kkm_mmu_get_idt_va();
 
+	printk(KERN_INFO "guest addr %px size %d\n",
+	       (void *)idt_entry->guest_idt_desc.address,
+	       idt_entry->guest_idt_desc.size);
+
 	/*
 	 * copy interrupt entry code to kx area
 	 */
@@ -215,6 +260,82 @@ int kkm_idt_descr_init(void)
 	*(uint64_t *)idt_entry->kx_global.va =
 		(uint64_t)kkm_switch_to_host_kernel;
 
+	/*
+	 * from native idt copy addresses of handlers to idt_native_ptrs
+	 * These are stored from offset 0x0 in always_idt_native_ptrs.va
+	 */
+	gs = (struct gate_struct *)idt_entry->native_idt_desc.address;
+	for (i = 0; i < NR_VECTORS; i++) {
+		((uint64_t *)idt_entry->always_idt_native_ptrs.va)[i] =
+			(uint64_t)gs[i].offset_high << 32 |
+			(uint64_t)gs[i].offset_middle << 16 |
+			(uint64_t)gs[i].offset_low;
+	}
+
+	/*
+	 * from  guest idt copy address of handlers to idt_native_ptrs
+	 * These are stored from offset 0x800 in always_idt_native_ptrs.va
+	 */
+	gs = (struct gate_struct *)idt_entry->idt.va;
+	for (i = 0; i < NR_VECTORS; i++) {
+		/*
+		 * run handlers from normal driver load address
+		 */
+		((uint64_t *)idt_entry->always_idt_native_ptrs.va)[NR_VECTORS+i] =
+			intr_function_pointers[i];
+	}
+
+	/*
+	 * clear out cpu flags
+	 * 64 bytes for each of 64 cpus
+	 */
+	memset((void*)idt_entry->always_idt_cpu_flags.va, 0, PAGE_SIZE);
+
+	/*
+	 * copy native idt to always_idt va
+	 */
+	memcpy((void *)idt_entry->always_idt.va,
+	       (void *)idt_entry->native_idt_desc.address, PAGE_SIZE);
+
+	/*
+	 * insert always_idt function addresses to native idt
+	 * keep rest of the descriptor flags intact
+	 */
+	gs = (struct gate_struct *)idt_entry->always_idt.va;
+	for (i = 0; i < 32 /* NR_VECTORS */; i++) {
+		intr_entry_addr = always_intr_function_pointers[i];
+
+		gs[i].offset_low = intr_entry_addr & 0xFFFF;
+		gs[i].offset_middle = (intr_entry_addr >> 16) & 0xFFFF;
+		gs[i].offset_high = (intr_entry_addr >> 32) & 0xFFFFFFFF;
+	}
+
+	printk(KERN_NOTICE "always kx addresses %px %px %px %px\n",
+	       (void *)KKM_ALWAYS_IDT_START, (void *)KKM_ALWAYS_IDT_PTRS_START,
+	       (void *)KKM_ALWAYS_IDT_CPU_FLAGS_START, (void *)KKM_ALWAYS_IDT_UNUSED_START);
+	printk(KERN_NOTICE "always kx sizes %px %px %px %px\n",
+	       (void *)KKM_ALWAYS_IDT_SIZE, (void *)KKM_ALWAYS_IDT_PTRS_SIZE,
+	       (void *)KKM_ALWAYS_IDT_PTRS_SIZE, (void *)KKM_ALWAYS_IDT_UNUSED_SIZE);
+
+	/*
+	 * insert idt page, idt text and kx global in kx area
+	 * idt in kx area is readonly
+	 */
+	kkm_mmu_set_kx_always_global_info(idt_entry->always_idt.pa,
+					  idt_entry->always_idt_native_ptrs.pa,
+					  idt_entry->always_idt_cpu_flags.pa,
+					  idt_entry->always_idt_unused.pa);
+
+	/*
+	 * use kx address mapping for kx idt
+	 */
+	idt_entry->always_idt_desc.size = idt_entry->native_idt_desc.size;
+	idt_entry->always_idt_desc.address =
+		(unsigned long)kkm_mmu_get_always_idt_va();
+
+	printk(KERN_INFO "always idt desc addr %px size %d\n",
+	       (void *)idt_entry->always_idt_desc.address,
+	       idt_entry->always_idt_desc.size);
 error:
 	return ret_val;
 }
@@ -255,8 +376,11 @@ int kkm_idt_get_desc(struct desc_ptr *native_desc, struct desc_ptr *guest_desc)
 
 	idt_entry = &kkm_idt.idt_entry;
 
-	native_desc->size = idt_entry->native_idt_desc.size;
-	native_desc->address = idt_entry->native_idt_desc.address;
+	//native_desc->size = idt_entry->native_idt_desc.size;
+	//native_desc->address = idt_entry->native_idt_desc.address;
+
+	kkm_platform->kkm_store_idt(native_desc);
+	
 
 	guest_desc->size = idt_entry->guest_idt_desc.size;
 	guest_desc->address = idt_entry->guest_idt_desc.address;
@@ -272,4 +396,24 @@ void kkm_idt_set_id(int cpu, uint64_t id)
 uint64_t kkm_idt_get_id(int cpu)
 {
 	return kkm_idt.desc_entries[cpu].last_id;
+}
+
+void kkm_install_idt(int cpu_no)
+{
+	struct desc_ptr desc;
+
+	kkm_platform->kkm_store_idt(&kkm_idt.kkm_saved_idt_desc[cpu_no]);
+	printk(KERN_NOTICE "cpu %d prev idt sz %x addr %lx\n",
+			cpu_no, kkm_idt.kkm_saved_idt_desc[cpu_no].size,
+			kkm_idt.kkm_saved_idt_desc[cpu_no].address);
+
+	kkm_platform->kkm_load_idt(&kkm_idt.idt_entry.always_idt_desc);
+
+	local_irq_disable();
+
+	kkm_platform->kkm_store_idt(&desc);
+
+	local_irq_enable();
+	printk(KERN_NOTICE "cpu %d prev idt sz %x addr %lx\n",
+			cpu_no, desc.size, desc.address);
 }

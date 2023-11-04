@@ -41,6 +41,20 @@ void kkm_idt_invalidate(void *address)
 	load_idt(&kkm_idt);
 }
 
+void kkm_flush_tlb_all(void)
+{
+	unsigned long cr4;
+	unsigned long flags;
+
+	raw_local_irq_save(flags);
+	cr4 = kkm_platform->kkm_read_cr4();
+	// toggle enable global pages
+	kkm_platform->kkm_write_cr4(cr4 ^ X86_CR4_PGE);
+	// restore original cr4
+	kkm_platform->kkm_write_cr4(cr4);
+	raw_local_irq_restore(flags);
+}
+
 #if 0
 /*
  * use CR4 to flush tbl.

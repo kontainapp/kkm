@@ -26,6 +26,11 @@
 struct kkm_mmu_pml4e kkm_mmu_kx;
 
 /*
+ * page table for always area
+ */
+struct kkm_mmu_always kkm_mmu_always;
+
+/*
  * return current cpu private area first page table index
  * next KKM_PER_CPU_GA_PAGE_COUNT belong to this physical cpu
  */
@@ -92,12 +97,29 @@ static bool kkm_mmu_get_table_va(uint64_t *table_va, int index)
  */
 int kkm_mmu_init(void)
 {
-	return kkm_create_pml4(&kkm_mmu_kx, KKM_PRIVATE_START_VA);
+	int ret_val = 0;
+
+	if ((ret_val = kkm_create_pml4(&kkm_mmu_kx, KKM_PRIVATE_START_VA)) != 0) {
+		printk(KERN_NOTICE
+		       "kkm_mmu_init: failed to create pml4 error(%d)\n",
+		       ret_val);
+		goto error;
+	}
+	if ((ret_val = kkm_create_always(&kkm_mmu_always, KKM_ALWAYS_START_VA)) != 0) {
+		printk(KERN_NOTICE
+		       "kkm_mmu_init: failed to create always area error(%d)\n",
+		       ret_val);
+		goto error;
+	}
+
+error:
+	return ret_val;
 }
 
 void kkm_mmu_cleanup(void)
 {
 	kkm_mmu_flush_tlb();
+	kkm_cleanup_always(&kkm_mmu_always);
 	kkm_cleanup_pml4(&kkm_mmu_kx);
 }
 
@@ -180,6 +202,34 @@ error:
 	return ret_val;
 }
 
+/*
+ * allocate page table page and initialize
+ */
+int kkm_create_always(struct kkm_mmu_always *always, uint64_t address)
+{
+	int ret_val = 0;
+	int pmd_idx = 0;
+
+	memset(always, 0, sizeof(struct kkm_mmu_always));
+
+	/* alocate page for pud */
+	ret_val = kkm_mm_allocate_page(&always->pt.page, &always->pt.va,
+				       &always->pt.pa);
+	if (ret_val != 0) {
+		printk(KERN_NOTICE
+		       "kkm_create_always: failed to allocate pt page error(%d)\n",
+		       ret_val);
+		goto error;
+	}
+
+	pmd_idx = pmd_index(address);
+	always->pmd_entry = (always->pt.pa & KKM_PAGE_PA_MASK) | _PAGE_USER |
+			 _PAGE_RW | _PAGE_PRESENT;
+
+error:
+	return ret_val;
+}
+
 void kkm_cleanup_pml4(struct kkm_mmu_pml4e *kmu)
 {
 	if (kmu->pud.page != NULL) {
@@ -190,6 +240,13 @@ void kkm_cleanup_pml4(struct kkm_mmu_pml4e *kmu)
 	}
 	if (kmu->pt.page != NULL) {
 		kkm_mm_free_page(kmu->pt.va);
+	}
+}
+
+void kkm_cleanup_always(struct kkm_mmu_always *always)
+{
+	if (always->pt.page != NULL) {
+		kkm_mm_free_page(always->pt.va);
 	}
 }
 
@@ -247,6 +304,38 @@ void kkm_mmu_set_kx_global_info(phys_addr_t idt_pa, phys_addr_t text_page0_pa,
 	 */
 	kkm_mmu_insert_page(kkm_mmu_kx.pt.va, KKM_PTE_INDEX_KX, kx_global_pa,
 			    _PAGE_NX | _PAGE_RW | _PAGE_PRESENT);
+}
+
+void *kkm_mmu_get_always_idt_va(void)
+{
+	return (void *)KKM_ALWAYS_IDT_START;
+}
+
+void kkm_mmu_set_kx_always_global_info(phys_addr_t always_idt_pa,
+				       phys_addr_t always_idt_native_ptrs_pa,
+				       phys_addr_t always_idt_cpu_flags_pa,
+				       phys_addr_t always_idt_unused_pa)
+{
+	/*
+	 * pte KKM_PTE_INDEX_IDT corresponds to KKM_IDT_START_VA
+	 */
+	kkm_mmu_insert_page(kkm_mmu_always.pt.va, KKM_PTE_INDEX_ALWAYS_IDT,
+			    always_idt_pa, _PAGE_NX | _PAGE_PRESENT);
+
+	/*
+	 * pte KKM_PTE_INDEX_KX corresponds to KKM_IDT_GLOBAL_START
+	 */
+	kkm_mmu_insert_page(kkm_mmu_always.pt.va, KKM_PTE_INDEX_NATIVE_PTRS,
+			    always_idt_native_ptrs_pa,
+			    _PAGE_NX | _PAGE_RW | _PAGE_PRESENT);
+
+	/*
+	 * pte KKM_PTE_INDEX_TEXT_0 corresponds to KKM_IDT_GLOBAL_START
+	 */
+	kkm_mmu_insert_page(kkm_mmu_always.pt.va, KKM_PTE_INDEX_ALWAYS_CPU_FLAGS,
+			    always_idt_cpu_flags_pa, _PAGE_RW | _PAGE_PRESENT);
+	kkm_mmu_insert_page(kkm_mmu_always.pt.va, KKM_PTE_INDEX_ALWAYS_UNUSED,
+			    always_idt_unused_pa, _PAGE_RW | _PAGE_PRESENT);
 }
 
 /*
@@ -520,5 +609,43 @@ end:
 		       table_va, monitor_fault_address, pgd_idx, p4d_idx,
 		       pud_idx, pmd_idx, pte_idx);
 	}
+	return ret_val;
+}
+
+bool kkm_mmu_update_always_area(void)
+{
+	bool ret_val = true;
+	uint64_t table_va = (uint64_t)__va(read_cr3_pa());
+	uint64_t address = KKM_ALWAYS_START_VA;
+	uint64_t pgd_idx = pgd_index(address);
+	uint64_t p4d_idx = p4d_index(address);
+	uint64_t pud_idx = pud_index(address);
+	uint64_t pmd_idx = pmd_index(address);
+
+	if (kkm_mmu_get_table_va(&table_va, pgd_idx) != true) {
+		printk(KERN_NOTICE "kkm_mmu_update_priv_area: pgd failed\n");
+		ret_val = false;
+		goto end;
+	}
+
+	if (pgtable_l5_enabled() == true) {
+		if (kkm_mmu_get_table_va(&table_va, p4d_idx) != true) {
+			printk(KERN_NOTICE
+			       "kkm_mmu_update_priv_area: p4d failed\n");
+			ret_val = false;
+			goto end;
+		}
+	}
+
+	if (kkm_mmu_get_table_va(&table_va, pud_idx) != true) {
+		printk(KERN_NOTICE "kkm_mmu_update_priv_area: pud failed\n");
+		ret_val = false;
+		goto end;
+	}
+
+	pmd_t *pmd = (pmd_t *)table_va;
+	(&pmd[pmd_idx])->pmd = kkm_mmu_always.pmd_entry;
+
+end:
 	return ret_val;
 }

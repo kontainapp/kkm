@@ -46,6 +46,23 @@ module_param(log_failed_page_faults, bool, S_IRUGO | S_IWUSR);
 
 DEFINE_PER_CPU(struct kkm_kontext *, current_kontext);
 
+DEFINE_PER_CPU(uint64_t, kkm_counter);
+
+int kkm_get_local(void)
+{
+	volatile uint64_t c = __this_cpu_read(kkm_counter);
+	int cpu_no = smp_processor_id();
+	__this_cpu_write(kkm_counter, cpu_no);
+	return c;
+}
+
+int kkm_get_local1(void)
+{
+	volatile int cpu_no_1 = get_cpu();
+	put_cpu();
+	return cpu_no_1;
+}
+
 /*
  * function pointer to guest payload entry code in kx area
  */
@@ -554,7 +571,11 @@ void kkm_guest_kernel_start_payload(struct kkm_guest_area *ga)
 	 * interrupts are disbled at the begining of switch_kernel
 	 * set new idt
 	 */
+#if 0
 	kkm_platform->kkm_load_idt(&ga->guest_idt_desc);
+#else
+	((uint64_t *)KKM_ALWAYS_IDT_CPU_FLAGS_START)[8*ga->cpu] = 1;
+#endif
 
 	/*
 	 * start payload
@@ -597,7 +618,11 @@ void kkm_switch_to_host_kernel(struct kkm_guest_area *ga)
 	/*
 	 * restore native kernel idt
 	 */
+#if 0
 	kkm_platform->kkm_load_idt(&ga->native_idt_desc);
+#else
+	((uint64_t *)KKM_ALWAYS_IDT_CPU_FLAGS_START)[8*ga->cpu] = 0;
+#endif
 
 	/*
 	 * restore native kernel SYSCALL target address

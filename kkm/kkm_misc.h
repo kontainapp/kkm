@@ -16,8 +16,8 @@
 #define __KKM_MISC_H__
 
 void kkm_idt_invalidate(void *address);
-#if 0
 void kkm_flush_tlb_all(void);
+#if 0
 void kkm_change_address_space(phys_addr_t pgd_pa);
 #endif
 

@@ -105,7 +105,7 @@ define show_pgd
 	if $argc == 0
 		help show_pgd
 	else
-		set $pgd_max_entries = 512
+		set $pgd_max_entries = 0x200
 		set $pgd_entry_address = (unsigned long long *)$arg0
 		set $pgd_index = 0
 		set $pgd_entry_va_offset = 0ULL
@@ -167,13 +167,13 @@ define show_pgd_va
 		set $entry_size = 8ULL
 		set $va = $arg1
 		set $offset = $va & 0xFFF
-		set $va = $va >> 12
+		set $va = $va >> 0xc
 		set $pte_index = $va & 0x1FF
-		set $va = $va >> 9
+		set $va = $va >> 0x9
 		set $pmd_index = $va & 0x1FF
-		set $va = $va >> 9
+		set $va = $va >> 0x9
 		set $pud_index = $va & 0x1FF
-		set $va = $va >> 9
+		set $va = $va >> 0x9
 		set $pgd_index = $va & 0x1FF
 		printf "va : %16lx\n", $arg1
 		printf "pgd index : %3x\n", $pgd_index
@@ -184,28 +184,28 @@ define show_pgd_va
 
 		set $entry_va = (unsigned long long)$arg0 + $pgd_index * $entry_size
 		set $entry_value = *((unsigned long long *)$entry_va)
-		printf "pgd table va %16lx pgd index %3x entry va %16lx entry value %16lx\n", $arg0, $pgd_index, $entry_va, $entry_value
+		printf "pgd -------------------- table va %16lx pgd index %3x entry va %16lx entry value %16lx\n", $arg0, $pgd_index, $entry_va, $entry_value
 		show_entry $entry_value
 
 		set $table_pa = (unsigned long long)($entry_value & 0x7FFFFFFFFFFFF000ULL)
 		set $table_va = $kern_base_va + $table_pa
 		set $entry_va = $table_va + $pud_index * $entry_size
 		set $entry_value = *((unsigned long long *)$entry_va)
-		printf "\ntable pa %16lx table va %16lx entry index %3x entry va %16lx entry value %16lx\n", $table_pa, $table_va, $pud_index, $entry_va, $entry_value
+		printf "\npud pa %16lx table va %16lx entry index %3x entry va %16lx entry value %16lx\n", $table_pa, $table_va, $pud_index, $entry_va, $entry_value
 		show_entry $entry_value
 
 		set $table_pa = $entry_value & 0x7FFFFFFFFFFFF000ULL
 		set $table_va = $kern_base_va + $table_pa
 		set $entry_va = $table_va + $pmd_index * $entry_size
 		set $entry_value = *((unsigned long long *)$entry_va)
-		printf "\ntable pa %16lx table va %16lx entry index %3x entry va %16lx entry value %16lx\n", $table_pa, $table_va, $pmd_index, $entry_va, $entry_value
+		printf "\npmd pa %16lx table va %16lx entry index %3x entry va %16lx entry value %16lx\n", $table_pa, $table_va, $pmd_index, $entry_va, $entry_value
 		show_entry $entry_value
 
 		set $table_pa = $entry_value & 0x7FFFFFFFFFFFF000ULL
 		set $table_va = $kern_base_va + $table_pa
 		set $entry_va = $table_va + $pte_index * $entry_size
 		set $entry_value = *((unsigned long long *)$entry_va)
-		printf "\ntable pa %16lx table va %16lx entry index %3x entry va %16lx entry value %16lx\n", $table_pa, $table_va, $pte_index, $entry_va, $entry_value
+		printf "\npd  pa %16lx table va %16lx entry index %3x entry va %16lx entry value %16lx\n", $table_pa, $table_va, $pte_index, $entry_va, $entry_value
 		show_entry $entry_value
 
 	end
@@ -297,7 +297,7 @@ define show_idt
 	if $argc == 0
 		help show_idt
 	else
-		set $idt_count = 256
+		set $idt_count = 0x100
 		set $idt_index = 0
 		set $idte_address = (unsigned long long *)$arg0
 		while $idt_index < $idt_count
@@ -305,11 +305,11 @@ define show_idt
 			set $entry1 = *($idte_address + 1)
 			if $entry0 & 0x800000000000ULL
 				printf "P "
-				printf "%4x seg %4x ", $idt_index, ($entry0 >> 16) & 0xffff
-				printf "addr %16lx ", (($entry1 & 0xffffffff) << 32) | (($entry0 >> 32) & 0xffff0000ULL) | ($entry0 & 0xffffULL)
-				printf "DPL %1x ", ($entry0 >> 45) & 3
-				printf "TYPE %1x ", ($entry0 >> 40) & 0xf
-				printf "IST %1x", ($entry0 >> 32) & 0x7
+				printf "%4x seg %4x ", $idt_index, ($entry0 >> 0x10) & 0xffff
+				printf "addr %16lx ", (($entry1 & 0xffffffff) << 0x20) | (($entry0 >> 0x20) & 0xffff0000ULL) | ($entry0 & 0xffffULL)
+				printf "DPL %1x ", ($entry0 >> 0x2D) & 0x3
+				printf "TYPE %1x ", ($entry0 >> 0x28) & 0xf
+				printf "IST %1x", ($entry0 >> 0x20) & 0x7
 				printf "\n"
 			end
 			set $idt_index = $idt_index + 1
@@ -324,7 +324,7 @@ end
 
 define add_trap_breaks
 	set $base = 0xfffffe8000001000
-	set $count = 16
+	set $count = 0x10
 	set $index = 0
 	while $index < $count
 		set $baddr = $base + $index * 0x10

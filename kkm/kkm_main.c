@@ -40,6 +40,10 @@ uint32_t kkm_version = 12;
 bool kkm_cpu_supported = false;
 bool kkm_cpu_full_tlb_flush = false;
 
+bool cpu_init_done[NR_CPUS];
+
+static_assert((&((struct pcpu_hot *)0)->cpu_number == (void *)12), "pcpu_hot cpu_number offset changed");
+
 kkm_xstate_format_t kkm_xs_format = KKM_XSAVES;
 void (*kkm_fpu_save_xstate)(void *) = kkm_fpu_save_xstate_xsaves;
 void (*kkm_fpu_restore_xstate)(void *) = kkm_fpu_restore_xstate_xsaves;
@@ -201,11 +205,23 @@ static inline void kkm_get_regs(struct kkm_kontext *kontext)
 static long kkm_run(struct kkm_kontext *kkm_kontext)
 {
 	int ret_val = 0;
+	int processor_id = smp_processor_id();
+
+	if (processor_id >= 64) {
+		printk(KERN_NOTICE "kkm_run: increase cpu count support in kkm\n");
+		ret_val = -EINVAL;
+		goto end;
+	}
+	if (cpu_init_done[processor_id] == false) {
+		cpu_init_done[processor_id] = true;
+		kkm_install_idt(processor_id);
+	}
 
 	kkm_set_regs(kkm_kontext);
 	ret_val = kkm_kontext_switch_kernel(kkm_kontext);
 	kkm_get_regs(kkm_kontext);
 
+end:
 	return ret_val;
 }
 
@@ -833,7 +849,7 @@ static long kkm_device_ioctl(struct file *file_p, unsigned int ioctl_type,
 		break;
 	case KKM_CPU_SUPPORTED:
 		ret_val = (kkm_cpu_supported == true) ? CPU_SUPPORTED :
-							      CPU_NOT_SUPPORTED;
+							CPU_NOT_SUPPORTED;
 		break;
 	case KKM_GET_IDENTITY:
 		ret_val = KKM_DEVICE_IDENTITY;
@@ -909,12 +925,18 @@ static void kkm_check_cpu_support(void)
  */
 static int __init kkm_init(void)
 {
+	int i = 0;
 	int ret_val = 0;
 	struct module *mod = THIS_MODULE;
 
 	kkm_platform = &kkm_platfrom_native;
 
 	kkm_check_cpu_support();
+
+	printk(KERN_INFO "kkm_init: NR_CPUS %d.\n", NR_CPUS);
+	for (i = 0; i < NR_CPUS; i++) {
+		cpu_init_done[i] = false;
+	}
 
 	/*
 	 * register /dev/kkm
@@ -928,6 +950,13 @@ static int __init kkm_init(void)
 	kkm_chardev_ops.owner = mod;
 	kkm_kontainer_ops.owner = mod;
 	kkm_execution_kontext_fops.owner = mod;
+
+	/*
+	 * dont change the order
+	 * 	kkm_mmu_init
+	 * 	kkm_idt_init
+	 * 	kkm_mmu_update_always_area
+	 */
 
 	/*
 	 * intialize mmu, allocate kkm private area data structures
@@ -946,6 +975,10 @@ static int __init kkm_init(void)
 		printk(KERN_ERR "kkm_init: Cannot initialize idt.\n");
 		return ret_val;
 	}
+
+	kkm_mmu_update_always_area();
+
+	kkm_flush_tlb_all();
 
 	atomic64_set(&kkm_object_id, 1ULL);
 

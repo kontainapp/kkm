@@ -71,6 +71,27 @@
 #define KKM_PTE_INDEX_TEXT_1 (2)
 #define KKM_PTE_INDEX_KX (3)
 
+/*
+ *           --------------------  0xFFFFFFFFFFE08000ULL
+ *      RWX  |    unused  4k    |
+ *           --------------------  0xFFFFFFFFFFE07000ULL
+ *      RWX  | per cpu flags 4k | (cache line) 64 bytes per cpu
+ *           --------------------  0xFFFFFFFFFFE06000ULL
+ *      RW   | guest intr handl |
+ *           --------------------  0xFFFFFFFFFFE05800ULL
+ *      RW   |native intr handlr|
+ *           --------------------  0xFFFFFFFFFFE05000ULL
+ *      R    |  Always IDT      |
+ *           --------------------  0xFFFFFFFFFFE04000ULL
+ */
+
+#define KKM_ALWAYS_START_VA (0xffffffffffe00000ULL)
+
+#define KKM_PTE_INDEX_ALWAYS_IDT (4)
+#define KKM_PTE_INDEX_NATIVE_PTRS (5)
+#define KKM_PTE_INDEX_ALWAYS_CPU_FLAGS (6)
+#define KKM_PTE_INDEX_ALWAYS_UNUSED (7)
+
 /* first page table entry index for physical cpu */
 #define KKM_CPU_GA_INDEX_START (256)
 /* number of page table entrie's for physical cpu */
@@ -96,7 +117,15 @@
 #define KKM_IDT_TEXT (2)
 #define KKM_IDT_GLBL (1)
 
-#define KKM_IDT_ALLOCATION_PAGES (KKM_IDT_TABLE + KKM_IDT_TEXT + KKM_IDT_GLBL)
+#define KKM_ALWAYS_IDT_TABLE (1)
+#define KKM_ALWAYS_IDT_PTRS (1)
+#define KKM_ALWAYS_CPU_FLAGS (1)
+#define KKM_ALWAYS_UNUSED (1)
+
+#define KKM_IDT_ALLOCATION_PAGES                                               \
+	(KKM_IDT_TABLE + KKM_IDT_TEXT + KKM_IDT_GLBL + KKM_ALWAYS_IDT_TABLE +  \
+	 KKM_ALWAYS_IDT_PTRS + KKM_ALWAYS_CPU_FLAGS + KKM_ALWAYS_UNUSED)
+
 
 /* IDT table start address */
 #define KKM_IDT_START_VA (KKM_PRIVATE_START_VA)
@@ -110,6 +139,28 @@
 #define KKM_IDT_GLOBAL_START (KKM_IDT_CODE_START_VA + KKM_IDT_CODE_SIZE)
 /* kx global data size */
 #define KKM_IDT_GLOBAL_SIZE (KKM_IDT_GLBL * PAGE_SIZE)
+
+
+/* always idt table start address */
+#define KKM_ALWAYS_IDT_START (KKM_ALWAYS_START_VA + KKM_PTE_INDEX_ALWAYS_IDT * PAGE_SIZE)
+/* always idt table size */
+#define KKM_ALWAYS_IDT_SIZE (KKM_ALWAYS_IDT_TABLE * PAGE_SIZE)
+/* native idt pointers */
+#define KKM_ALWAYS_IDT_PTRS_START                                              \
+	(KKM_ALWAYS_IDT_START + KKM_ALWAYS_IDT_SIZE)
+/* native idt pointers size */
+#define KKM_ALWAYS_IDT_PTRS_SIZE (KKM_ALWAYS_IDT_PTRS * PAGE_SIZE)
+
+/* always idt cpu flags address */
+#define KKM_ALWAYS_IDT_CPU_FLAGS_START (KKM_ALWAYS_IDT_PTRS_START + KKM_ALWAYS_IDT_PTRS_SIZE)
+/* always idt code size */
+#define KKM_ALWAYS_IDT_CPU_FLAGS_SIZE (KKM_ALWAYS_CPU_FLAGS * PAGE_SIZE)
+
+/* always idt unused */
+#define KKM_ALWAYS_IDT_UNUSED_START (KKM_ALWAYS_IDT_CPU_FLAGS_START + KKM_ALWAYS_IDT_CPU_FLAGS_SIZE)
+/* always idt code size */
+#define KKM_ALWAYS_IDT_UNUSED_SIZE (KKM_ALWAYS_UNUSED * PAGE_SIZE)
+
 
 /* 16 bytes is code generated for each intr entry */
 #define KKM_IDT_ENTRY_FUNCTION_SIZE (16)
@@ -200,12 +251,19 @@ struct kkm_mmu_pml4e {
 	struct kkm_mmu_page_info pt; /* page for page table */
 };
 
+struct kkm_mmu_always {
+	uint64_t pmd_entry;
+	struct kkm_mmu_page_info pt; /* page for page table */
+};
+
 int kkm_mmu_init(void);
 void kkm_mmu_cleanup(void);
 void kkm_mmu_flush_tlb(void);
 void kkm_mmu_flush_tlb_one_page(uint64_t addr);
 int kkm_create_pml4(struct kkm_mmu_pml4e *kmu, uint64_t address);
+int kkm_create_always(struct kkm_mmu_always *always, uint64_t address);
 void kkm_cleanup_pml4(struct kkm_mmu_pml4e *kmu);
+void kkm_cleanup_always(struct kkm_mmu_always *always);
 
 void kkm_mmu_set_guest_area(int cpu_index, phys_addr_t pa0, phys_addr_t pa1,
 			    phys_addr_t pa2, phys_addr_t pa3);
@@ -215,6 +273,11 @@ void *kkm_mmu_get_idt_va(void);
 void kkm_mmu_set_kx_global_info(phys_addr_t idt_pa, phys_addr_t text_page0_pa,
 				phys_addr_t text_page1_pa,
 				phys_addr_t kx_global_pa);
+void *kkm_mmu_get_always_idt_va(void);
+void kkm_mmu_set_kx_always_global_info(phys_addr_t always_idt_pa,
+				       phys_addr_t always_idt_native_ptrs_pa,
+				       phys_addr_t always_idt_cpu_flags_pa,
+				       phys_addr_t always_idt_unused_pa);
 
 int kkm_mmu_copy_kernel_pgd(uint64_t current_pgd_base, void *guest_kernel_va,
 			    void *guest_payload_va, void *kernel_p4d_va,
@@ -226,5 +289,6 @@ bool kkm_mmu_update_priv_area(uint64_t guest_fault_address,
 			      uint64_t monitor_fault_address,
 			      uint64_t current_pgd_base,
 			      struct kkm_mmu_pml4e *guest);
+bool kkm_mmu_update_always_area(void);
 
 #endif /* __KKM_MMU_H__ */
