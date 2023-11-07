@@ -201,10 +201,21 @@ static inline void kkm_get_regs(struct kkm_kontext *kontext)
 static long kkm_run(struct kkm_kontext *kkm_kontext)
 {
 	int ret_val = 0;
+	struct kkm_guest_area *ga = (struct kkm_guest_area *)kkm_kontext->guest_area;
+
+	if (ga->sregs.gs.base != kkm_kontext->sregs.gs.base) {
+		printk(KERN_NOTICE "before run gs base mismatch %llx %llx\n",
+				ga->sregs.gs.base, kkm_kontext->sregs.gs.base);
+	}
 
 	kkm_set_regs(kkm_kontext);
 	ret_val = kkm_kontext_switch_kernel(kkm_kontext);
 	kkm_get_regs(kkm_kontext);
+
+	if (ga->sregs.gs.base != kkm_kontext->sregs.gs.base) {
+		printk(KERN_NOTICE "after run gs base mismatch %llx %llx\n",
+				ga->sregs.gs.base, kkm_kontext->sregs.gs.base);
+	}
 
 	return ret_val;
 }
@@ -286,6 +297,7 @@ static long kkm_execution_kontext_ioctl(struct file *file_p,
 			/* set guest system registers and segment registers */
 			ret_val = kkm_from_user(&ga->sregs, (void *)arg,
 						sizeof(struct kkm_sregs));
+			kkm_kontext->sregs = ga->sregs;
 			break;
 		case KKM_SET_MSRS:
 			/* set msrs */

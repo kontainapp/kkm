@@ -154,6 +154,8 @@ struct kkm_kontext {
 	uint64_t prev_trap_addr;
 	uint64_t prev_error_code;
 	uint64_t trap_repeat_counter;
+
+	struct kkm_sregs sregs;
 };
 
 struct kkm_mem_slot {
