@@ -22,25 +22,27 @@
 
 .macro kkm_always_intr_entry index
 	.align 16
-	.global kkm_always_intr_entry_\index
-kkm_always_intr_entry_\index:
+	.global kkm_aie_\index
+kkm_aie_\index:
+	endbr64
 	clc
 	pushq	$0
 	pushq	$\index
 	jmp	kkm_always_intr_common
 	int3
-	.size kkm_always_intr_entry_\index, .-kkm_always_intr_entry_\index
+	.size kkm_aie_\index, .-kkm_aie_\index
 .endm
 
 .macro kkm_always_intr_entry_error index
 	.align 16
-	.global kkm_always_intr_entry_\index
-kkm_always_intr_entry_\index:
+	.global kkm_aie_\index
+kkm_aie_\index:
+	endbr64
 	clc
 	pushq	$\index
 	jmp	kkm_always_intr_common_error
 	int3
-	.size kkm_always_intr_entry_\index, .-kkm_always_intr_entry_\index
+	.size kkm_aie_\index, .-kkm_aie_\index
 .endm
 
 .altmacro

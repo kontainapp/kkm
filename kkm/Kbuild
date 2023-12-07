@@ -13,4 +13,4 @@
 #
 
 obj-m += kkm.o
-kkm-objs += kkm_fpu.o kkm_guest_entry.o kkm_guest_exit.o kkm_intr.o kkm_kontext.o kkm_mm.o kkm_platform_pv.o kkm_intr_table.o kkm_main.o kkm_mmu.o kkm_trace.o kkm_idt.o kkm_kontainer.o kkm_misc.o kkm_platform_native.o kkm_always_intr.o
+kkm-objs += kkm_fpu.o kkm_guest_entry.o kkm_guest_exit.o kkm_intr.o kkm_kontext.o kkm_mm.o kkm_platform_pv.o kkm_intr_table.o kkm_main.o kkm_mmu.o kkm_trace.o kkm_idt.o kkm_kontainer.o kkm_misc.o kkm_platform_native.o kkm_always_intr.o kkm_always_intr_forward.o

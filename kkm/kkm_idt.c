@@ -302,7 +302,7 @@ int kkm_idt_descr_init(void)
 	 * keep rest of the descriptor flags intact
 	 */
 	gs = (struct gate_struct *)idt_entry->always_idt.va;
-	for (i = 0; i < 32 /* NR_VECTORS */; i++) {
+	for (i = 0; i < NR_VECTORS; i++) {
 		intr_entry_addr = always_intr_function_pointers[i];
 
 		gs[i].offset_low = intr_entry_addr & 0xFFFF;
