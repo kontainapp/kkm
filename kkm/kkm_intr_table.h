@@ -18,5 +18,6 @@
 extern uint64_t intr_function_pointers[NR_VECTORS];
 extern uint64_t intr_forward_pointers[NR_VECTORS];
 extern uint64_t always_intr_function_pointers[NR_VECTORS];
+extern void (*always_intr_forward_function_pointers[NR_VECTORS])(uint64_t, uint64_t, uint64_t, uint64_t);
 
 #endif /* __KKM_INTR_TABLE_H__ */

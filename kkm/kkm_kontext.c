@@ -692,6 +692,7 @@ int kkm_process_intr(struct kkm_kontext *kkm_kontext)
 		(struct kkm_guest_area *)kkm_kontext->guest_area;
 	struct kkm_run *kkm_run = NULL;
 	uint64_t start_intr_time = 0, end_intr_time = 0;
+	uint64_t intr_handler_address = 0;
 
 	kkm_run = (struct kkm_run *)kkm_kontext->mmap_area[0].kvaddr;
 	kkm_run->exit_reason = KKM_EXIT_UNKNOWN;
@@ -786,7 +787,12 @@ int kkm_process_intr(struct kkm_kontext *kkm_kontext)
 			break;
 		default:
 			start_intr_time = ktime_get_ns();
+#if 0
 			kkm_forward_intr(intr_forward_pointers[ga->intr_no]);
+#else
+			intr_handler_address = kkm_idt_get_native_handler(ga->intr_no);
+			(*always_intr_forward_function_pointers[ga->intr_no])(intr_handler_address, ga->trap_info.error, __KERNEL_CS, __KERNEL_DS);
+#endif
 			end_intr_time = ktime_get_ns();
 			ret_val = KKM_KONTEXT_FAULT_PROCESS_DONE;
 

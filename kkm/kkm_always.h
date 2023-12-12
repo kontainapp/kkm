@@ -273,7 +273,7 @@ void kkm_aie_253(void);
 void kkm_aie_254(void);
 void kkm_aie_255(void);
 
-void kkm_aife_error(void);
-void kkm_aife(void);
+void kkm_aife_error(uint64_t handler_address, uint64_t errorcode, uint64_t cs, uint64_t ss);
+void kkm_aife(uint64_t handler_address, uint64_t errorcode, uint64_t cs, uint64_t ss);
 
 #endif /* __KKM_ALWAYS_H__ */

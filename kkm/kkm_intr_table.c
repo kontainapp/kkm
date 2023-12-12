@@ -335,7 +335,7 @@ void (*always_intr_function_pointers[NR_VECTORS])(void) = {
 	kkm_aie_255,
 };
 
-void (*always_intr_forward_function_pointers[NR_VECTORS])(void) = {
+void (*always_intr_forward_function_pointers[NR_VECTORS])(uint64_t, uint64_t, uint64_t, uint64_t) = {
 	kkm_aife,	kkm_aife,	kkm_aife,	kkm_aife,
 	kkm_aife,	kkm_aife,	kkm_aife,	kkm_aife,
 	kkm_aife_error, kkm_aife,	kkm_aife_error, kkm_aife_error,

@@ -417,3 +417,9 @@ void kkm_install_idt(int cpu_no)
 	printk(KERN_NOTICE "cpu %d prev idt sz %x addr %lx\n",
 			cpu_no, desc.size, desc.address);
 }
+
+uint64_t kkm_idt_get_native_handler(int handler_no)
+{
+	uint64_t *idt_ptrs = (uint64_t *)kkm_idt.idt_entry.always_idt_native_ptrs.va;
+	return idt_ptrs[handler_no];
+}
