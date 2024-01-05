@@ -34,6 +34,8 @@ void kkm_intr_entry_ss_fault(void);
 void kkm_intr_entry_general_protection(void);
 void kkm_intr_entry_page_fault(void);
 void kkm_intr_entry_alignment_check(void);
+void kkm_intr_entry_control_protection(void);
+void kkm_intr_entry_vmm_communication(void);
 void kkm_intr_entry_security_exception(void);
 
 void kkm_syscall_entry_asm(void);

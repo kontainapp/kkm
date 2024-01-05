@@ -2796,6 +2796,8 @@ kkm_intr_entry_\name:
 	fault_with_error_code general_protection 13	/* general protection */
 	fault_with_error_code page_fault 14	/* page fault */
 	fault_with_error_code alignment_check 17	/* alignment check */
+	fault_with_error_code control_protection 21	/* control protection */
+	fault_with_error_code vmm_communication 29	/* VMM communication */
 	fault_with_error_code security_exception 30	/* security exception */
 
 

@@ -199,6 +199,10 @@ int kkm_idt_descr_init(void)
 		(uint64_t)kkm_intr_entry_page_fault;
 	intr_function_pointers[X86_TRAP_AC] =
 		(uint64_t)kkm_intr_entry_alignment_check;
+	intr_function_pointers[X86_TRAP_CP] =
+		(uint64_t)kkm_intr_entry_control_protection;
+	intr_function_pointers[X86_TRAP_VC] =
+		(uint64_t)kkm_intr_entry_vmm_communication;
 	intr_function_pointers[X86_TRAP_SE] =
 		(uint64_t)kkm_intr_entry_security_exception;
 
