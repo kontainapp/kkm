@@ -25,7 +25,7 @@
 	.global kkm_aie_\index
 kkm_aie_\index:
 	endbr64
-	clc
+	clac
 	pushq	$0
 	pushq	$\index
 	jmp	kkm_always_intr_common
@@ -38,7 +38,7 @@ kkm_aie_\index:
 	.global kkm_aie_\index
 kkm_aie_\index:
 	endbr64
-	clc
+	clac
 	pushq	$\index
 	jmp	kkm_always_intr_common_error
 	int3
