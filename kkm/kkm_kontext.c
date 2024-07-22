@@ -35,6 +35,9 @@
 #include "kkm_intr_table.h"
 #include "kkm_statistics.h"
 
+int kkm_kontext_handle_syscall_response(struct kkm_kontext *kontext,
+					struct kkm_guest_area *ga);
+
 static bool __read_mostly lazy_flush_tlb = true;
 module_param(lazy_flush_tlb, bool, S_IRUGO | S_IWUSR);
 

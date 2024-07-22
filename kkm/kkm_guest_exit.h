@@ -37,6 +37,9 @@ void kkm_intr_entry_alignment_check(void);
 void kkm_intr_entry_security_exception(void);
 
 void kkm_syscall_entry_asm(void);
+void kkm_syscall_label_1(void);
+void kkm_syscall_label_2(void);
+void kkm_syscall_label_3(void);
 
 /* one for each intr */
 void kkm_intr_entry_0(void);

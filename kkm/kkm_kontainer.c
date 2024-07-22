@@ -35,6 +35,15 @@
 #define KKM_KONTAINER_LOW_PAGE_COUNT (1)
 
 int kkm_kontainer_allocate_lvl_pages(struct kkm_mmu_page_info *k_page,
+				     struct kkm_mmu_page_info *p_page);
+int kkm_kontainer_allocate_pgd_pages(struct kkm *kkm);
+int kkm_kontainer_allocate_p4d_pages(struct kkm *kkm);
+void kkm_kontainer_cleanup_lvl_pages(struct kkm_mmu_page_info *k_page,
+				     struct kkm_mmu_page_info *p_page);
+void kkm_kontainer_cleanup_pgd_pages(struct kkm *kkm);
+void kkm_kontainer_cleanup_p4d_pages(struct kkm *kkm);
+
+int kkm_kontainer_allocate_lvl_pages(struct kkm_mmu_page_info *k_page,
 				     struct kkm_mmu_page_info *p_page)
 {
 	int ret_val = 0;
