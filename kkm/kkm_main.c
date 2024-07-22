@@ -36,6 +36,16 @@
 #include "kkm_fpu.h"
 #include "kkm_misc.h"
 
+void kkm_destroy_app(struct kkm *kkm);
+void kkm_reference_count_init(struct kkm *kkm);
+void kkm_reference_count_up(struct kkm *kkm);
+void kkm_reference_count_down(struct kkm *kkm);
+int kkm_add_execution_kontext(struct kkm *kkm, unsigned long arg);
+int kkm_set_kontainer_memory(struct kkm *kkm, unsigned long arg);
+int kkm_set_id_map_addr(struct kkm *kkm, unsigned long arg);
+int kkm_create_kontainer(unsigned long arg);
+int kkm_check_extension(unsigned long arg);
+
 uint32_t kkm_version = 12;
 bool kkm_cpu_supported = false;
 bool kkm_cpu_full_tlb_flush = false;
@@ -77,7 +87,7 @@ static int kkm_platform_pv_ops_set(const char *s, const struct kernel_param *kp)
 	bool set_pv;
 	int ret_val;
 
-	ret_val = strtobool(s, &set_pv);
+	ret_val = kstrtobool(s, &set_pv);
 	if (ret_val == 0) {
 		platform_pv = set_pv;
 		kkm_platform =
@@ -833,7 +843,7 @@ static long kkm_device_ioctl(struct file *file_p, unsigned int ioctl_type,
 		break;
 	case KKM_CPU_SUPPORTED:
 		ret_val = (kkm_cpu_supported == true) ? CPU_SUPPORTED :
-							      CPU_NOT_SUPPORTED;
+							CPU_NOT_SUPPORTED;
 		break;
 	case KKM_GET_IDENTITY:
 		ret_val = KKM_DEVICE_IDENTITY;
@@ -864,7 +874,8 @@ static void kkm_check_cpu_support(void)
 {
 	kkm_cpu_supported = false;
 
-	if (!IS_ENABLED(CONFIG_PAGE_TABLE_ISOLATION)) {
+	if ((!IS_ENABLED(CONFIG_PAGE_TABLE_ISOLATION)) &&
+	    (!IS_ENABLED(CONFIG_MITIGATION_PAGE_TABLE_ISOLATION))) {
 		printk(KERN_ERR "kkm_init: X86_FEATURE_PTI not supported.\n");
 		return;
 	}

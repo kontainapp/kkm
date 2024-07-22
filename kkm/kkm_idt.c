@@ -19,12 +19,15 @@
 #include <asm/io.h>
 
 #include "kkm.h"
+#include "kkm_idt.h"
 #include "kkm_run.h"
 #include "kkm_mm.h"
 #include "kkm_kontext.h"
 #include "kkm_guest_entry.h"
 #include "kkm_guest_exit.h"
 #include "kkm_intr_table.h"
+
+int kkm_idt_descr_init(void);
 
 /*
  * There is one idt system wide.
@@ -214,6 +217,72 @@ int kkm_idt_descr_init(void)
 	 */
 	*(uint64_t *)idt_entry->kx_global.va =
 		(uint64_t)kkm_switch_to_host_kernel;
+
+	/*
+	 * modify code to change pc relative instructions to direct address
+	 */
+	uint8_t *insn_addr = NULL;
+	uint32_t offset = -1;
+	uint64_t rip_value = -1;
+	uint64_t gs_relative_offset = -1;
+	uint8_t *relocated_address =
+		NULL; // this is where copied instruction is
+
+	insn_addr = (uint8_t *)kkm_syscall_label_1;
+	/* replace mov    %rsp,%gs:<offset>(%rip) with mov %rsp,%gs:<offset> */
+	if (insn_addr[0] == 0x65 && insn_addr[1] == 0x48 &&
+	    insn_addr[2] == 0x89 && insn_addr[3] == 0x25) {
+		offset = *(uint32_t *)(insn_addr + 4);
+		rip_value = (uint64_t)(insn_addr + 8);
+		gs_relative_offset = rip_value + offset;
+		relocated_address =
+			(uint8_t *)(kkm_syscall_label_1 - kkm_intr_entry_0 +
+				    idt_entry->idt_text_page0.va);
+		relocated_address[0] = 0x65;
+		relocated_address[1] = 0x48;
+		relocated_address[2] = 0x89;
+		relocated_address[3] = 0x24;
+		relocated_address[4] = 0x25;
+		*((uint32_t *)&relocated_address[5]) =
+			(uint32_t)gs_relative_offset;
+	}
+
+	insn_addr = (uint8_t *)kkm_syscall_label_2;
+	/* replace mov %gs:<offset>(%rip),%rsp with mov %gs:<offset>,%rsp */
+	if (insn_addr[0] == 0x65 && insn_addr[1] == 0x48 &&
+	    insn_addr[2] == 0x8b && insn_addr[3] == 0x25) {
+		offset = *(uint32_t *)(insn_addr + 4);
+		rip_value = (uint64_t)(insn_addr + 8);
+		gs_relative_offset = rip_value + offset;
+		relocated_address =
+			(uint8_t *)(kkm_syscall_label_2 - kkm_intr_entry_0 +
+				    idt_entry->idt_text_page0.va);
+		relocated_address[0] = 0x65;
+		relocated_address[1] = 0x48;
+		relocated_address[2] = 0x8b;
+		relocated_address[3] = 0x24;
+		relocated_address[4] = 0x25;
+		*((uint32_t *)&relocated_address[5]) =
+			(uint32_t)gs_relative_offset;
+	}
+
+	insn_addr = (uint8_t *)kkm_syscall_label_3;
+	/* replace push %gs:<offset>(%rip) with push %gs:<offset> */
+	if (insn_addr[0] == 0x65 && insn_addr[1] == 0xff &&
+	    insn_addr[2] == 0x35) {
+		offset = *(uint32_t *)(insn_addr + 3);
+		rip_value = (uint64_t)(insn_addr + 7);
+		gs_relative_offset = rip_value + offset;
+		relocated_address =
+			(uint8_t *)(kkm_syscall_label_3 - kkm_intr_entry_0 +
+				    idt_entry->idt_text_page0.va);
+		relocated_address[0] = 0x65;
+		relocated_address[1] = 0xff;
+		relocated_address[2] = 0x34;
+		relocated_address[3] = 0x25;
+		*((uint32_t *)&relocated_address[4]) =
+			(uint32_t)gs_relative_offset;
+	}
 
 error:
 	return ret_val;

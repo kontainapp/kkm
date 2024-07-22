@@ -2815,15 +2815,23 @@ kkm_syscall_entry_asm:
 	 * save current stack
 	 * and switch stack
 	 */
+	.global kkm_syscall_label_1
+kkm_syscall_label_1:
 	movq	%rsp, PER_CPU_VAR(cpu_tss_rw + TSS_sp2)
+	nop
+	.global kkm_syscall_label_2
+kkm_syscall_label_2:
 	movq	PER_CPU_VAR(cpu_tss_rw + TSS_sp0), %rsp
-
+	nop
 	/*
 	 * create stack
 	 * similar to trap and call common code
 	 */
 	pushq	$__USER_DS
+	.global kkm_syscall_label_3
+kkm_syscall_label_3:
 	pushq	PER_CPU_VAR(cpu_tss_rw + TSS_sp2)
+	nop
 	pushq	%r11
 	pushq	$__USER_CS
 	pushq	%rcx
